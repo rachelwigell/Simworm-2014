@@ -1,20 +1,23 @@
 package test;
 
-import static org.junit.Assert.*;
+//import static org.junit.Assert.*;
 
 import org.junit.Test;
 
-import dataStructures.Axes;
+
+import processing.BasicVisual;
+/*import dataStructures.Axes;
 import dataStructures.Cell;
 import dataStructures.Compartment;
 import dataStructures.Coordinates;
 import dataStructures.DivisionData;
 import dataStructures.Gene;
-import dataStructures.GeneState;
+import dataStructures.GeneState;*/
 import dataStructures.Shell;
 
-public class CellDivisionTests {
-	Shell testShell = new Shell();
+public class MethodsTests {
+	BasicVisual testVis = new BasicVisual();
+	Shell testShell = new Shell(testVis);
 	
 	/*@Test
 	public void firstDivision() {
@@ -58,7 +61,6 @@ public class CellDivisionTests {
 	@Test
 	public void testTimeLapse(){
 		System.out.println("Begin time lapse tests");
-		Shell testShell = new Shell();
 		testShell.timeStep();
 		testShell.timeStep();
 		testShell.timeStep();
@@ -69,5 +71,30 @@ public class CellDivisionTests {
 		testShell.timeStep();
 		testShell.timeStep();
 		testShell.timeStep(); //10
+		testShell.timeStep();
+		testShell.timeStep();
+		testShell.timeStep();
+		testShell.timeStep();
+		testShell.timeStep(); //15
+		testShell.timeStep();
+		testShell.timeStep();
+		testShell.timeStep();
+		testShell.timeStep();
+		testShell.timeStep(); //20
+		testShell.timeStep();
+		testShell.timeStep();
+		testShell.timeStep();
+		testShell.timeStep();
+		testShell.timeStep(); //25
+		testShell.timeStep();
+		testShell.timeStep();
+		testShell.timeStep();
+		testShell.timeStep();
+		testShell.timeStep(); //30
+		testShell.timeStep();
+		testShell.timeStep();
+		testShell.timeStep();
+		testShell.timeStep();
+		testShell.timeStep(); //35
 	}
 }

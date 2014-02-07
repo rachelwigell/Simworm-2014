@@ -4,23 +4,27 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import processing.core.*;
+
 public class Shell{
-	
+	PApplet window; // window in which to display the shell
 	private HashMap<String, Cell> cells;
 	private Coordinates dimensions;
 	private List<DivisionData> divisions = new ArrayList<DivisionData>(); //holds the order in which cells divide, so division can progress in a loop later
 	private double volume;
 	int simTime = 1;
 	
-	public Shell(){
+	public Shell(PApplet window){
+		this.window = window;
+		
 		//info about the shell itself
 		this.cells = new HashMap<String, Cell>();
-		this.dimensions = new Coordinates(50, 30, 30);
-		this.volume = 50*30*30;
+		this.dimensions = new Coordinates(500, 300, 300);
+		this.volume = 500*300*300;
 		
 		//info about p-0, which fills the whole shell at the start
-		Coordinates startCenter = new Coordinates(25, 15, 15);
-		Coordinates startLengths = new Coordinates(50, 30, 30);
+		Coordinates startCenter = new Coordinates(250, 150, 150);
+		Coordinates startLengths = new Coordinates(500, 300, 300);
 		HashMap<String, Gene> startGenes = new HashMap<String, Gene>();
 		
 		//populate the cell's genes
@@ -56,7 +60,7 @@ public class Shell{
 				startGenes.put("par-4", new Gene("par-4", new GeneState(true), new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER)).populateCons());
 				startGenes.put("par-5", new Gene("par-5", new GeneState(true), new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER)).populateCons());
 
-		Cell start = new Cell("p-0", startCenter, startLengths, this.volume, null, startGenes);
+		Cell start = new Cell(this.window, "p-0", startCenter, startLengths, this.volume, null, startGenes);
 		this.cells.put(start.getName(), start);
 		
 		//populate the divisions data
@@ -148,7 +152,7 @@ public class Shell{
 			for(String s: parentGenes.keySet()){
 				Gene g = parentGenes.get(s);
 				if(g.getLocation().getAP() != Compartment.POSTERIOR && daughter1 || g.getLocation().getAP() != Compartment.ANTERIOR && !daughter1){
-					childGenes.put(g.getName(), new Gene(g.getName(), g.getState(), g.getLocation()));
+					childGenes.put(g.getName(), new Gene(g.getName(), g.getState(), g.getLocation()).populateCons());
 				}
 			}
 			break;
@@ -156,7 +160,7 @@ public class Shell{
 			for(String s: parentGenes.keySet()){
 				Gene g = parentGenes.get(s);
 				if(g.getLocation().getDV() != Compartment.VENTRAL && daughter1 || g.getLocation().getDV() != Compartment.DORSAL && !daughter1){
-					childGenes.put(g.getName(), new Gene(g.getName(), g.getState(), g.getLocation()));
+					childGenes.put(g.getName(), new Gene(g.getName(), g.getState(), g.getLocation()).populateCons());
 				}
 			}
 			break;
@@ -164,7 +168,7 @@ public class Shell{
 			for(String s: parentGenes.keySet()){
 				Gene g = parentGenes.get(s);
 				if(g.getLocation().getLR() != Compartment.LEFT && daughter1 || g.getLocation().getLR() != Compartment.RIGHT && !daughter1){
-					childGenes.put(g.getName(), new Gene(g.getName(), g.getState(), g.getLocation()));
+					childGenes.put(g.getName(), new Gene(g.getName(), g.getState(), g.getLocation()).populateCons());
 				}
 			}
 			break;
@@ -191,14 +195,14 @@ public class Shell{
 		HashMap<String, Gene> d2genes = childGenes(parent, axis, false);
 		switch(axis){
 			case X:
-				d1Center = new Coordinates((d1Percentage - 1) * (ofInterest.getLengths().getX() / 2.0) + ofInterest.getCenter().getX(),
+				d1Center = new Coordinates((float) ((d1Percentage - 1) * (ofInterest.getLengths().getX() / 2.0) + ofInterest.getCenter().getX()),
 						ofInterest.getCenter().getY(), ofInterest.getCenter().getZ());
-				d1Lengths = new Coordinates(d1Percentage*ofInterest.getLengths().getX(), ofInterest.getLengths().getY(), ofInterest.getLengths().getZ());
-				daughter1 = new Cell(d1name, d1Center, d1Lengths, d1Percentage*ofInterest.getVolume(), parent, d1genes);
-				d2Center = new Coordinates(d1Percentage * ofInterest.getLengths().getX() / 2.0 + ofInterest.getCenter().getX(),
+				d1Lengths = new Coordinates((float) (d1Percentage*ofInterest.getLengths().getX()), ofInterest.getLengths().getY(), ofInterest.getLengths().getZ());
+				daughter1 = new Cell(this.window, d1name, d1Center, d1Lengths, d1Percentage*ofInterest.getVolume(), parent, d1genes);
+				d2Center = new Coordinates((float) (d1Percentage * ofInterest.getLengths().getX() / 2.0 + ofInterest.getCenter().getX()),
 						ofInterest.getCenter().getY(), ofInterest.getCenter().getZ());
-				d2Lengths = new Coordinates((1-d1Percentage)*ofInterest.getLengths().getX(), ofInterest.getLengths().getY(), ofInterest.getLengths().getZ());
-				daughter2 = new Cell(d2name, d2Center, d2Lengths, (1-d1Percentage)*ofInterest.getVolume(), parent, d2genes);
+				d2Lengths = new Coordinates((float) ((1-d1Percentage)*ofInterest.getLengths().getX()), ofInterest.getLengths().getY(), ofInterest.getLengths().getZ());
+				daughter2 = new Cell(this.window, d2name, d2Center, d2Lengths, (1-d1Percentage)*ofInterest.getVolume(), parent, d2genes);
 				this.cells.remove(parent);
 				this.cells.put(d1name, daughter1);
 				this.cells.put(d2name, daughter2);
@@ -208,15 +212,15 @@ public class Shell{
 				break;
 			case Y:
 				d1Center = new Coordinates(ofInterest.getCenter().getX(),
-						(d1Percentage - 1) * (ofInterest.getLengths().getY() / 2.0) + ofInterest.getCenter().getY(),
+						(float) ((d1Percentage - 1) * (ofInterest.getLengths().getY() / 2.0) + ofInterest.getCenter().getY()),
 						ofInterest.getCenter().getZ());
-				d1Lengths = new Coordinates(ofInterest.getLengths().getX(), d1Percentage*ofInterest.getLengths().getY(), ofInterest.getLengths().getZ());
-				daughter1 = new Cell(d1name, d1Center, d1Lengths, d1Percentage*ofInterest.getVolume(), parent, d1genes);
+				d1Lengths = new Coordinates(ofInterest.getLengths().getX(), (float) (d1Percentage*ofInterest.getLengths().getY()), ofInterest.getLengths().getZ());
+				daughter1 = new Cell(this.window, d1name, d1Center, d1Lengths, d1Percentage*ofInterest.getVolume(), parent, d1genes);
 				d2Center = new Coordinates(ofInterest.getCenter().getX(),
-						d1Percentage * ofInterest.getLengths().getY() / 2.0 + ofInterest.getCenter().getY(),
+						(float) (d1Percentage * ofInterest.getLengths().getY() / 2.0 + ofInterest.getCenter().getY()),
 						ofInterest.getCenter().getZ());
-				d2Lengths = new Coordinates(ofInterest.getLengths().getX(), (1-d1Percentage)*ofInterest.getLengths().getY(), ofInterest.getLengths().getZ());
-				daughter2 = new Cell(d2name, d2Center, d2Lengths, (1-d1Percentage)*ofInterest.getVolume(), parent, d2genes);
+				d2Lengths = new Coordinates(ofInterest.getLengths().getX(), (float) ((1-d1Percentage)*ofInterest.getLengths().getY()), ofInterest.getLengths().getZ());
+				daughter2 = new Cell(this.window, d2name, d2Center, d2Lengths, (1-d1Percentage)*ofInterest.getVolume(), parent, d2genes);
 				this.cells.remove(parent);
 				this.cells.put(d1name, daughter1);
 				this.cells.put(d2name, daughter2);
@@ -226,13 +230,13 @@ public class Shell{
 				break;
 			case Z:
 				d1Center = new Coordinates(ofInterest.getCenter().getX(), ofInterest.getCenter().getY(),
-						(d1Percentage - 1) * (ofInterest.getLengths().getZ() / 2.0) + ofInterest.getCenter().getZ());
-				d1Lengths = new Coordinates(ofInterest.getLengths().getX(), ofInterest.getLengths().getY(), d1Percentage*ofInterest.getLengths().getZ());
-				daughter1 = new Cell(d1name, d1Center, d1Lengths, d1Percentage*ofInterest.getVolume(), parent, d1genes);
+						(float) ((d1Percentage - 1) * (ofInterest.getLengths().getZ() / 2.0) + ofInterest.getCenter().getZ()));
+				d1Lengths = new Coordinates(ofInterest.getLengths().getX(), ofInterest.getLengths().getY(), (float) (d1Percentage*ofInterest.getLengths().getZ()));
+				daughter1 = new Cell(this.window, d1name, d1Center, d1Lengths, d1Percentage*ofInterest.getVolume(), parent, d1genes);
 				d2Center = new Coordinates(ofInterest.getCenter().getX(), ofInterest.getCenter().getY(),
-						d1Percentage * ofInterest.getLengths().getZ() / 2.0 + ofInterest.getCenter().getZ());
-				d2Lengths = new Coordinates(ofInterest.getLengths().getX(), (1-d1Percentage)*ofInterest.getLengths().getY(), ofInterest.getLengths().getZ());
-				daughter2 = new Cell(d2name, d2Center, d2Lengths, (1-d1Percentage)*ofInterest.getVolume(), parent, d2genes);
+						(float) (d1Percentage * ofInterest.getLengths().getZ() / 2.0 + ofInterest.getCenter().getZ()));
+				d2Lengths = new Coordinates(ofInterest.getLengths().getX(), ofInterest.getLengths().getY(), (float) ((1-d1Percentage)*ofInterest.getLengths().getZ()));
+				daughter2 = new Cell(this.window, d2name, d2Center, d2Lengths, (1-d1Percentage)*ofInterest.getVolume(), parent, d2genes);
 				this.cells.remove(parent);
 				this.cells.put(d1name, daughter1);
 				this.cells.put(d2name, daughter2);
@@ -243,9 +247,15 @@ public class Shell{
 		}		
 	}
 	
+	public void drawAllCells(){
+		for(String s: this.cells.keySet()){
+			this.cells.get(s).drawCell();
+		}
+	}
+	
 	//runs cell timeStep on each cell and then checks for cell divisions
 	public void timeStep(){
-		System.out.println("Beginning new time step");
+		System.out.println("Beginning new time step " + simTime);
 		System.out.println("Beginning check of genes in all cells");
 		for(String s: this.cells.keySet()){
 			cells.put(s, cells.get(s).timeLapse(cells.size()));		

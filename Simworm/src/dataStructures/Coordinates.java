@@ -1,16 +1,16 @@
 package dataStructures;
 
 public class Coordinates {
-	private double x; //smaller numbers are more anterior, larger numbers are more posterior
-	private double y; //smaller numbers are more dorsal, larger numbers are more ventral
-	private double z; //smaller numbers are more right, larger numbers are more left
+	private float x; //smaller numbers are more anterior, larger numbers are more posterior when used for locations
+	private float y; //smaller numbers are more dorsal, larger numbers are more ventral when used for locations
+	private float z; //smaller numbers are more right, larger numbers are more left when used for locations
 	
 	private Compartment AP;
 	private Compartment DV;
 	private Compartment LR;
 	
 	//used to indicate location	
-	public Coordinates(double x, double y, double z){
+	public Coordinates(float x, float y, float z){
 		this.x = x;
 		this.y = y;
 		this.z = z;
@@ -23,15 +23,16 @@ public class Coordinates {
 		this.LR = LR;
 	}
 	
-	public double getX() {
+	//getters
+	public float getX() {
 		return x;
 	}
 
-	public double getY() {
+	public float getY() {
 		return y;
 	}
 
-	public double getZ() {
+	public float getZ() {
 		return z;
 	}
 
@@ -45,5 +46,21 @@ public class Coordinates {
 
 	public Compartment getLR() {
 		return LR;
+	}
+	
+	public float getSmallest(){
+		float smallest = this.x;
+		if(this.y < smallest){
+			smallest = this.y;
+		}
+		if(this.z < smallest){
+			smallest = this.z;
+		}
+		return smallest;
+	}
+	
+	public Coordinates lengthsToScale(){
+		float smallest = this.getSmallest();
+		return new Coordinates(this.x/(smallest*2), this.y/(smallest*2), this.z/(smallest*2)); //divide by two to convert diameter to radius
 	}
 }

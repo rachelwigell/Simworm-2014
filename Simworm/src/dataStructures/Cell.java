@@ -4,22 +4,22 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import javax.media.j3d.Shape3D;
-
 import dataStructures.Coordinates;
 
+import processing.core.*;
 
 public class Cell {
+	PApplet window;
 	private String name;
 	private Coordinates center;
 	private Coordinates lengths; //a little misleading, this isn't a set of coordinates, it's the length of the cell in each direction
-	private Shape3D image;
 	private double volume;
 	private String parent;
 	private HashMap<String, Gene> genes;
 	private List<Gene> recentlyChanged = new ArrayList<Gene>();
 	
-	public Cell(String name, Coordinates center, Coordinates lengths, double volume, String parent, HashMap<String, Gene> genes){
+	public Cell(PApplet window, String name, Coordinates center, Coordinates lengths, double volume, String parent, HashMap<String, Gene> genes){
+		this.window = window;
 		this.name = name;
 		this.center = center;
 		this.lengths = lengths;
@@ -45,10 +45,6 @@ public class Cell {
 		return lengths;
 	}
 
-	public Shape3D getImage() {
-		return image;
-	}
-
 	public String getParent() {
 		return parent;
 	}
@@ -70,19 +66,19 @@ public class Cell {
 				boolean allFulfilled = true; //tracks whether all necessary antecedents for a particular consequence are fulfilled
 				checkAnte:
 				for(Gene a: c.getAntecedents()){ //look at the antecedents for a particular consequence
-					if(!a.getState().isUnknown()){
-						if(genes.get(a.getName()).getState().isOn() != a.getState().isOn()){ //check if the state of the gene in the cell is what it must be to fulfill antecedent
-							allFulfilled = false; //if any are wrong, set flag. if get to end of for without setting to false, then all antecedents are fulfilled
-							break checkAnte; //stop looking through antecedents as soon as one contradictory one is found
-						}
+					if(a.getState().isUnknown()) break checkAnte; //if any gene in the antecedents is unknown, stop immediately
+					if(!genes.keySet().contains(a.getName())) break checkAnte; //if the cell doesn't contain one of the antecedent genes, stop immediately
+					if(genes.get(a.getName()).getState().isOn() != a.getState().isOn()){ //check if the state of the gene in the cell is what it must be to fulfill antecedent
+						allFulfilled = false; //if any are wrong, set flag. if get to end of for without setting to false, then all antecedents are fulfilled
+						break checkAnte; //stop looking through antecedents as soon as one contradictory one is found
 					}
+				
 				}
 				if(allFulfilled){
 					if(!c.getConsequence().getState().isUnknown()){
 						System.out.println("\t\t" + c.getConsequence().getName() + " will be set to " + c.getConsequence().getState().isOn());
 					}
-					c.getConsequence().populateCons(); //must populate the relevantCons list for this gene instance since it will be added to the cell
-					effects.add(c.getConsequence());
+					effects.add(c.getConsequence().populateCons()); //must populate the relevantCons list for this gene instance since it will be added to the cell
 				}
 			}
 		}
@@ -104,6 +100,16 @@ public class Cell {
 		}
 		this.applyCons();
 		return this;
+	}
+	
+	public void drawCell(){
+		window.pushMatrix();
+		window.translate(this.center.getX(), this.center.getY(), this.center.getZ());
+		float smallSide = this.lengths.getSmallest();
+		Coordinates scaling = this.lengths.lengthsToScale();
+		window.scale(scaling.getX(), scaling.getY(), scaling.getZ());
+		window.sphere(smallSide);
+		window.popMatrix();
 	}
 	
 }
