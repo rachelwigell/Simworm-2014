@@ -4,17 +4,18 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import processing.BasicVisual;
 import processing.core.*;
 
 public class Shell{
-	PApplet window; // window in which to display the shell
+	BasicVisual window; // window in which to display the shell
 	private HashMap<String, Cell> cells;
 	private Coordinates dimensions;
 	private List<DivisionData> divisions = new ArrayList<DivisionData>(); //holds the order in which cells divide, so division can progress in a loop later
 	private double volume;
 	int simTime = 1;
 	
-	public Shell(PApplet window){
+	public Shell(BasicVisual window){
 		this.window = window;
 		
 		//info about the shell itself
