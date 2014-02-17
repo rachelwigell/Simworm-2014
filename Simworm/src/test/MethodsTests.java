@@ -2,15 +2,20 @@ package test;
 
 import static org.junit.Assert.*;
 
+import java.util.ArrayList;
 import java.util.Random;
 
 import org.junit.Test;
 
 
 
+
+
+
 import processing.BasicVisual;
 import dataStructures.Axes;
 import dataStructures.Cell;
+import dataStructures.CellChangesData;
 import dataStructures.Compartment;
 import dataStructures.Coordinates;
 import dataStructures.DivisionData;
@@ -24,7 +29,16 @@ public class MethodsTests {
 	
 	@Test
 	public void firstDivision() {
-		testShell.cellDivision("p-0", .6, Axes.X);
+		ArrayList<CellChangesData> cellChanges = new ArrayList<CellChangesData>();
+		cellChanges.add(testShell.cellDivision("p-0", .6, Axes.X));
+		for(CellChangesData d: cellChanges){
+			for(String s: d.cellsRemoved){
+				testShell.getCells().remove(s);
+			}
+			for(Cell c: d.cellsAdded){
+				testShell.getCells().put(c.getName(), c);
+			}
+		}
 		Cell ab = testShell.getCells().get("ab");
 		Cell p1 = testShell.getCells().get("p-1");
 		assertTrue(ab.getCenter().getX() == 150 && p1.getCenter().getX() == 400 && ab.getLengths().getX() == 300 && p1.getLengths().getX() == 200);
@@ -94,6 +108,10 @@ public class MethodsTests {
 	
 	@Test
 	public void testInheritance(){
+		
+		
+		CellChangesData cellChanges;
+		
 		assertEquals(1, testShell.getCells().keySet().size());
 		int numPars = 0;
 		for(String s: testShell.getCells().get("p-0").getGenes().keySet()){
@@ -102,7 +120,15 @@ public class MethodsTests {
 		}
 		assertEquals(6, numPars);
 		DivisionData d = testShell.getDivisions().get("p-0");
-		testShell.cellDivision(d.getParent(), d.getD1Percentage(), d.getAxis());
+		cellChanges = testShell.cellDivision(d.getParent(), d.getD1Percentage(), d.getAxis());
+		
+		for(String s: cellChanges.cellsRemoved){
+			testShell.getCells().remove(s);
+		}
+		for(Cell c: cellChanges.cellsAdded){
+			testShell.getCells().put(c.getName(), c);
+		}
+		
 		assertEquals(2, testShell.getCells().keySet().size());
 		numPars = 0;
 		for(String s: testShell.getCells().get("p-1").getGenes().keySet()){
@@ -117,7 +143,15 @@ public class MethodsTests {
 		}
 		assertEquals(4, numPars);
 		d = testShell.getDivisions().get("ab");
-		testShell.cellDivision(d.getParent(), d.getD1Percentage(), d.getAxis());
+		cellChanges = testShell.cellDivision(d.getParent(), d.getD1Percentage(), d.getAxis());
+		
+		for(String s: cellChanges.cellsRemoved){
+			testShell.getCells().remove(s);
+		}
+		for(Cell c: cellChanges.cellsAdded){
+			testShell.getCells().put(c.getName(), c);
+		}
+		
 		numPars = 0;
 		for(String s: testShell.getCells().get("ab-a").getGenes().keySet()){
 			Gene g = testShell.getCells().get("ab-a").getGenes().get(s);
