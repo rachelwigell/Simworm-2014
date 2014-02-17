@@ -18,5 +18,6 @@
 	<classpathentry kind="lib" path="jogl-all-natives-windows-amd64.jar"/>
 	<classpathentry kind="lib" path="jogl-all-natives-windows-i586.jar"/>
 	<classpathentry kind="lib" path="jogl-all.jar"/>
+	<classpathentry kind="lib" path="peasycam.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
