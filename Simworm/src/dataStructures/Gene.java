@@ -74,16 +74,20 @@ public class Gene /*implements Comparable<Gene>*/{
 		return state;
 	}
 	
-	/*public double getConcentration(){
-		return concentration;
-	}*/
-	
 	public List<Consequence> getRelevantCons(){
 		return relevantCons;
 	}
 
 	public Coordinates getLocation() {
 		return location;
+	}
+
+	public void setState(GeneState state) {
+		this.state = state;
+	}
+
+	public void setLocation(Coordinates location) {
+		this.location = location;
 	}
 	
 	//genes get sorted by concentration

@@ -3,9 +3,11 @@ package test;
 import static org.junit.Assert.*;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Random;
 
 import org.junit.Test;
+
 
 
 
@@ -27,10 +29,16 @@ public class MethodsTests {
 	BasicVisual testVis = new BasicVisual();
 	Shell testShell = new Shell(testVis);
 	
-	@Test
+	//@Test
 	public void firstDivision() {
 		ArrayList<CellChangesData> cellChanges = new ArrayList<CellChangesData>();
-		cellChanges.add(testShell.cellDivision("p-0", .6, Axes.X));
+		HashMap<String, Coordinates> abChanges = new HashMap<String, Coordinates>();
+		abChanges.put("pkc-3", new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER));
+		abChanges.put("par-3", new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER));
+		abChanges.put("par-6", new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER));
+		
+		DivisionData data = testShell.getDivisions().get("p-0");
+		cellChanges.add(testShell.cellDivision(data));
 		for(CellChangesData d: cellChanges){
 			for(String s: d.cellsRemoved){
 				testShell.getCells().remove(s);
@@ -50,7 +58,7 @@ public class MethodsTests {
 		testShell = new Shell(testVis);
 		for(String s: testShell.getDivisions().keySet()){
 			DivisionData d = testShell.getDivisions().get(s);
-			testShell.cellDivision(d.getParent(), d.getD1Percentage(), d.getAxis());
+			testShell.cellDivision(d);
 		}
 	}
 	
@@ -80,7 +88,7 @@ public class MethodsTests {
 		System.out.println("pha-4 is " + testCell.getGenes().get("pha-4").getState().isOn());
 	}
 	
-	@Test
+	//@Test
 	public void testTimeLapse(){
 		System.out.println("Begin time lapse tests");
 		for(int i = 0; i<45; i++){
@@ -106,7 +114,7 @@ public class MethodsTests {
 		assertTrue(randInt == 0 || randInt == 1 || randInt == 2 || randInt == 3);
 	}
 	
-	@Test
+	//@Test
 	public void testInheritance(){
 		
 		
@@ -120,7 +128,7 @@ public class MethodsTests {
 		}
 		assertEquals(6, numPars);
 		DivisionData d = testShell.getDivisions().get("p-0");
-		cellChanges = testShell.cellDivision(d.getParent(), d.getD1Percentage(), d.getAxis());
+		cellChanges = testShell.cellDivision(d);
 		
 		for(String s: cellChanges.cellsRemoved){
 			testShell.getCells().remove(s);
@@ -143,7 +151,7 @@ public class MethodsTests {
 		}
 		assertEquals(4, numPars);
 		d = testShell.getDivisions().get("ab");
-		cellChanges = testShell.cellDivision(d.getParent(), d.getD1Percentage(), d.getAxis());
+		cellChanges = testShell.cellDivision(d);
 		
 		for(String s: cellChanges.cellsRemoved){
 			testShell.getCells().remove(s);
@@ -163,6 +171,26 @@ public class MethodsTests {
 			Gene g = testShell.getCells().get("ab-p").getGenes().get(s);
 			if(g.getName().contains("par")) numPars++;
 		}
-		assertEquals(2, numPars);
+		assertEquals(4, numPars);
+	}
+	
+	@Test
+	public void instancesTest(){
+		Gene g = new Gene("test", new GeneState(true), new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER));
+		Gene g2 = g;
+		g2.setState(new GeneState(false));
+		assertFalse(g.getState().isOn());
+		
+		Gene h = new Gene("test", new GeneState(true), new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER));
+		Gene h2 = new Gene(h.getName(), h.getState(), h.getLocation());
+		h2.setState(new GeneState(false));
+		assertTrue(h.getState().isOn());
+	}
+	
+	@Test
+	public void mutationsTest(){
+		testShell = new Shell(testVis);
+		Cell c = testShell.getCells().get("p-0");
+		testShell.calcMutation(c);
 	}
 }

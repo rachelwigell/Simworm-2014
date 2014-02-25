@@ -150,11 +150,12 @@ public class Cell {
 	}
 	
 	public String getInfo(){
-		String info = this.name+"\n";
-		for(String s: this.genes.keySet()){
+		String info = this.name+" genes present:\n";
+		for(String s: this.genes.keySet()){			
 			if(this.genes.get(s).getState().isUnknown()) info = info + s + " unknown\n";
 			else if(this.genes.get(s).getState().isOn()) info = info + s + " active\n";
 			else info = info + s + " inactive\n";
+			window.fill(255, 255, 255);
 		}
 		return info;
 	}	

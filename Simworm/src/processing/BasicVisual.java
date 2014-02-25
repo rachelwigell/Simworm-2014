@@ -12,7 +12,7 @@ public class BasicVisual extends PApplet{
 	public static final int h = 800; //height of display view
 	int value1 = w/2;
 	int value2 = h/2;	
-	String userText = "Type a command";
+	String userText = "Type a cell name";
 	PeasyCam camera;
 	PMatrix matScene;
 
@@ -21,14 +21,14 @@ public class BasicVisual extends PApplet{
 		displayView = createGraphics(w, h, P3D);
 		infoView = createGraphics(width-w, h, P2D);
 		displayShell = new Shell(this);
-		//matScene = getMatrix();
+		matScene = getMatrix();
 		//camera = new PeasyCam(this, w/2, h/2, 0, 600);
 	}
 
 	public void draw(){
 		displayView.beginDraw();
 			displayView.background(0);
-			//displayView.setMatrix(getMatrix());
+			displayView.setMatrix(getMatrix());
 			displayView.camera(value1, value2, (h/2) / tan(PI/6), w/2, h/2, 0, 0, 1, 0);
 			displayView.translate(w/2-250, h/2-150, -150);
 			displayView.lights();
@@ -36,24 +36,27 @@ public class BasicVisual extends PApplet{
 			drawAxes();
 			displayView.noStroke();
 			displayShell.drawAllCells();
-			
 		displayView.endDraw();
 		
 		infoView.beginDraw();
-			infoView.background(0);
+			infoView.background(50);
 			infoView.fill(255);
-			infoView.text(userText, (width-w)/3, 100);
+			infoView.text(userText, (width-w)/3, 50);
+			drawButtons();
+			drawKey();
 		infoView.endDraw();
 		
-		//setMatrix(matScene);
+		setMatrix(matScene);
 		
 		image(displayView, 0, 0);
 		image(infoView, w, 0);
 	}
 	
 	public void mouseDragged(){
-		value1 = mouseX;
-		value2 = mouseY;
+		if(mouseX < w){
+			value1 = mouseX;
+			value2 = mouseY;
+		}
 	}
 	
 	public void keyReleased(){
@@ -66,39 +69,7 @@ public class BasicVisual extends PApplet{
 			}
 		}
 		else if(keyCode == ENTER){
-			if(userText.equals("front")){
-				value1 = width/2;
-				value2 = height/2;
-//				camera.reset(0);
-				userText = "Type a command";
-			}
-			else if(userText.equals("back")){
-//				camera.reset(0);
-//				camera.rotateX(180);
-				userText = "Type a command";
-			}
-			else if(userText.equals("top")){
-//				camera.reset(0);
-//				camera.rotateY(90);
-				userText = "Type a command";
-			}
-			else if(userText.equals("bottom")){
-//				camera.reset(0);
-//				camera.rotateY(270);
-				userText = "Type a command";
-			}
-			else if(userText.equals("left")){
-//				camera.reset(0);
-//				camera.rotateZ(90);
-				userText = "Type a command";
-			}
-			else if(userText.equals("right")){
-//				camera.reset(0);
-//				camera.rotateZ(270);
-				userText = "Type a command";
-			}
-			
-			else if(!displayShell.getCells().containsKey(userText)){
+			if(!displayShell.getCells().containsKey(userText)){
 				userText = "Cell not present";
 			}
 			else{
@@ -134,6 +105,104 @@ public class BasicVisual extends PApplet{
 		//set up to draw cells
 		displayView.noStroke();
 		displayView.fill(180, 255, 255);
+	}
+	
+	public void drawButtons(){
+		infoView.fill(180, 180, 180);
+		infoView.rect(20, 650, 100, 50);
+		infoView.fill(0,0,0);
+		infoView.text("front", 30, 675);
+		
+		infoView.fill(180, 180, 180);
+		infoView.rect(20, 710, 100, 50);
+		infoView.fill(0,0,0);
+		infoView.text("back", 30, 735);
+		
+		infoView.fill(180, 180, 180);
+		infoView.rect(140, 650, 100, 50);
+		infoView.fill(0,0,0);
+		infoView.text("top", 150, 675);
+		
+		infoView.fill(180, 180, 180);
+		infoView.rect(140, 710, 100, 50);
+		infoView.fill(0,0,0);
+		infoView.text("bottom", 150, 735);
+		
+		infoView.fill(180, 180, 180);
+		infoView.rect(260, 650, 100, 50);
+		infoView.fill(0,0,0);
+		infoView.text("left", 270, 675);
+
+		infoView.fill(180, 180, 180);
+		infoView.rect(260, 710, 100, 50);
+		infoView.fill(0,0,0);
+		infoView.text("right", 270, 735);		
+	}
+	
+	public void mouseClicked(){		
+		if(mouseX >= w+20 && mouseX <= w+120 && mouseY >= 650 && mouseY <= 700){
+			//over anterior button
+			value1 = w/2;
+			value2 = h/2;
+//			camera.reset(0);
+		}
+		else if(mouseX >= w+20 && mouseX <= w+120 && mouseY >= 710 && mouseY <= 760){
+			//over posterior
+//			camera.reset(0);
+//			camera.rotateX(180);
+		}
+		else if(mouseX >= w+140 && mouseX <= w+240 && mouseY >= 650 && mouseY <= 700){
+			//over dorsal
+//			camera.reset(0);
+//			camera.rotateY(90);
+		}
+		else if(mouseX >= w+140 && mouseX <= w+240 && mouseY >= 710 && mouseY <= 760){
+			//over ventral
+//			camera.reset(0);
+//			camera.rotateY(270);
+		}
+		else if(mouseX >= w+260 && mouseX <= w+360 && mouseY >= 650 && mouseY <= 700){
+			//over left
+//			camera.reset(0);
+//			camera.rotateZ(90)
+		}
+		else if(mouseX >= w+260 && mouseX <= w+360 && mouseY >= 710 && mouseY <= 760){
+			//over right
+//			camera.reset(0);
+//			camera.rotateZ(270);
+		}
+	}
+	
+	public void drawKey(){
+		infoView.fill(255, 0, 255);
+		infoView.ellipse(40, 590, 20, 20);
+		infoView.fill(255, 255, 255);
+		infoView.text("par-1", 60, 590);
+		
+		infoView.fill(255, 0, 0);
+		infoView.ellipse(160, 590, 20, 20);
+		infoView.fill(255, 255, 255);
+		infoView.text("par-2", 180, 590);
+		
+		infoView.fill(0, 255, 255);
+		infoView.ellipse(280, 590, 20, 20);
+		infoView.fill(255, 255, 255);
+		infoView.text("par-3", 300, 590);
+		
+		infoView.fill(0, 0, 255);
+		infoView.ellipse(40, 620, 20, 20);
+		infoView.fill(255, 255, 255);
+		infoView.text("par-4", 60, 620);
+		
+		infoView.fill(255, 255, 0);
+		infoView.ellipse(160, 620, 20, 20);
+		infoView.fill(255, 255, 255);
+		infoView.text("par-5", 180, 620);
+		
+		infoView.fill(0, 255, 0);
+		infoView.ellipse(280, 620, 20, 20);
+		infoView.fill(255, 255, 255);
+		infoView.text("par-6", 300, 620);
 	}
 	
 	public static void main(String args[]){
