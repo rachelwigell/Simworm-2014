@@ -29,7 +29,7 @@ public class MethodsTests {
 	BasicVisual testVis = new BasicVisual();
 	Shell testShell = new Shell(testVis);
 	
-	//@Test
+	@Test
 	public void firstDivision() {
 		ArrayList<CellChangesData> cellChanges = new ArrayList<CellChangesData>();
 		HashMap<String, Coordinates> abChanges = new HashMap<String, Coordinates>();
@@ -88,7 +88,7 @@ public class MethodsTests {
 		System.out.println("pha-4 is " + testCell.getGenes().get("pha-4").getState().isOn());
 	}
 	
-	//@Test
+	@Test
 	public void testTimeLapse(){
 		System.out.println("Begin time lapse tests");
 		for(int i = 0; i<45; i++){
@@ -114,7 +114,7 @@ public class MethodsTests {
 		assertTrue(randInt == 0 || randInt == 1 || randInt == 2 || randInt == 3);
 	}
 	
-	//@Test
+	@Test
 	public void testInheritance(){
 		
 		

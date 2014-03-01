@@ -12,7 +12,7 @@ public class Shell{
 	private Coordinates dimensions;
 	private HashMap<String, DivisionData> divisions = new HashMap<String, DivisionData>(); //holds the information about when and how cells divide in theory (according to events queue)
 	int simTime = 1;
-	float mutationProb = (float) .1; // number between 0 and 1 to indicate the probability of a mutation happening at any time
+	public float mutationProb = (float) 0; // number between 0 and 1 to indicate the probability of a mutation happening at any time
 	
 	public Shell(BasicVisual window){
 		this.window = window;
@@ -333,6 +333,9 @@ public class Shell{
 		}
 		simTime++;
 	}
+	
+	@Deprecated
+	//this is not how mutations actually work in biology...oops, I am just the code monkey
 	
 	//this method is inefficient because it works on a cell that is already calculated, goes through everything, and makes the changes to mutate it.
 	//if simulation becomes slow, you should move all of the pieces into other methods such that they can be calculated on the first pass.

@@ -139,24 +139,32 @@ public class Cell {
 	}
 	
 	public void drawCell(){
-		window.displayView.pushMatrix();
-		window.displayView.translate(this.center.getX(), this.center.getY(), this.center.getZ());
+		window.pushMatrix();
+		window.translate(this.center.getX(), this.center.getY(), this.center.getZ());
 		float smallSide = this.lengths.getSmallest();
 		Coordinates scaling = this.lengths.lengthsToScale();
-		window.displayView.scale(scaling.getX(), scaling.getY(), scaling.getZ());
-		window.displayView.fill(this.color.getRed(), this.color.getGreen(), this.color.getBlue());
-		window.displayView.sphere(smallSide);		
-		window.displayView.popMatrix();
+		window.scale(scaling.getX(), scaling.getY(), scaling.getZ());
+		window.fill(this.color.getRed(), this.color.getGreen(), this.color.getBlue());
+		window.sphere(smallSide);		
+		window.popMatrix();
 	}
 	
 	public String getInfo(){
-		String info = this.name+" genes present:\n";
-		for(String s: this.genes.keySet()){			
-			if(this.genes.get(s).getState().isUnknown()) info = info + s + " unknown\n";
-			else if(this.genes.get(s).getState().isOn()) info = info + s + " active\n";
-			else info = info + s + " inactive\n";
+		String parsInfo = this.name+" genes present:\n\n";
+		String otherInfo = "\n\n";
+		for(String s: this.genes.keySet()){	
+			if(this.genes.get(s).getName().contains("par")){
+				if(this.genes.get(s).getState().isUnknown()) parsInfo += s + " unknown\n";
+				else if(this.genes.get(s).getState().isOn()) parsInfo += s + " active\n";
+				else parsInfo += s + " inactive\n";
+			}
+			else{
+				if(this.genes.get(s).getState().isUnknown()) otherInfo += s + " unknown\n";
+				else if(this.genes.get(s).getState().isOn()) otherInfo += s + " active\n";
+				else otherInfo += s + " inactive\n";
+			}
 			window.fill(255, 255, 255);
 		}
-		return info;
+		return parsInfo+otherInfo;
 	}	
 }

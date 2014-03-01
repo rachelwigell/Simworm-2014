@@ -1,62 +1,99 @@
 package processing;
 
+import controlP5.*;
 import dataStructures.Shell;
 import processing.core.*;
 import peasy.*;
 
 public class BasicVisual extends PApplet{	
 	Shell displayShell;
-	public PGraphics displayView;
-	public PGraphics infoView;
-	public static final int w = 1000; //width of display view
-	public static final int h = 800; //height of display view
-	int value1 = w/2;
-	int value2 = h/2;	
 	String userText = "Type a cell name";
 	PeasyCam camera;
 	PMatrix matScene;
-
+	ControlP5 info;
+	Slider mutationRate;
+	Textarea userTextArea;
+	Button frontB;
+	Button backB;
+	Button topB;
+	Button bottomB;
+	Button leftB;
+	Button rightB;
+	
 	public void setup(){
 		size(1400, 800, P3D);
-		displayView = createGraphics(w, h, P3D);
-		infoView = createGraphics(width-w, h, P2D);
-		displayShell = new Shell(this);
-		matScene = getMatrix();
-		//camera = new PeasyCam(this, w/2, h/2, 0, 600);
+		displayShell = new Shell(this);		
+		info = new ControlP5(this);
+		info.setAutoDraw(false);
+
+		camera = new PeasyCam(this, 500, 400, 0, 600);
+		
+		mutationRate = new Slider(info, "mutation rate");
+		mutationRate.setRange(0, 100).setPosition(1100, 650).setSize(200, 25);
+		
+		userTextArea = new Textarea(info, "infoText");
+		userTextArea.setPosition(1200, 20).setSize(200, 600);
+		
+		frontB = new Button(info, "front").setPosition(1100, 700);
+		backB = new Button(info, "back").setPosition(1100, 730);
+		topB = new Button(info, "top").setPosition(1200, 700);
+		bottomB = new Button(info, "bottom").setPosition(1200, 730);
+		leftB = new Button(info, "left").setPosition(1300, 700);
+		rightB = new Button(info, "right").setPosition(1300, 730);
+		
+		new Button(info, "par-1").setPosition(1100, 570).setColorBackground(color(255, 0, 255)).setColorActive(color(255, 0, 255)).setColorForeground(color(255, 0, 255));
+		new Button(info, "par-2").setPosition(1100, 600).setColorBackground(color(255, 0, 0)).setColorActive(color(255, 0, 0)).setColorForeground(color(255, 0, 0));
+		new Button(info, "par-3").setPosition(1200, 570).setColorBackground(color(0, 255, 255)).setColorActive(color(0, 255, 255)).setColorForeground(color(0, 255, 255));
+		new Button(info, "par-4").setPosition(1200, 600).setColorBackground(color(0, 0, 255)).setColorActive(color(0, 0, 255)).setColorForeground(color(0, 0, 255));
+		new Button(info, "par-5").setPosition(1300, 570).setColorBackground(color(255, 255, 0)).setColorActive(color(255, 255, 0)).setColorForeground(color(255, 255, 0));
+		new Button(info, "par-6").setPosition(1300, 600).setColorBackground(color(0, 255, 0)).setColorActive(color(0, 255, 0)).setColorForeground(color(0, 255, 0));
 	}
 
 	public void draw(){
-		displayView.beginDraw();
-			displayView.background(0);
-			displayView.setMatrix(getMatrix());
-			displayView.camera(value1, value2, (h/2) / tan(PI/6), w/2, h/2, 0, 0, 1, 0);
-			displayView.translate(w/2-250, h/2-150, -150);
-			displayView.lights();
-			displayView.spotLight(180, 255, 255, w/2-250, h/2-150, 400, 0, 0, -1, PI/4, 2);
-			drawAxes();
-			displayView.noStroke();
-			displayShell.drawAllCells();
-		displayView.endDraw();
-		
-		infoView.beginDraw();
-			infoView.background(50);
-			infoView.fill(255);
-			infoView.text(userText, (width-w)/3, 50);
-			drawButtons();
-			drawKey();
-		infoView.endDraw();
-		
-		setMatrix(matScene);
-		
-		image(displayView, 0, 0);
-		image(infoView, w, 0);
+		background(0);
+		translate(250, 250, -150);
+		lights();
+		spotLight(180, 255, 255, 250, 250, 400, 0, 0, -1, PI/4, 2);
+		drawAxes();
+		noStroke();
+		displayShell.drawAllCells();
+		userTextArea.setText(userText);
+		displayShell.mutationProb = (float) (mutationRate.getValue()/100.0);
+
+		if(mouseX > 1100) camera.setActive(false);
+		else camera.setActive(true);
+
+		gui();
 	}
 	
-	public void mouseDragged(){
-		if(mouseX < w){
-			value1 = mouseX;
-			value2 = mouseY;
-		}
+	void front(float theValue){
+		camera.reset(0);
+	}
+	
+	void back(float theValue){
+		//still off
+		camera.reset(0);
+		camera.rotateY(180);
+	}
+	
+	void top(float theValue){
+		camera.reset(0);
+		camera.rotateX(90);
+	}
+	
+	void bottom(float theValue){
+		camera.reset(0);
+		camera.rotateX(-90);
+	}
+	
+	void left(float theValue){
+		camera.reset(0);
+		camera.rotateY(-90);
+	}
+	
+	void right(float theValue){
+		camera.reset(0);
+		camera.rotateY(90);
 	}
 	
 	public void keyReleased(){
@@ -83,127 +120,37 @@ public class BasicVisual extends PApplet{
 	}
 	
 	public void drawAxes(){
-		displayView.strokeWeight(5);
+		strokeWeight(5);
 		//set up to draw x axis
-		displayView.stroke(255,0,0);
-		displayView.fill(255,0,0);
-		displayView.line(-200, 400, 0, 0, 400, 0);
-		displayView.text("a", -200, 390, 0);
-		displayView.text("p", 0, 390, 0);
+		stroke(255,0,0);
+		fill(255,0,0);
+		line(-200, 400, 0, 0, 400, 0);
+		text("a", -200, 390, 0);
+		text("p", 0, 390, 0);
 		//set up to draw y axis
-		displayView.stroke(0,255,0);
-		displayView.fill(0,255,0);
-		displayView.text("v", -100, 510, 0);
-		displayView.text("d", -100, 290, 0);
-		displayView.line(-100, 500, 0, -100, 300, 0);
+		stroke(0,255,0);
+		fill(0,255,0);
+		text("v", -100, 510, 0);
+		text("d", -100, 290, 0);
+		line(-100, 500, 0, -100, 300, 0);
 		//set up to draw z axis
-		displayView.stroke(0,0,255);
-		displayView.fill(0,0,255);
-		displayView.line(-100, 400, -100, -100, 400, 100);
-		displayView.text("r", -90, 400, -100);
-		displayView.text("l", -110, 400, 100);
+		stroke(0,0,255);
+		fill(0,0,255);
+		line(-100, 400, -100, -100, 400, 100);
+		text("r", -90, 400, -100);
+		text("l", -110, 400, 100);
 		//set up to draw cells
-		displayView.noStroke();
-		displayView.fill(180, 255, 255);
+		noStroke();
+		fill(180, 255, 255);
 	}
 	
-	public void drawButtons(){
-		infoView.fill(180, 180, 180);
-		infoView.rect(20, 650, 100, 50);
-		infoView.fill(0,0,0);
-		infoView.text("front", 30, 675);
-		
-		infoView.fill(180, 180, 180);
-		infoView.rect(20, 710, 100, 50);
-		infoView.fill(0,0,0);
-		infoView.text("back", 30, 735);
-		
-		infoView.fill(180, 180, 180);
-		infoView.rect(140, 650, 100, 50);
-		infoView.fill(0,0,0);
-		infoView.text("top", 150, 675);
-		
-		infoView.fill(180, 180, 180);
-		infoView.rect(140, 710, 100, 50);
-		infoView.fill(0,0,0);
-		infoView.text("bottom", 150, 735);
-		
-		infoView.fill(180, 180, 180);
-		infoView.rect(260, 650, 100, 50);
-		infoView.fill(0,0,0);
-		infoView.text("left", 270, 675);
-
-		infoView.fill(180, 180, 180);
-		infoView.rect(260, 710, 100, 50);
-		infoView.fill(0,0,0);
-		infoView.text("right", 270, 735);		
-	}
-	
-	public void mouseClicked(){		
-		if(mouseX >= w+20 && mouseX <= w+120 && mouseY >= 650 && mouseY <= 700){
-			//over anterior button
-			value1 = w/2;
-			value2 = h/2;
-//			camera.reset(0);
+	public void gui(){
+		  hint(DISABLE_DEPTH_TEST);
+		  camera.beginHUD();
+		  info.draw();
+		  camera.endHUD();
+		  hint(ENABLE_DEPTH_TEST);
 		}
-		else if(mouseX >= w+20 && mouseX <= w+120 && mouseY >= 710 && mouseY <= 760){
-			//over posterior
-//			camera.reset(0);
-//			camera.rotateX(180);
-		}
-		else if(mouseX >= w+140 && mouseX <= w+240 && mouseY >= 650 && mouseY <= 700){
-			//over dorsal
-//			camera.reset(0);
-//			camera.rotateY(90);
-		}
-		else if(mouseX >= w+140 && mouseX <= w+240 && mouseY >= 710 && mouseY <= 760){
-			//over ventral
-//			camera.reset(0);
-//			camera.rotateY(270);
-		}
-		else if(mouseX >= w+260 && mouseX <= w+360 && mouseY >= 650 && mouseY <= 700){
-			//over left
-//			camera.reset(0);
-//			camera.rotateZ(90)
-		}
-		else if(mouseX >= w+260 && mouseX <= w+360 && mouseY >= 710 && mouseY <= 760){
-			//over right
-//			camera.reset(0);
-//			camera.rotateZ(270);
-		}
-	}
-	
-	public void drawKey(){
-		infoView.fill(255, 0, 255);
-		infoView.ellipse(40, 590, 20, 20);
-		infoView.fill(255, 255, 255);
-		infoView.text("par-1", 60, 590);
-		
-		infoView.fill(255, 0, 0);
-		infoView.ellipse(160, 590, 20, 20);
-		infoView.fill(255, 255, 255);
-		infoView.text("par-2", 180, 590);
-		
-		infoView.fill(0, 255, 255);
-		infoView.ellipse(280, 590, 20, 20);
-		infoView.fill(255, 255, 255);
-		infoView.text("par-3", 300, 590);
-		
-		infoView.fill(0, 0, 255);
-		infoView.ellipse(40, 620, 20, 20);
-		infoView.fill(255, 255, 255);
-		infoView.text("par-4", 60, 620);
-		
-		infoView.fill(255, 255, 0);
-		infoView.ellipse(160, 620, 20, 20);
-		infoView.fill(255, 255, 255);
-		infoView.text("par-5", 180, 620);
-		
-		infoView.fill(0, 255, 0);
-		infoView.ellipse(280, 620, 20, 20);
-		infoView.fill(255, 255, 255);
-		infoView.text("par-6", 300, 620);
-	}
 	
 	public static void main(String args[]){
 		   PApplet.main(new String[] { "--present", "processing.BasicVisual" });
