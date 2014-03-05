@@ -19,6 +19,12 @@ public class Gene /*implements Comparable<Gene>*/{
 		this.location = location;
 	}
 	
+	//constructor for a "simple gene" which doesn't hold as much info - used to avoid storing excess info in antecedents and consequences
+	public Gene(String name, GeneState state){
+		this.name = name;
+		this.state = state;
+	}
+	
 	//populates relevantCons
 	//must be called before any gene's list of relevant consequences should be used. otherwise it is a "shallow" gene just containing the name/isOn/concentration/location info
 	//only the gene instances that are in a cell's gene list generally need to call this
@@ -82,12 +88,14 @@ public class Gene /*implements Comparable<Gene>*/{
 		return location;
 	}
 
-	public void setState(GeneState state) {
+	public Gene setState(GeneState state) {
 		this.state = state;
+		return this;
 	}
 
-	public void setLocation(Coordinates location) {
+	public Gene setLocation(Coordinates location) {
 		this.location = location;
+		return this;
 	}
 	
 	//genes get sorted by concentration

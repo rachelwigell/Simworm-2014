@@ -1,7 +1,9 @@
 package dataStructures;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Random;
 
 import processing.BasicVisual;
@@ -13,9 +15,12 @@ public class Shell{
 	private HashMap<String, DivisionData> divisions = new HashMap<String, DivisionData>(); //holds the information about when and how cells divide in theory (according to events queue)
 	int simTime = 1;
 	public float mutationProb = (float) 0; // number between 0 and 1 to indicate the probability of a mutation happening at any time
+	public HashMap<String, Gene> startGenes = new HashMap<String, Gene>();
+	public HashMap<String, Boolean> mutants = new HashMap<String, Boolean>();
 	
-	public Shell(BasicVisual window){
+	public Shell(BasicVisual window, HashMap<String, Boolean> mutants){
 		this.window = window;
+		this.mutants = mutants;
 		
 		//info about the shell itself
 		this.cells = new HashMap<String, Cell>();
@@ -24,7 +29,6 @@ public class Shell{
 		//info about p-0, which fills the whole shell at the start
 		Coordinates startCenter = new Coordinates(250, 150, 150);
 		Coordinates startLengths = new Coordinates(500, 300, 300);
-		HashMap<String, Gene> startGenes = new HashMap<String, Gene>();
 		
 		//populate the cell's genes
 		startGenes.put("par-1", new Gene("par-1", new GeneState(true), new Coordinates(Compartment.POSTERIOR, Compartment.YCENTER, Compartment.ZCENTER)).populateCons());
@@ -34,12 +38,12 @@ public class Shell{
 		startGenes.put("par-5", new Gene("par-5", new GeneState(true), new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER)).populateCons());
 		startGenes.put("par-6", new Gene("par-6", new GeneState(true), new Coordinates(Compartment.ANTERIOR, Compartment.YCENTER, Compartment.ZCENTER)).populateCons());
 		startGenes.put("pkc-3", new Gene("pkc-3", new GeneState(true), new Coordinates(Compartment.ANTERIOR, Compartment.YCENTER, Compartment.ZCENTER)).populateCons());
-		startGenes.put("mex-5", new Gene("mex-5", new GeneState(true), new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER)).populateCons());
+		startGenes.put("mex-5", new Gene("mex-5", new GeneState(true), new Coordinates(Compartment.ANTERIOR, Compartment.YCENTER, Compartment.ZCENTER)).populateCons());
 		startGenes.put("axp-1", new Gene("axp-1", new GeneState(true), new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER)).populateCons());
 		startGenes.put("glp-1", new Gene("glp-1", new GeneState(true), new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER)).populateCons());
 		startGenes.put("tbx-38", new Gene("tbx-38", new GeneState(true), new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER)).populateCons());
 		startGenes.put("ref-1", new Gene("ref-1", new GeneState(false), new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER)).populateCons());
-		startGenes.put("skn-1", new Gene("skn-1", new GeneState(true), new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER)).populateCons());
+		startGenes.put("skn-1", new Gene("skn-1", new GeneState(true), new Coordinates(Compartment.POSTERIOR, Compartment.YCENTER, Compartment.ZCENTER)).populateCons());
 		startGenes.put("MS signal", new Gene("MS signal", new GeneState(false), new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER)).populateCons());
 		startGenes.put("lag-2", new Gene("lag-2", new GeneState(true), new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER)).populateCons());
 		startGenes.put("lin-12", new Gene("lin-12", new GeneState(false), new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER)).populateCons());
@@ -49,57 +53,63 @@ public class Shell{
 		startGenes.put("mom-2", new Gene("mom-2", new GeneState(false), new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER)).populateCons());
 		startGenes.put("mom-4", new Gene("mom-4", new GeneState(false), new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER)).populateCons());
 		startGenes.put("pie-1", new Gene("pie-1", new GeneState(true), new Coordinates(Compartment.POSTERIOR, Compartment.YCENTER, Compartment.ZCENTER)).populateCons());
-		startGenes.put("pal-1", new Gene("pal-1", new GeneState(true), new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER)).populateCons());
+		startGenes.put("pal-1", new Gene("pal-1", new GeneState(true), new Coordinates(Compartment.POSTERIOR, Compartment.YCENTER, Compartment.ZCENTER)).populateCons());
 		startGenes.put("med-1", new Gene("med-1", new GeneState(false), new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER)).populateCons());
 		startGenes.put("med-2", new Gene("med-2", new GeneState(false), new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER)).populateCons());
 		startGenes.put("wrm-1", new Gene("wrm-1", new GeneState(false), new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER)).populateCons());
 		startGenes.put("lit-1", new Gene("lit-1", new GeneState(false), new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER)).populateCons());
 		startGenes.put("pop-1", new Gene("pop-1", new GeneState(true), new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER)).populateCons());
 		startGenes.put("tbx-37", new Gene("tbx-37", new GeneState(true), new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER)).populateCons());
-		startGenes.put("mex-3", new Gene("mex-3", new GeneState(false), new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER)).populateCons());
+		startGenes.put("mex-3", new Gene("mex-3", new GeneState(false), new Coordinates(Compartment.ANTERIOR, Compartment.YCENTER, Compartment.ZCENTER)).populateCons());
 		startGenes.put("mom-5",  new Gene("mom-5", new GeneState(false), new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER)).populateCons());
-		startGenes.put("pos-1", new Gene("pos-1", new GeneState(true), new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER)).populateCons());
+		startGenes.put("pos-1", new Gene("pos-1", new GeneState(true), new Coordinates(Compartment.POSTERIOR, Compartment.YCENTER, Compartment.ZCENTER)).populateCons());
 		startGenes.put("lgl-1", new Gene("lgl-1", new GeneState(false), new Coordinates(Compartment.POSTERIOR, Compartment.YCENTER, Compartment.ZCENTER)).populateCons());
+		startGenes.put("mex-1", new Gene("mex-1", new GeneState(true), new Coordinates(Compartment.POSTERIOR, Compartment.YCENTER, Compartment.ZCENTER)).populateCons());
 
 		//populate the data about genes that move to center after the first division.
 		HashMap<String, Coordinates> abChanges = new HashMap<String, Coordinates>();
 		abChanges.put("pkc-3", new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER));
 		abChanges.put("par-3", new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER));
 		abChanges.put("par-6", new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER));
+		abChanges.put("mex-5", new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER));
+		abChanges.put("mex-3", new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER));
 		HashMap<String, Coordinates> p1Changes = new HashMap<String, Coordinates>();
 		p1Changes.put("lgl-1", new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER));
+		p1Changes.put("skn-1", new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER));
+		p1Changes.put("pal-1", new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER));
 		
 		//populate the divisions data (from the events queue)
-		divisions.put("p-0", new DivisionData("p-0", .6, Axes.X, 10, new HashMap<String, Coordinates>()));
-		divisions.put("ab", new DivisionData("ab", .5, Axes.X, 27, abChanges));
-		divisions.put("p-1", new DivisionData("p-1", .6, Axes.X, 28, p1Changes));
-		divisions.put("ab-a", new DivisionData("ab-a", .5, Axes.Z, 45, new HashMap<String, Coordinates>()));
-		divisions.put("ab-p", new DivisionData("ab-p", .5, Axes.Z, 45, new HashMap<String, Coordinates>()));
-		divisions.put("ems", new DivisionData("ems", .6, Axes.X, 49, new HashMap<String, Coordinates>()));
-		divisions.put("p-2", new DivisionData("p-2", .6, Axes.X, 52, new HashMap<String, Coordinates>()));
-		divisions.put("ab-al", new DivisionData("ab-al", .5, Axes.X, 60, new HashMap<String, Coordinates>()));
-		divisions.put("ab-ar", new DivisionData("ab-ar", .5, Axes.X, 60, new HashMap<String, Coordinates>()));
-		divisions.put("ab-pl", new DivisionData("ab-pl", .5, Axes.X, 60, new HashMap<String, Coordinates>()));
-		divisions.put("ab-pr", new DivisionData("ab-pr", .5, Axes.X, 65, new HashMap<String, Coordinates>()));
-		divisions.put("ms", new DivisionData("ms", .5, Axes.X, 68, new HashMap<String, Coordinates>()));
-		divisions.put("e", new DivisionData("e", .5, Axes.X, 68, new HashMap<String, Coordinates>()));
-		divisions.put("c", new DivisionData("c", .5, Axes.X, 80, new HashMap<String, Coordinates>()));
-		divisions.put("ab-ala", new DivisionData("ab-ala", .5, Axes.X, 78, new HashMap<String, Coordinates>()));
-		divisions.put("ab-alp", new DivisionData("ab-alp", .5, Axes.X, 78, new HashMap<String, Coordinates>()));
-		divisions.put("ab-ara", new DivisionData("ab-ara", .5, Axes.X, 85, new HashMap<String, Coordinates>()));
-		divisions.put("ab-arp", new DivisionData("ab-arp", .5, Axes.X, 78, new HashMap<String, Coordinates>()));
-		divisions.put("ab-pla", new DivisionData("ab-pla", .5, Axes.X, 85, new HashMap<String, Coordinates>()));
-		divisions.put("ab-plp", new DivisionData("ab-plp", .5, Axes.X, 77, new HashMap<String, Coordinates>()));
-		divisions.put("ab-pra", new DivisionData("ab-pra", .5, Axes.X, 85, new HashMap<String, Coordinates>()));
-		divisions.put("ab-prp", new DivisionData("ab-prp", .5, Axes.X, 85, new HashMap<String, Coordinates>()));
-		divisions.put("p-3", new DivisionData("p-3", .5, Axes.X, 78, new HashMap<String, Coordinates>()));
-		divisions.put("ms-a", new DivisionData("ms-a", .5, Axes.X, 95, new HashMap<String, Coordinates>()));
-		divisions.put("ms-p", new DivisionData("ms-p", .5, Axes.X, 95, new HashMap<String, Coordinates>()));
+		divisions.put("p-0", new DivisionData("p-0", .6, Axes.X, 10, new HashMap<String, Coordinates>(), 0));
+		divisions.put("ab", new DivisionData("ab", .5, Axes.X, 27, abChanges, 1));
+		divisions.put("p-1", new DivisionData("p-1", .6, Axes.X, 28, p1Changes, 1));
+		divisions.put("ab-a", new DivisionData("ab-a", .5, Axes.Z, 45, new HashMap<String, Coordinates>(), 2));
+		divisions.put("ab-p", new DivisionData("ab-p", .5, Axes.Z, 45, new HashMap<String, Coordinates>(), 2));
+		divisions.put("ems", new DivisionData("ems", .6, Axes.X, 49, new HashMap<String, Coordinates>(), 2));
+		divisions.put("p-2", new DivisionData("p-2", .6, Axes.X, 52, new HashMap<String, Coordinates>(), 2));
+		divisions.put("ab-al", new DivisionData("ab-al", .5, Axes.X, 60, new HashMap<String, Coordinates>(), 3));
+		divisions.put("ab-ar", new DivisionData("ab-ar", .5, Axes.X, 60, new HashMap<String, Coordinates>(), 3));
+		divisions.put("ab-pl", new DivisionData("ab-pl", .5, Axes.X, 60, new HashMap<String, Coordinates>(), 3));
+		divisions.put("ab-pr", new DivisionData("ab-pr", .5, Axes.X, 65, new HashMap<String, Coordinates>(), 3));
+		divisions.put("ms", new DivisionData("ms", .5, Axes.X, 68, new HashMap<String, Coordinates>(), 3));
+		divisions.put("e", new DivisionData("e", .5, Axes.X, 68, new HashMap<String, Coordinates>(), 3));
+		divisions.put("c", new DivisionData("c", .5, Axes.X, 80, new HashMap<String, Coordinates>(), 3));
+		divisions.put("ab-ala", new DivisionData("ab-ala", .5, Axes.X, 78, new HashMap<String, Coordinates>(), 4));
+		divisions.put("ab-alp", new DivisionData("ab-alp", .5, Axes.X, 78, new HashMap<String, Coordinates>(), 4));
+		divisions.put("ab-ara", new DivisionData("ab-ara", .5, Axes.X, 85, new HashMap<String, Coordinates>(), 4));
+		divisions.put("ab-arp", new DivisionData("ab-arp", .5, Axes.X, 78, new HashMap<String, Coordinates>(), 4));
+		divisions.put("ab-pla", new DivisionData("ab-pla", .5, Axes.X, 85, new HashMap<String, Coordinates>(), 4));
+		divisions.put("ab-plp", new DivisionData("ab-plp", .5, Axes.X, 77, new HashMap<String, Coordinates>(), 4));
+		divisions.put("ab-pra", new DivisionData("ab-pra", .5, Axes.X, 85, new HashMap<String, Coordinates>(), 4));
+		divisions.put("ab-prp", new DivisionData("ab-prp", .5, Axes.X, 85, new HashMap<String, Coordinates>(), 4));
+		divisions.put("p-3", new DivisionData("p-3", .5, Axes.X, 78, new HashMap<String, Coordinates>(), 3));
+		divisions.put("ms-a", new DivisionData("ms-a", .5, Axes.X, 95, new HashMap<String, Coordinates>(), 4));
+		divisions.put("ms-p", new DivisionData("ms-p", .5, Axes.X, 95, new HashMap<String, Coordinates>(), 4));
 				
-				
+		perShellMutations();
+		perCellMutations(startGenes);
 		
-		Cell start = new Cell(this.window, "p-0", startCenter, startLengths, null, startGenes, new RGB(250, 250, 250), divisions.get("p-0"));
-		this.cells.put(start.getName(), calcMutation(start));		
+		Cell start = new Cell(this.window, "p-0", startCenter, startLengths, null, startGenes, new RGB(250, 250, 250), divisions.get("p-0"), 0);
+		this.cells.put(start.getName(), start);		
 	}
 	
 	public HashMap<String, Cell> getCells() {
@@ -212,7 +222,7 @@ public class Shell{
 		Axes axis = data.getAxis();
 		HashMap<String, Coordinates> geneCompartments = data.getGeneCompartments();
 		
-		Cell ofInterest = this.cells.get(parent); //retreive the dividing cell from the hashmap
+		Cell ofInterest = this.cells.get(parent); //retrieve the dividing cell from the hashmap
 		Coordinates d1Center;
 		Coordinates d1Lengths;
 		Coordinates d2Center;
@@ -222,49 +232,51 @@ public class Shell{
 		String d1name = nameCalc(parent, axis, true);
 		String d2name = nameCalc(parent, axis, false);
 		HashMap<String, Gene> d1genes = childGenes(parent, axis, geneCompartments, true); //call childgenes to determine the genes inherited by daughter1
+		d1genes = perCellMutations(d1genes);
 		HashMap<String, Gene> d2genes = childGenes(parent, axis, geneCompartments, false); //equivalent for daughter2
+		d2genes = perCellMutations(d2genes);
 		CellChangesData changes = new CellChangesData(new ArrayList<String>(), new ArrayList<Cell>()); //will hold all the added/removed cells; this is returned and the changes will propagate within other functions
 		switch(axis){ //how we proceed depends on which axis we're dividing along
 			case X:
 				d1Center = new Coordinates((float) ((d1Percentage - 1) * (ofInterest.getLengths().getX() / 2.0) + ofInterest.getCenter().getX()),
 						ofInterest.getCenter().getY(), ofInterest.getCenter().getZ()); //calculations to get the center of daughter1
 				d1Lengths = new Coordinates((float) (d1Percentage*ofInterest.getLengths().getX()), ofInterest.getLengths().getY(), ofInterest.getLengths().getZ()); //calculations to get the dimensions of daughter1
-				daughter1 = new Cell(this.window, d1name, d1Center, d1Lengths, parent, d1genes, calcCellColor(d1genes), divisions.get(d1name)); //create daughter1 with all the fields we have calculated
+				daughter1 = new Cell(this.window, d1name, d1Center, d1Lengths, parent, d1genes, calcCellColor(d1genes), divisions.get(d1name), ofInterest.getGeneration()+1); //create daughter1 with all the fields we have calculated
 				d2Center = new Coordinates((float) (d1Percentage * ofInterest.getLengths().getX() / 2.0 + ofInterest.getCenter().getX()), //repeat for daughter2
 						ofInterest.getCenter().getY(), ofInterest.getCenter().getZ());
 				d2Lengths = new Coordinates((float) ((1-d1Percentage)*ofInterest.getLengths().getX()), ofInterest.getLengths().getY(), ofInterest.getLengths().getZ());
-				daughter2 = new Cell(this.window, d2name, d2Center, d2Lengths, parent, d2genes, calcCellColor(d2genes), divisions.get(d2name));
+				daughter2 = new Cell(this.window, d2name, d2Center, d2Lengths, parent, d2genes, calcCellColor(d2genes), divisions.get(d2name), ofInterest.getGeneration()+1);
 				changes.cellsRemoved.add(parent); //store parent cell in changes to be removed later
-				changes.cellsAdded.add(calcMutation(daughter1)); //store daughters in changes to be added to the actual cells hashmap later
-				changes.cellsAdded.add(calcMutation(daughter2));
+				changes.cellsAdded.add(daughter1); //store daughters in changes to be added to the actual cells hashmap later
+				changes.cellsAdded.add(daughter2);
 				break;
 			case Y: //equivalent cases for y and z
 				d1Center = new Coordinates(ofInterest.getCenter().getX(),
 						(float) ((d1Percentage - 1) * (ofInterest.getLengths().getY() / 2.0) + ofInterest.getCenter().getY()),
 						ofInterest.getCenter().getZ());
 				d1Lengths = new Coordinates(ofInterest.getLengths().getX(), (float) (d1Percentage*ofInterest.getLengths().getY()), ofInterest.getLengths().getZ());
-				daughter1 = new Cell(this.window, d1name, d1Center, d1Lengths, parent, d1genes, calcCellColor(d1genes), divisions.get(d1name));
+				daughter1 = new Cell(this.window, d1name, d1Center, d1Lengths, parent, d1genes, calcCellColor(d1genes), divisions.get(d1name), ofInterest.getGeneration()+1);
 				d2Center = new Coordinates(ofInterest.getCenter().getX(),
 						(float) (d1Percentage * ofInterest.getLengths().getY() / 2.0 + ofInterest.getCenter().getY()),
 						ofInterest.getCenter().getZ());
 				d2Lengths = new Coordinates(ofInterest.getLengths().getX(), (float) ((1-d1Percentage)*ofInterest.getLengths().getY()), ofInterest.getLengths().getZ());
-				daughter2 = new Cell(this.window, d2name, d2Center, d2Lengths, parent, d2genes, calcCellColor(d1genes), divisions.get(d2name));
+				daughter2 = new Cell(this.window, d2name, d2Center, d2Lengths, parent, d2genes, calcCellColor(d1genes), divisions.get(d2name), ofInterest.getGeneration()+1);
 				changes.cellsRemoved.add(parent);
-				changes.cellsAdded.add(calcMutation(daughter1));
-				changes.cellsAdded.add(calcMutation(daughter2));
+				changes.cellsAdded.add(daughter1);
+				changes.cellsAdded.add(daughter2);
 				break;
 			case Z:
 				d1Center = new Coordinates(ofInterest.getCenter().getX(), ofInterest.getCenter().getY(),
 						(float) ((d1Percentage - 1) * (ofInterest.getLengths().getZ() / 2.0) + ofInterest.getCenter().getZ()));
 				d1Lengths = new Coordinates(ofInterest.getLengths().getX(), ofInterest.getLengths().getY(), (float) (d1Percentage*ofInterest.getLengths().getZ()));
-				daughter1 = new Cell(this.window, d1name, d1Center, d1Lengths, parent, d1genes, calcCellColor(d1genes), divisions.get(d1name));
+				daughter1 = new Cell(this.window, d1name, d1Center, d1Lengths, parent, d1genes, calcCellColor(d1genes), divisions.get(d1name), ofInterest.getGeneration()+1);
 				d2Center = new Coordinates(ofInterest.getCenter().getX(), ofInterest.getCenter().getY(),
 						(float) (d1Percentage * ofInterest.getLengths().getZ() / 2.0 + ofInterest.getCenter().getZ()));
 				d2Lengths = new Coordinates(ofInterest.getLengths().getX(), ofInterest.getLengths().getY(), (float) ((1-d1Percentage)*ofInterest.getLengths().getZ()));
-				daughter2 = new Cell(this.window, d2name, d2Center, d2Lengths, parent, d2genes, calcCellColor(d2genes), divisions.get(d2name));
+				daughter2 = new Cell(this.window, d2name, d2Center, d2Lengths, parent, d2genes, calcCellColor(d2genes), divisions.get(d2name), ofInterest.getGeneration()+1);
 				changes.cellsRemoved.add(parent);
-				changes.cellsAdded.add(calcMutation(daughter1));
-				changes.cellsAdded.add(calcMutation(daughter2));
+				changes.cellsAdded.add(daughter1);
+				changes.cellsAdded.add(daughter2);
 				break;
 		}
 		return changes;
@@ -396,8 +408,228 @@ public class Shell{
 		}
 		
 		//place all of the parts into a divisiondata structure
-		DivisionData mutatedData = new DivisionData(cData.getParent(), mutatedPercent, cData.getAxis(), mutatedTime, cData.getGeneCompartments());
+		DivisionData mutatedData = new DivisionData(cData.getParent(), mutatedPercent, cData.getAxis(), mutatedTime, cData.getGeneCompartments(), c.getGeneration());
 		//and finally place all of the parts into a cell to be returned. the non-mutatable attribute are drawn directly from the original cell.
-		return new Cell(c.window, c.getName(), c.getCenter(), c.getLengths(), c.getParent(), mutatedGenes, mutatedColor, mutatedData);
+		return new Cell(c.window, c.getName(), c.getCenter(), c.getLengths(), c.getParent(), mutatedGenes, mutatedColor, mutatedData, c.getGeneration());
 	}
+	
+	public HashMap<String, Gene> perCellMutations (HashMap<String, Gene> genes){
+		for(String s: mutants.keySet()){ //go through the set of mutants; this contains each of the par's and an associated boolean value indicating whether it is mutant.
+			if(mutants.get(s)){ //if a par is mutant...
+				genes.remove(s); //remove it from the present genes
+				if(s.equals("par-1")){ //check which par it is and apply unique mutations
+					genes = par1Mutations(genes);
+				}
+				else if(s.equals("par-2")){
+					genes = par2Mutations(genes);
+				}
+				else if(s.equals("par-3") || s.equals("par-6") || s.equals("pkc-3")){ //par-3, 6, and pkc-3 all manifest mutations the same way
+					genes = par3Mutations(genes);
+				}
+				else if(s.equals("par-4")){
+					genes = par4Mutations(genes);
+				}
+				else if(s.equals("par-5")){
+					genes = par5Mutations(genes);
+				}
+			}
+		}
+		return genes;
+	}
+	
+	public void perShellMutations(){
+		Random r = new Random();
+		int mutateTimes = 0; //times mutate if there are any mutant pars
+		int mutatePercentages = 0; //percentages mutate if anything is mutant except par-4
+		boolean par4 = false;
+		for(String s: mutants.keySet()){ //go through the set of mutants; this contains each of the par's and an associated boolean value indicating whether it is mutant.
+			if(mutants.get(s)){ //if a par is mutant...
+				mutateTimes++; //count it
+				if(!s.equals("par-4")) mutatePercentages++; //count towards percentages if not par-4
+				else par4 = true; //if par-4, have to do special rule
+			}
+		}
+		if(mutatePercentages > 0){ //if there was at least one mutant par (not counting par-4)...
+			for(String s: divisions.keySet()){ //look at each division in the events queue...
+				DivisionData d = divisions.get(s); //get the relevant data
+				int chosen = r.nextInt(20) + 40; //random number between 40 and 60
+				divisions.put(s, d.setD1Percentage(chosen/100.0)); //set the d1percentage to something between .4 and .6
+			}
+		}
+		else{
+			if(par4){ //if par4 is the only one mutated
+				for(String s: divisions.keySet()){
+					DivisionData  d = divisions.get(s);
+					if(!d.getParent().equals("p-0")){ //apply to all but first cell division
+						int chosen = r.nextInt(20) + 40; //random number between 40 and 60
+						divisions.put(s, d.setD1Percentage(chosen/100.0)); //set the d1percentage to something between .4 and .6
+					}
+				}
+			}
+		}
+		if(mutateTimes > 0){ //if there was at least one mutant par...
+			HashMap<Integer, LinkedList<Integer>> groupGenerations = new HashMap<Integer, LinkedList<Integer>>(); //will hold all the cell division times of each generation
+			for(String s: divisions.keySet()){ //look at each division in the events queue...
+				DivisionData d = divisions.get(s); //get the relevant data
+				//hashmap keys are the generation that the cell belongs to.
+				//we must go through the events queue and find all the times that cells in this generation divide. these get stored in the associated linkedList.
+				//then we'll sort the linkedList to find the extremes, and pick a random number within this range
+				//then each division in this generation will be set to occur at this same random time.
+				if(groupGenerations.keySet().contains(d.getGeneration())){ //if there is already an entry in the hashmap for this generation...
+					LinkedList<Integer> times = groupGenerations.get(d.getGeneration()); //get the list as it stands now
+					times.add(d.getTime()); //add the new time to it
+					groupGenerations.put(d.getGeneration(), times); //replace list in hashmap with larger list
+				}
+				else{ //if the entry doesn't exist yet...
+					LinkedList<Integer> times = new LinkedList<Integer>(); //initialize with empty list
+					times.add(d.getTime());
+					groupGenerations.put(d.getGeneration(), times); //initialize it with an empty list.
+					
+				}
+			}
+			for(Integer i: groupGenerations.keySet()){ //now go through  the generations hashmap
+				LinkedList<Integer> times = groupGenerations.get(i); //get the associated list
+				Collections.sort(times); //sort it
+				LinkedList<Integer> chosen = new LinkedList<Integer>();	//new "list" will hold just one number, the randomly chosen one
+				if(times.getLast() - times.getFirst() == 0) chosen.add(times.getFirst()); //if there is no variation, just add the only choice. else...
+				else chosen.add(r.nextInt(times.getLast() - times.getFirst()) + times.getFirst()); //choose a random number between the smallest and largest time in the list
+				groupGenerations.put(i, chosen); //replace entry in hashmap with the chosen number
+			}
+			for(String s: divisions.keySet()){ //now go through the divisions set
+				DivisionData d = divisions.get(s); //get the relevant data
+				//each key in groupGenerations corresponds to a generation,
+				//and the corresponding list contains only the time that cells in that generation should be set to divide
+				divisions.put(s, d.setTime(groupGenerations.get(d.getGeneration()).getFirst()));
+			}
+		}
+	}
+	
+	public HashMap<String, Gene> par1Mutations(HashMap<String, Gene> genes){
+		Random r = new Random();
+		int var;
+		//skn-1 mislocalized
+		if(genes.get("skn-1") != null){
+			var = r.nextInt(100);
+			if(var < 90) genes.put("skn-1", genes.get("skn-1").setLocation(new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER)));
+			else if(var < 95) genes.put("skn-1", genes.get("skn-1").setLocation(new Coordinates(Compartment.ANTERIOR, Compartment.YCENTER, Compartment.ZCENTER)));
+			else genes.put("skn-1", genes.get("skn-1").setLocation(new Coordinates(Compartment.POSTERIOR, Compartment.YCENTER, Compartment.ZCENTER)));
+		}
+		//pie-1 degrades
+		if(genes.get("pie-1") != null){
+			genes.remove("pie-1");
+		}
+		//glp-1 mislocalized
+		if(genes.get("glp-1") != null){
+			var = r.nextInt(100);
+			if(var < 90) genes.put("glp-1", genes.get("glp-1").setLocation(new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER)));
+			else if(var < 95) genes.put("glp-1", genes.get("glp-1").setLocation(new Coordinates(Compartment.ANTERIOR, Compartment.YCENTER, Compartment.ZCENTER)));
+			else genes.put("glp-1", genes.get("glp-1").setLocation(new Coordinates(Compartment.POSTERIOR, Compartment.YCENTER, Compartment.ZCENTER)));
+		}
+		//par-3 mislocalized
+		if(genes.get("par-3") != null){
+			var = r.nextInt(100);
+			if(var < 90) genes.put("par-3", genes.get("par-3").setLocation(new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER)));
+			else if(var < 95) genes.put("par-3", genes.get("par-3").setLocation(new Coordinates(Compartment.ANTERIOR, Compartment.YCENTER, Compartment.ZCENTER)));
+			else genes.put("par-3", genes.get("par-3").setLocation(new Coordinates(Compartment.POSTERIOR, Compartment.YCENTER, Compartment.ZCENTER)));
+		}
+		//mex-3 mislocalized
+		if(genes.get("mex-3") != null){
+			var = r.nextInt(100);
+			if(var < 90) genes.put("mex-3", genes.get("mex-3").setLocation(new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER)));
+			else if(var < 95) genes.put("mex-3", genes.get("mex-3").setLocation(new Coordinates(Compartment.ANTERIOR, Compartment.YCENTER, Compartment.ZCENTER)));
+			else genes.put("mex-3", genes.get("mex-3").setLocation(new Coordinates(Compartment.POSTERIOR, Compartment.YCENTER, Compartment.ZCENTER)));
+		}
+		//mex-5 mislocalized
+		if(genes.get("mex-5") != null){
+			var = r.nextInt(100);
+			if(var < 90) genes.put("mex-5", genes.get("mex-5").setLocation(new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER)));
+			else if(var < 95) genes.put("mex-5", genes.get("mex-5").setLocation(new Coordinates(Compartment.ANTERIOR, Compartment.YCENTER, Compartment.ZCENTER)));
+			else genes.put("mex-5", genes.get("mex-5").setLocation(new Coordinates(Compartment.POSTERIOR, Compartment.YCENTER, Compartment.ZCENTER)));
+		}
+		return genes;
+	}
+	
+	public HashMap<String, Gene> par2Mutations(HashMap<String, Gene> genes){
+		Random r = new Random();
+		int var;
+		//glp-1 mislocalized
+		if(genes.get("glp-1") != null){
+			var = r.nextInt(100);
+			if(var < 63) genes.put("glp-1", genes.get("glp-1").setLocation(new Coordinates(Compartment.ANTERIOR, Compartment.YCENTER, Compartment.ZCENTER)));
+			var = r.nextInt(100);
+			if(var < 50) genes.put("glp-1", genes.get("glp-1").setLocation(new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER)));
+			else genes.put("glp-1", genes.get("glp-1").setLocation(new Coordinates(Compartment.POSTERIOR, Compartment.YCENTER, Compartment.ZCENTER)));
+		}
+		//par-1 mislocalized
+		if(genes.get("par-1") != null){
+			var = r.nextInt(100);
+			if(var < 90) genes.put("par-1", genes.get("par-1").setLocation(new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER)));
+			else if(var < 95) genes.put("par-1", genes.get("par-1").setLocation(new Coordinates(Compartment.ANTERIOR, Compartment.YCENTER, Compartment.ZCENTER)));
+			else genes.put("par-1", genes.get("par-1").setLocation(new Coordinates(Compartment.POSTERIOR, Compartment.YCENTER, Compartment.ZCENTER)));
+		}
+		//par-3 mislocalized
+		if(genes.get("par-3") != null){
+			var = r.nextInt(100);
+			if(var < 90) genes.put("par-3", genes.get("par-3").setLocation(new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER)));
+			else if(var < 95) genes.put("par-3", genes.get("par-3").setLocation(new Coordinates(Compartment.ANTERIOR, Compartment.YCENTER, Compartment.ZCENTER)));
+			else genes.put("par-3", genes.get("par-3").setLocation(new Coordinates(Compartment.POSTERIOR, Compartment.YCENTER, Compartment.ZCENTER)));
+		}
+		return genes;
+	}
+	
+	//also run for par-6 and pkc-3; these mutations all behave the same way
+	public HashMap<String, Gene> par3Mutations(HashMap<String, Gene> genes){
+		Random r = new Random();
+		int var;
+		//par-2 mislocalized
+		if(genes.get("par-2") != null){
+			var = r.nextInt(100);
+			if(var < 90) genes.put("par-2", genes.get("par-2").setLocation(new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER)));
+			else if(var < 95) genes.put("par-2", genes.get("par-2").setLocation(new Coordinates(Compartment.ANTERIOR, Compartment.YCENTER, Compartment.ZCENTER)));
+			else genes.put("par-2", genes.get("par-2").setLocation(new Coordinates(Compartment.POSTERIOR, Compartment.YCENTER, Compartment.ZCENTER)));
+		}
+		//par-1 mislocalized
+		if(genes.get("par-1") != null){
+			var = r.nextInt(100);
+			if(var < 90) genes.put("par-1", genes.get("par-1").setLocation(new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER)));
+			else if(var < 95) genes.put("par-1", genes.get("par-1").setLocation(new Coordinates(Compartment.ANTERIOR, Compartment.YCENTER, Compartment.ZCENTER)));
+			else genes.put("par-1", genes.get("par-1").setLocation(new Coordinates(Compartment.POSTERIOR, Compartment.YCENTER, Compartment.ZCENTER)));
+		}
+		//glp-1 mislocalized
+		if(genes.get("glp-1") != null){
+			var = r.nextInt(100);
+			if(var < 23) genes.put("glp-1", genes.get("glp-1").setLocation(new Coordinates(Compartment.ANTERIOR, Compartment.YCENTER, Compartment.ZCENTER)));
+			var = r.nextInt(100);
+			if(var < 50) genes.put("glp-1", genes.get("glp-1").setLocation(new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER)));
+			else genes.put("glp-1", genes.get("glp-1").setLocation(new Coordinates(Compartment.POSTERIOR, Compartment.YCENTER, Compartment.ZCENTER)));
+		}
+		return genes;
+	}
+	
+	public HashMap<String, Gene> par4Mutations(HashMap<String, Gene> genes){
+		//glp-1 moves to center
+		genes.put("glp-1", genes.get("glp-1").setLocation(new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER)));	
+		return genes;
+	}
+	
+	public HashMap<String, Gene> par5Mutations(HashMap<String, Gene> genes){
+		Random r = new Random();
+		int var;
+		//par-3 mislocalized
+		if(genes.get("par-3") != null){
+			var = r.nextInt(100);
+			if(var < 90) genes.put("par-3", genes.get("par-3").setLocation(new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER)));
+			else if(var < 95) genes.put("par-3", genes.get("par-3").setLocation(new Coordinates(Compartment.ANTERIOR, Compartment.YCENTER, Compartment.ZCENTER)));
+			else genes.put("par-3", genes.get("par-3").setLocation(new Coordinates(Compartment.POSTERIOR, Compartment.YCENTER, Compartment.ZCENTER)));
+		}
+		//mex-5 mislocalized
+		if(genes.get("mex-5") != null){
+			var = r.nextInt(100);
+			if(var < 28) genes.put("mex-5", genes.get("mex-5").setLocation(new Coordinates(Compartment.ANTERIOR, Compartment.YCENTER, Compartment.ZCENTER)));
+			var = r.nextInt(100);
+			if(var < 50) genes.put("mex-5", genes.get("mex-5").setLocation(new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER)));
+			else genes.put("mex-5", genes.get("mex-5").setLocation(new Coordinates(Compartment.POSTERIOR, Compartment.YCENTER, Compartment.ZCENTER)));
+		}
+		return genes;
+	}	
 }

@@ -1,5 +1,8 @@
 package processing;
 
+import java.awt.TextField;
+import java.util.HashMap;
+
 import controlP5.*;
 import dataStructures.Shell;
 import processing.core.*;
@@ -11,7 +14,7 @@ public class BasicVisual extends PApplet{
 	PeasyCam camera;
 	PMatrix matScene;
 	ControlP5 info;
-	Slider mutationRate;
+	//Slider mutationRate;
 	Textarea userTextArea;
 	Button frontB;
 	Button backB;
@@ -19,18 +22,43 @@ public class BasicVisual extends PApplet{
 	Button bottomB;
 	Button leftB;
 	Button rightB;
+	boolean mutantsChosen = false;
+	HashMap<String, Boolean> mutants = new HashMap<String, Boolean>();
+	CheckBox chooseMutants;
+	Button createShell;
 	
 	public void setup(){
 		size(1400, 800, P3D);
-		displayShell = new Shell(this);		
 		info = new ControlP5(this);
 		info.setAutoDraw(false);
-
+		
+		new Textarea(info, "boxeslabel").setPosition(600, 450).setText("CHOOSE MUTANTS");
+		chooseMutants = new CheckBox(info, "boxes");
+		chooseMutants.setItemsPerRow(3)
+		.setSpacingColumn(30)
+		.setSpacingRow(20)
+		.setPosition(600, 500)
+		.addItem("par-1", 0)
+		.addItem("par-2", 1)
+		.addItem("par-3", 2)
+		.addItem("par-4", 3)
+		.addItem("par-5", 4)
+		.addItem("par-6", 5)
+		.addItem("pkc-3", 6);
+		createShell = new Button(info, "createShell").setPosition(600, 600).setLabel("create shell");
+		
 		camera = new PeasyCam(this, 500, 400, 0, 600);
 		
-		mutationRate = new Slider(info, "mutation rate");
-		mutationRate.setRange(0, 100).setPosition(1100, 650).setSize(200, 25);
-		
+		//mutationRate = new Slider(info, "mutation rate");
+		//mutationRate.setRange(0, 100).setPosition(1100, 650).setSize(200, 25);		
+	}
+	
+	public void secondarySetup(){
+		info.remove("boxeslabel");
+		info.remove("boxes");
+		info.remove("createShell");
+		mutantsChosen = true;
+		displayShell = new Shell(this, mutants);
 		userTextArea = new Textarea(info, "infoText");
 		userTextArea.setPosition(1200, 20).setSize(200, 600);
 		
@@ -41,12 +69,12 @@ public class BasicVisual extends PApplet{
 		leftB = new Button(info, "left").setPosition(1300, 700);
 		rightB = new Button(info, "right").setPosition(1300, 730);
 		
-		new Button(info, "par-1").setPosition(1100, 570).setColorBackground(color(255, 0, 255)).setColorActive(color(255, 0, 255)).setColorForeground(color(255, 0, 255));
-		new Button(info, "par-2").setPosition(1100, 600).setColorBackground(color(255, 0, 0)).setColorActive(color(255, 0, 0)).setColorForeground(color(255, 0, 0));
-		new Button(info, "par-3").setPosition(1200, 570).setColorBackground(color(0, 255, 255)).setColorActive(color(0, 255, 255)).setColorForeground(color(0, 255, 255));
-		new Button(info, "par-4").setPosition(1200, 600).setColorBackground(color(0, 0, 255)).setColorActive(color(0, 0, 255)).setColorForeground(color(0, 0, 255));
-		new Button(info, "par-5").setPosition(1300, 570).setColorBackground(color(255, 255, 0)).setColorActive(color(255, 255, 0)).setColorForeground(color(255, 255, 0));
-		new Button(info, "par-6").setPosition(1300, 600).setColorBackground(color(0, 255, 0)).setColorActive(color(0, 255, 0)).setColorForeground(color(0, 255, 0));
+		//new Button(info, "par-1").setPosition(1100, 570).setColorBackground(color(255, 0, 255)).setColorActive(color(255, 0, 255)).setColorForeground(color(255, 0, 255));
+		//new Button(info, "par-2").setPosition(1100, 600).setColorBackground(color(255, 0, 0)).setColorActive(color(255, 0, 0)).setColorForeground(color(255, 0, 0));
+		//new Button(info, "par-3").setPosition(1200, 570).setColorBackground(color(0, 255, 255)).setColorActive(color(0, 255, 255)).setColorForeground(color(0, 255, 255));
+		//new Button(info, "par-4").setPosition(1200, 600).setColorBackground(color(0, 0, 255)).setColorActive(color(0, 0, 255)).setColorForeground(color(0, 0, 255));
+		//new Button(info, "par-5").setPosition(1300, 570).setColorBackground(color(255, 255, 0)).setColorActive(color(255, 255, 0)).setColorForeground(color(255, 255, 0));
+		//new Button(info, "par-6").setPosition(1300, 600).setColorBackground(color(0, 255, 0)).setColorActive(color(0, 255, 0)).setColorForeground(color(0, 255, 0));
 	}
 
 	public void draw(){
@@ -54,16 +82,31 @@ public class BasicVisual extends PApplet{
 		translate(250, 250, -150);
 		lights();
 		spotLight(180, 255, 255, 250, 250, 400, 0, 0, -1, PI/4, 2);
-		drawAxes();
 		noStroke();
-		displayShell.drawAllCells();
-		userTextArea.setText(userText);
-		displayShell.mutationProb = (float) (mutationRate.getValue()/100.0);
+		if(mutantsChosen){
+			drawAxes();
+			displayShell.drawAllCells();
+			userTextArea.setText(userText);
+		}
+		
+		//displayShell.mutationProb = (float) (mutationRate.getValue()/100.0);
 
 		if(mouseX > 1100) camera.setActive(false);
 		else camera.setActive(true);
 
 		gui();
+	}
+	
+	void createShell(float theValue){
+		//read states of the checkboxes
+		mutants.put("par-1", chooseMutants.getState(0));
+		mutants.put("par-2", chooseMutants.getState(1));
+		mutants.put("par-3", chooseMutants.getState(2));
+		mutants.put("par-4", chooseMutants.getState(3));
+		mutants.put("par-5", chooseMutants.getState(4));
+		mutants.put("par-6", chooseMutants.getState(5));
+		mutants.put("pkc-3", chooseMutants.getState(6));
+		secondarySetup();
 	}
 	
 	void front(float theValue){

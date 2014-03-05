@@ -15,10 +15,11 @@ public class Cell {
 	private HashMap<String, Gene> recentlyChanged = new HashMap<String, Gene>();
 	private RGB color;
 	private DivisionData divide;
+	private int generation;
 	
 	Coordinates sphereLocation;
 	
-	public Cell(BasicVisual window, String name, Coordinates center, Coordinates lengths, String parent, HashMap<String, Gene> genes, RGB color, DivisionData divide){
+	public Cell(BasicVisual window, String name, Coordinates center, Coordinates lengths, String parent, HashMap<String, Gene> genes, RGB color, DivisionData divide, int generation){
 		this.window = window;
 		this.name = name;
 		this.center = center;
@@ -27,6 +28,7 @@ public class Cell {
 		this.genes = genes;
 		this.color = color;
 		this.divide = divide;
+		this.generation = generation;
 		
 		for(String s: genes.keySet()){
 			recentlyChanged.put(s, genes.get(s));
@@ -67,61 +69,79 @@ public class Cell {
 		return divide;
 	}
 
+	public int getGeneration() {
+		return generation;
+	}
+
 	//MUST be handed gene instances from inside of cell, as these are the only ones fully initialized past name/state
 	//collect changes to be made to cell, get applied at end of function. cascading effects handled on next timestep
 	public HashMap<String, Gene> applyCons(){ //use list of genes that have recently changed, to calculate effects
 		HashMap<String, Gene> effects = new HashMap<String, Gene>(); //will hold all changes to be made to the cell
 		for(String s: recentlyChanged.keySet()){ //look through list of genes that have been changed
-			Gene g = recentlyChanged.get(s);
+			Gene g = genes.get(s);
 			//System.out.println("checking a new recently changed gene " + s);
 			for(Consequence c: g.getRelevantCons()){ //for each, consider the consequences that contain it as an antecedent
 				boolean allFulfilled = true; //tracks whether all necessary antecedents for a particular consequence are fulfilled
-				//System.out.println("checking a new consequence");
+				Gene cons = c.getConsequence();
+				//System.out.println("checking a new consequence " + cons.getName());
 				checkAnte:
 				for(Gene a: c.getAntecedents()){ //look at the antecedents for a particular consequence
 					if(genes.get(a.getName()) == null){
 						allFulfilled = false;
-						//System.out.println("\tan antecedent isn't present");
+						//System.out.println("\tantecedent " + a.getName() + " isn't present");
 						break checkAnte; // if cell doesn't contain this antecedent, stop immediately
 					}
-					if(genes.get(a.getName()).getState().isUnknown()){
+					//now that we know the antecedent gene exists the genes hashmap, we want to start using the instance from within the cell instead of the one in conslist.
+					//the one in conslist might not have all the correct information, especially if there are mutations.
+					Gene aInGenes = genes.get(a.getName());
+					if(aInGenes.getState().isUnknown()){
 						allFulfilled = false;
-						//System.out.println("\tan antecedent is unknown");
+						//System.out.println("\tantecedent " + a.getName() + " is unknown");
 						break checkAnte; //if any gene in the antecedents is unknown, stop immediately
 					}
-					if(genes.get(c.getConsequence().getName()) == null){
+					if(genes.get(cons.getName()) == null){
 						allFulfilled = false;
 						//System.out.println("\tconsequence gene " + c.getConsequence().getName() + " not contained in " + name);
 						break checkAnte; //if cell doesn't contain consequence gene, stop immediately
 					}
+					//now that we know the consequence gene exists in the genes hashmap, we want to start using the instance from within the cell instead of the one in conslist.
+					Gene consInGenes = genes.get(c.getConsequence().getName());
 					//consider removing below if, if systematic way to determine effect "winner" is found - this line causes first to win automatically
-					if(effects.get(c.getConsequence().getName()) != null){
-						//System.out.println("\t" + c.getConsequence().getName() + " is already going to be applied to " + name);
+					if(effects.get(cons.getName()) != null){
+						//System.out.println("\t" + cons.getName() + " is already going to be applied to " + name);
 						allFulfilled = false;
-						break checkAnte; // if the effect is already going to be applied, can stop immediately
+						break checkAnte; // if an effect is already going to be applied to this gene, can stop immediately
 					}
-					if(genes.get(c.getConsequence().getName()).getState().isOn() == c.getConsequence().getState().isOn()){
+					if(consInGenes.getState().isOn() == cons.getState().isOn()){
 						allFulfilled = false;
-						//System.out.println("\tconsequence gene " + c.getConsequence().getName() + " already set to " + genes.get(c.getConsequence().getName()).getState().isOn() + " in " + name);
+						//System.out.println("\tconsequence gene " + cons.getName() + " already set to " + cons.getState().isOn() + " in " + name);
 						break checkAnte; //if state of the gene is already set here, stop immediately
 					}
-					if(genes.get(a.getName()).getState().isOn() != a.getState().isOn()){ //check if the state of the gene in the cell is what it must be to fulfill antecedent
+					if(aInGenes.getState().isOn() != a.getState().isOn()){ //check if the state of the gene in the cell is what it must be to fulfill antecedent
 						allFulfilled = false; //if any are wrong, set flag. if get to end of for without setting to false, then all antecedents are fulfilled
-						//System.out.println("\tantecedent not fulfilled");
+						//System.out.println("\tantecedent " + a.getName() + " not fulfilled");
+						//System.out.println("\t\tneeds to be " + a.getState().isOn() + " but actually is " + aInGenes.getState().isOn());
 						break checkAnte; //stop looking through antecedents as soon as one contradictory one is found
 					}
-				
+					Coordinates compartment = consInGenes.getLocation(); //holds location of the consequence gene
+					if(compartment.getAP() != aInGenes.getLocation().getAP() //check that antecedent is in the same compartment as the consequence
+							|| compartment.getDV() != aInGenes.getLocation().getDV()
+							|| compartment.getLR() != aInGenes.getLocation().getLR()){
+						//System.out.println(aInGenes.getName() + " not in right compartment");
+						allFulfilled = false; //if not, the two genes can't interact
+						break checkAnte;
+					}				
 				}
 				if(allFulfilled){
-					//System.out.println("\tputting " + c.getConsequence().getName() + " into " + name);
-					effects.put(c.getConsequence().getName(), c.getConsequence().populateCons()); //must populate the relevantCons list for this gene instance since it will be added to the cell
+					//System.out.println("\tsetting " + c.getConsequence().getName() + " to " + c.getConsequence().getState().isOn() + " in " + name);
+					effects.put(c.getConsequence().getName(), c.getConsequence()); //put into effects to apply
 				}
 			}
 		}
 		if(effects.size() != 0){ //if changes were made, we want to add them to the cell
 			for(String s: effects.keySet()){ //apply changes to the cell
 				//System.out.println(s);
-				genes.put(s, effects.get(s));
+				genes.get(s).setState(effects.get(s).getState());
 				
 			}
 		}
