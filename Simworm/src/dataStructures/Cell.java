@@ -73,6 +73,10 @@ public class Cell {
 		return generation;
 	}
 
+	public void setColor(RGB color) {
+		this.color = color;
+	}
+
 	//MUST be handed gene instances from inside of cell, as these are the only ones fully initialized past name/state
 	//collect changes to be made to cell, get applied at end of function. cascading effects handled on next timestep
 	public HashMap<String, Gene> applyCons(){ //use list of genes that have recently changed, to calculate effects
@@ -112,10 +116,12 @@ public class Cell {
 						allFulfilled = false;
 						break checkAnte; // if an effect is already going to be applied to this gene, can stop immediately
 					}
-					if(consInGenes.getState().isOn() == cons.getState().isOn()){
-						allFulfilled = false;
-						//System.out.println("\tconsequence gene " + cons.getName() + " already set to " + cons.getState().isOn() + " in " + name);
-						break checkAnte; //if state of the gene is already set here, stop immediately
+					if(!consInGenes.getState().isUnknown()){
+						if(consInGenes.getState().isOn() == cons.getState().isOn()){
+							allFulfilled = false;
+							//System.out.println("\tconsequence gene " + cons.getName() + " already set to " + cons.getState().isOn() + " in " + name);
+							break checkAnte; //if state of the gene is already set here, stop immediately
+						}
 					}
 					if(aInGenes.getState().isOn() != a.getState().isOn()){ //check if the state of the gene in the cell is what it must be to fulfill antecedent
 						allFulfilled = false; //if any are wrong, set flag. if get to end of for without setting to false, then all antecedents are fulfilled

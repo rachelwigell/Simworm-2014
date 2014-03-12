@@ -1,9 +1,9 @@
 package processing;
 
-import java.awt.TextField;
 import java.util.HashMap;
 
 import controlP5.*;
+import dataStructures.ColorMode;
 import dataStructures.Shell;
 import processing.core.*;
 import peasy.*;
@@ -26,6 +26,30 @@ public class BasicVisual extends PApplet{
 	HashMap<String, Boolean> mutants = new HashMap<String, Boolean>();
 	CheckBox chooseMutants;
 	Button createShell;
+	RadioButton chooseColorMode;
+	boolean lineageState = true;
+	boolean fateState = false;
+	boolean parsState = false;
+	Button fateKey0;
+	Button fateKey1;
+	Button fateKey2;
+	Button fateKey3;
+	Button fateKey4;
+	Button fateKey5;
+	Button fateKey6;
+	Button parsKey0;
+	Button parsKey1;
+	Button parsKey2;
+	Button parsKey3;
+	Button parsKey4;
+	Button parsKey5;
+	Button lineageKey0;
+	Button lineageKey1;
+	Button lineageKey2;
+	Button lineageKey3;
+	Button lineageKey4;
+	Button lineageKey5;
+	Button lineageKey6;
 	
 	public void setup(){
 		size(1400, 800, P3D);
@@ -69,31 +93,61 @@ public class BasicVisual extends PApplet{
 		leftB = new Button(info, "left").setPosition(1300, 700);
 		rightB = new Button(info, "right").setPosition(1300, 730);
 		
-		//new Button(info, "par-1").setPosition(1100, 570).setColorBackground(color(255, 0, 255)).setColorActive(color(255, 0, 255)).setColorForeground(color(255, 0, 255));
-		//new Button(info, "par-2").setPosition(1100, 600).setColorBackground(color(255, 0, 0)).setColorActive(color(255, 0, 0)).setColorForeground(color(255, 0, 0));
-		//new Button(info, "par-3").setPosition(1200, 570).setColorBackground(color(0, 255, 255)).setColorActive(color(0, 255, 255)).setColorForeground(color(0, 255, 255));
-		//new Button(info, "par-4").setPosition(1200, 600).setColorBackground(color(0, 0, 255)).setColorActive(color(0, 0, 255)).setColorForeground(color(0, 0, 255));
-		//new Button(info, "par-5").setPosition(1300, 570).setColorBackground(color(255, 255, 0)).setColorActive(color(255, 255, 0)).setColorForeground(color(255, 255, 0));
-		//new Button(info, "par-6").setPosition(1300, 600).setColorBackground(color(0, 255, 0)).setColorActive(color(0, 255, 0)).setColorForeground(color(0, 255, 0));
+		fateKey0 = new Button(info, "germline").setPosition(1100, 570).setColorBackground(color(102, 194, 165)).setColorActive(color(102, 194, 165)).setColorForeground(color(102, 194, 165)).setVisible(false);
+		fateKey1 = new Button(info, "MS").setPosition(1100, 600).setColorBackground(color(252, 141, 98)).setColorActive(color(252, 141, 98)).setColorForeground(color(252, 141, 98)).setVisible(false);
+		fateKey2 = new Button(info, "C").setPosition(1200, 570).setColorBackground(color(141, 160, 203)).setColorActive(color(141, 160, 203)).setColorForeground(color(141, 160, 203)).setVisible(false);
+		fateKey3 = new Button(info, "D").setPosition(1200, 600).setColorBackground(color(231, 138, 195)).setColorActive(color(231, 138, 195)).setColorForeground(color(231, 138, 195)).setVisible(false);
+		fateKey4 = new Button(info, "intestine").setPosition(1300, 570).setColorBackground(color(166, 216, 84)).setColorActive(color(166, 216, 84)).setColorForeground(color(166, 216, 84)).setVisible(false);
+		fateKey5 = new Button(info, "pharynx").setPosition(1300, 600).setColorBackground(color(255, 217, 47)).setColorActive(color(255, 217, 47)).setColorForeground(color(255, 217, 47)).setVisible(false);
+		fateKey6 = new Button(info, "error").setPosition(1100, 630).setColorBackground(color(196, 196, 196)).setColorActive(color(196, 196, 196)).setColorForeground(color(196, 196, 196)).setVisible(false);
+		
+		parsKey0 = new Button(info, "par-1").setPosition(1100, 570).setColorBackground(color(255, 0, 255)).setColorActive(color(255, 0, 255)).setColorForeground(color(255, 0, 255)).setVisible(false);
+		parsKey1 = new Button(info, "par-2").setPosition(1100, 600).setColorBackground(color(255, 0, 0)).setColorActive(color(255, 0, 0)).setColorForeground(color(255, 0, 0)).setVisible(false);
+		parsKey2 = new Button(info, "par-3").setPosition(1200, 570).setColorBackground(color(0, 255, 255)).setColorActive(color(0, 255, 255)).setColorForeground(color(0, 255, 255)).setVisible(false);
+		parsKey3 = new Button(info, "par-4").setPosition(1200, 600).setColorBackground(color(0, 0, 255)).setColorActive(color(0, 0, 255)).setColorForeground(color(0, 0, 255)).setVisible(false);
+		parsKey4 = new Button(info, "par-5").setPosition(1300, 570).setColorBackground(color(255, 255, 0)).setColorActive(color(255, 255, 0)).setColorForeground(color(255, 255, 0)).setVisible(false);
+		parsKey5 = new Button(info, "par-6").setPosition(1300, 600).setColorBackground(color(0, 255, 0)).setColorActive(color(0, 255, 0)).setColorForeground(color(0, 255, 0)).setVisible(false);
+		
+		lineageKey0 = new Button(info, "ab-a").setPosition(1100, 570).setColorBackground(color(255, 0, 0)).setColorActive(color(255, 0, 0)).setColorForeground(color(255, 0, 0)).setVisible(true);
+		lineageKey1 = new Button(info, "ab-p").setPosition(1100, 600).setColorBackground(color(0, 0, 255)).setColorActive(color(0, 0, 255)).setColorForeground(color(0, 0, 255)).setVisible(true);
+		lineageKey2 = new Button(info, "e, ab").setPosition(1200, 570).setColorBackground(color(0, 255, 0)).setColorActive(color(0, 255, 0)).setColorForeground(color(0, 255, 0)).setVisible(true);
+		lineageKey3 = new Button(info, "ms").setPosition(1200, 600).setColorBackground(color(0, 255, 255)).setColorActive(color(0, 255, 255)).setColorForeground(color(0, 255, 255)).setVisible(true);
+		lineageKey4 = new Button(info, "c").setPosition(1300, 570).setColorBackground(color(255, 0, 255)).setColorActive(color(255, 0, 255)).setColorForeground(color(255, 0, 255)).setVisible(true);
+		lineageKey5 = new Button(info, "d").setPosition(1300, 600).setColorBackground(color(200, 100, 200)).setColorActive(color(200, 100, 200)).setColorForeground(color(200, 100, 200)).setVisible(true);
+		lineageKey6 = new Button(info, "p").setPosition(1100, 630).setColorBackground(color(255, 255, 0)).setColorActive(color(255, 255, 0)).setColorForeground(color(255, 255, 0)).setVisible(true);		
+		
+		new Button(info, "Choose color mode").setPosition(1100, 665).setColorBackground(color(0, 0, 0)).setColorActive(color(0, 0, 0)).setColorForeground(color(0, 0, 0));
+		chooseColorMode = new RadioButton(info, "radios");
+		chooseColorMode.setItemsPerRow(3)
+		.setSpacingColumn(60)
+		.setSpacingRow(20)
+		.setPosition(1200, 670)
+		.addItem("Lineage", 0)
+		.addItem("Fate", 1)
+		.addItem("Pars", 2)
+		.activate(0)
+		.setNoneSelectedAllowed(false);
+		
+		drawKey(displayShell.colorMode);
 	}
 
 	public void draw(){
 		background(0);
 		translate(250, 250, -150);
 		lights();
-		spotLight(180, 255, 255, 250, 250, 400, 0, 0, -1, PI/4, 2);
+		spotLight(255, 255, 255, 250, 0, 400, 0, 0, -1, PI/4, 2);
 		noStroke();
 		if(mutantsChosen){
 			drawAxes();
 			displayShell.drawAllCells();
 			userTextArea.setText(userText);
+			if(chooseColorMode.getState(0) != lineageState || chooseColorMode.getState(1) != fateState || chooseColorMode.getState(2) != parsState) updateColorMode();
 		}
-		
 		//displayShell.mutationProb = (float) (mutationRate.getValue()/100.0);
 
 		if(mouseX > 1100) camera.setActive(false);
 		else camera.setActive(true);
-
+		
 		gui();
 	}
 	
@@ -139,27 +193,127 @@ public class BasicVisual extends PApplet{
 		camera.rotateY(90);
 	}
 	
+	public void updateColorMode(){
+		if(chooseColorMode.getState(0)){
+			displayShell.colorMode = ColorMode.LINEAGE;
+			drawKey(ColorMode.LINEAGE);
+			lineageState = true;
+			fateState = false;
+			parsState = false;
+		}
+		else if(chooseColorMode.getState(1)){
+			displayShell.colorMode = ColorMode.FATE;
+			drawKey(ColorMode.FATE);
+			lineageState = false;
+			fateState = true;
+			parsState = false;
+		}
+		else if (chooseColorMode.getState(2)){
+			displayShell.colorMode = ColorMode.PARS;
+			drawKey(ColorMode.PARS);
+			lineageState = false;
+			fateState = false;
+			parsState = true;
+		}
+		displayShell.updateColorMode();
+	}
+	
 	public void keyReleased(){
-		if(key == ' '){
-			displayShell.timeStep();
-		}
-		else if(keyCode == BACKSPACE){
-			if (userText.length() > 0) {
-			      userText = userText.substring(0, userText.length()-1);
+		if(mutantsChosen){
+			if(key == ' '){
+				displayShell.timeStep();
 			}
-		}
-		else if(keyCode == ENTER){
-			if(!displayShell.getCells().containsKey(userText)){
-				userText = "Cell not present";
+			else if(keyCode == BACKSPACE){
+				if (userText.length() > 0) {
+					userText = userText.substring(0, userText.length()-1);
+				}
+			}
+			else if(keyCode == ENTER){
+				if(!displayShell.getCells().containsKey(userText)){
+					userText = "Cell not present";
+				}
+				else{
+					userText = displayShell.getCells().get(userText).getInfo();
+				}
 			}
 			else{
-				userText = displayShell.getCells().get(userText).getInfo();
+				if (userText.length() > 10) userText = "";
+				userText = userText + key;
 			}
 		}
-		else{
-			if (userText.length() > 10) userText = "";
-			userText = userText + key;
+	}
+	
+	public void drawKey(ColorMode colorMode){
+		switch(colorMode){		
+		case FATE:
+			fateKey0.setVisible(true);
+			fateKey1.setVisible(true);
+			fateKey2.setVisible(true);
+			fateKey3.setVisible(true);
+			fateKey4.setVisible(true);
+			fateKey5.setVisible(true);
+			fateKey6.setVisible(true);
+			parsKey0.setVisible(false);
+			parsKey1.setVisible(false);
+			parsKey2.setVisible(false);
+			parsKey3.setVisible(false);
+			parsKey4.setVisible(false);
+			parsKey5.setVisible(false);
+			lineageKey0.setVisible(false);
+			lineageKey1.setVisible(false);
+			lineageKey2.setVisible(false);
+			lineageKey3.setVisible(false);
+			lineageKey4.setVisible(false);
+			lineageKey5.setVisible(false);
+			lineageKey6.setVisible(false);
+			break;
+		case PARS:
+			fateKey0.setVisible(false);
+			fateKey1.setVisible(false);
+			fateKey2.setVisible(false);
+			fateKey3.setVisible(false);
+			fateKey4.setVisible(false);
+			fateKey5.setVisible(false);
+			fateKey6.setVisible(false);
+			parsKey0.setVisible(true);
+			parsKey1.setVisible(true);
+			parsKey2.setVisible(true);
+			parsKey3.setVisible(true);
+			parsKey4.setVisible(true);
+			parsKey5.setVisible(true);
+			lineageKey0.setVisible(false);
+			lineageKey1.setVisible(false);
+			lineageKey2.setVisible(false);
+			lineageKey3.setVisible(false);
+			lineageKey4.setVisible(false);
+			lineageKey5.setVisible(false);
+			lineageKey6.setVisible(false);
+			break;
+		case LINEAGE:
+
+			fateKey0.setVisible(false);
+			fateKey1.setVisible(false);
+			fateKey2.setVisible(false);
+			fateKey3.setVisible(false);
+			fateKey4.setVisible(false);
+			fateKey5.setVisible(false);
+			fateKey6.setVisible(false);
+			parsKey0.setVisible(false);
+			parsKey1.setVisible(false);
+			parsKey2.setVisible(false);
+			parsKey3.setVisible(false);
+			parsKey4.setVisible(false);
+			parsKey5.setVisible(false);
+			lineageKey0.setVisible(true);
+			lineageKey1.setVisible(true);
+			lineageKey2.setVisible(true);
+			lineageKey3.setVisible(true);
+			lineageKey4.setVisible(true);
+			lineageKey5.setVisible(true);
+			lineageKey6.setVisible(true);
+			break;
 		}
+		
 	}
 	
 	public void drawAxes(){

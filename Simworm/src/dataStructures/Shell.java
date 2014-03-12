@@ -1,5 +1,9 @@
 package dataStructures;
 
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -17,6 +21,7 @@ public class Shell{
 	public float mutationProb = (float) 0; // number between 0 and 1 to indicate the probability of a mutation happening at any time
 	public HashMap<String, Gene> startGenes = new HashMap<String, Gene>();
 	public HashMap<String, Boolean> mutants = new HashMap<String, Boolean>();
+	public ColorMode colorMode = ColorMode.LINEAGE;
 	
 	public Shell(BasicVisual window, HashMap<String, Boolean> mutants){
 		this.window = window;
@@ -30,85 +35,16 @@ public class Shell{
 		Coordinates startCenter = new Coordinates(250, 150, 150);
 		Coordinates startLengths = new Coordinates(500, 300, 300);
 		
-		//populate the cell's genes
-		startGenes.put("par-1", new Gene("par-1", new GeneState(true), new Coordinates(Compartment.POSTERIOR, Compartment.YCENTER, Compartment.ZCENTER)).populateCons());
-		startGenes.put("par-2",  new Gene("par-2", new GeneState(true), new Coordinates(Compartment.POSTERIOR, Compartment.YCENTER, Compartment.ZCENTER)).populateCons());
-		startGenes.put("par-3", new Gene("par-3", new GeneState(true), new Coordinates(Compartment.ANTERIOR, Compartment.YCENTER, Compartment.ZCENTER)).populateCons());
-		startGenes.put("par-4", new Gene("par-4", new GeneState(true), new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER)).populateCons());
-		startGenes.put("par-5", new Gene("par-5", new GeneState(true), new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER)).populateCons());
-		startGenes.put("par-6", new Gene("par-6", new GeneState(true), new Coordinates(Compartment.ANTERIOR, Compartment.YCENTER, Compartment.ZCENTER)).populateCons());
-		startGenes.put("pkc-3", new Gene("pkc-3", new GeneState(true), new Coordinates(Compartment.ANTERIOR, Compartment.YCENTER, Compartment.ZCENTER)).populateCons());
-		startGenes.put("mex-5", new Gene("mex-5", new GeneState(true), new Coordinates(Compartment.ANTERIOR, Compartment.YCENTER, Compartment.ZCENTER)).populateCons());
-		startGenes.put("axp-1", new Gene("axp-1", new GeneState(true), new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER)).populateCons());
-		startGenes.put("glp-1", new Gene("glp-1", new GeneState(true), new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER)).populateCons());
-		startGenes.put("tbx-38", new Gene("tbx-38", new GeneState(true), new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER)).populateCons());
-		startGenes.put("ref-1", new Gene("ref-1", new GeneState(false), new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER)).populateCons());
-		startGenes.put("skn-1", new Gene("skn-1", new GeneState(true), new Coordinates(Compartment.POSTERIOR, Compartment.YCENTER, Compartment.ZCENTER)).populateCons());
-		startGenes.put("MS signal", new Gene("MS signal", new GeneState(false), new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER)).populateCons());
-		startGenes.put("lag-2", new Gene("lag-2", new GeneState(true), new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER)).populateCons());
-		startGenes.put("lin-12", new Gene("lin-12", new GeneState(false), new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER)).populateCons());
-		startGenes.put("pha-4", new Gene("pha-4", new GeneState(true), new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER)).populateCons());
-		startGenes.put("mom-3", new Gene("mom-3", new GeneState(true), new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER)).populateCons());
-		startGenes.put("mom-1", new Gene("mom-1", new GeneState(true), new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER)).populateCons());
-		startGenes.put("mom-2", new Gene("mom-2", new GeneState(false), new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER)).populateCons());
-		startGenes.put("mom-4", new Gene("mom-4", new GeneState(false), new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER)).populateCons());
-		startGenes.put("pie-1", new Gene("pie-1", new GeneState(true), new Coordinates(Compartment.POSTERIOR, Compartment.YCENTER, Compartment.ZCENTER)).populateCons());
-		startGenes.put("pal-1", new Gene("pal-1", new GeneState(true), new Coordinates(Compartment.POSTERIOR, Compartment.YCENTER, Compartment.ZCENTER)).populateCons());
-		startGenes.put("med-1", new Gene("med-1", new GeneState(false), new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER)).populateCons());
-		startGenes.put("med-2", new Gene("med-2", new GeneState(false), new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER)).populateCons());
-		startGenes.put("wrm-1", new Gene("wrm-1", new GeneState(false), new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER)).populateCons());
-		startGenes.put("lit-1", new Gene("lit-1", new GeneState(false), new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER)).populateCons());
-		startGenes.put("pop-1", new Gene("pop-1", new GeneState(true), new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER)).populateCons());
-		startGenes.put("tbx-37", new Gene("tbx-37", new GeneState(true), new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER)).populateCons());
-		startGenes.put("mex-3", new Gene("mex-3", new GeneState(false), new Coordinates(Compartment.ANTERIOR, Compartment.YCENTER, Compartment.ZCENTER)).populateCons());
-		startGenes.put("mom-5",  new Gene("mom-5", new GeneState(false), new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER)).populateCons());
-		startGenes.put("pos-1", new Gene("pos-1", new GeneState(true), new Coordinates(Compartment.POSTERIOR, Compartment.YCENTER, Compartment.ZCENTER)).populateCons());
-		startGenes.put("lgl-1", new Gene("lgl-1", new GeneState(false), new Coordinates(Compartment.POSTERIOR, Compartment.YCENTER, Compartment.ZCENTER)).populateCons());
-		startGenes.put("mex-1", new Gene("mex-1", new GeneState(true), new Coordinates(Compartment.POSTERIOR, Compartment.YCENTER, Compartment.ZCENTER)).populateCons());
-
-		//populate the data about genes that move to center after the first division.
-		HashMap<String, Coordinates> abChanges = new HashMap<String, Coordinates>();
-		abChanges.put("pkc-3", new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER));
-		abChanges.put("par-3", new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER));
-		abChanges.put("par-6", new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER));
-		abChanges.put("mex-5", new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER));
-		abChanges.put("mex-3", new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER));
-		HashMap<String, Coordinates> p1Changes = new HashMap<String, Coordinates>();
-		p1Changes.put("lgl-1", new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER));
-		p1Changes.put("skn-1", new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER));
-		p1Changes.put("pal-1", new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER));
+		//populate the cell's genes from csv file
+		startGenes = readGeneInfo("genes.csv");
 		
-		//populate the divisions data (from the events queue)
-		divisions.put("p-0", new DivisionData("p-0", .6, Axes.X, 10, new HashMap<String, Coordinates>(), 0));
-		divisions.put("ab", new DivisionData("ab", .5, Axes.X, 27, abChanges, 1));
-		divisions.put("p-1", new DivisionData("p-1", .6, Axes.X, 28, p1Changes, 1));
-		divisions.put("ab-a", new DivisionData("ab-a", .5, Axes.Z, 45, new HashMap<String, Coordinates>(), 2));
-		divisions.put("ab-p", new DivisionData("ab-p", .5, Axes.Z, 45, new HashMap<String, Coordinates>(), 2));
-		divisions.put("ems", new DivisionData("ems", .6, Axes.X, 49, new HashMap<String, Coordinates>(), 2));
-		divisions.put("p-2", new DivisionData("p-2", .6, Axes.X, 52, new HashMap<String, Coordinates>(), 2));
-		divisions.put("ab-al", new DivisionData("ab-al", .5, Axes.X, 60, new HashMap<String, Coordinates>(), 3));
-		divisions.put("ab-ar", new DivisionData("ab-ar", .5, Axes.X, 60, new HashMap<String, Coordinates>(), 3));
-		divisions.put("ab-pl", new DivisionData("ab-pl", .5, Axes.X, 60, new HashMap<String, Coordinates>(), 3));
-		divisions.put("ab-pr", new DivisionData("ab-pr", .5, Axes.X, 65, new HashMap<String, Coordinates>(), 3));
-		divisions.put("ms", new DivisionData("ms", .5, Axes.X, 68, new HashMap<String, Coordinates>(), 3));
-		divisions.put("e", new DivisionData("e", .5, Axes.X, 68, new HashMap<String, Coordinates>(), 3));
-		divisions.put("c", new DivisionData("c", .5, Axes.X, 80, new HashMap<String, Coordinates>(), 3));
-		divisions.put("ab-ala", new DivisionData("ab-ala", .5, Axes.X, 78, new HashMap<String, Coordinates>(), 4));
-		divisions.put("ab-alp", new DivisionData("ab-alp", .5, Axes.X, 78, new HashMap<String, Coordinates>(), 4));
-		divisions.put("ab-ara", new DivisionData("ab-ara", .5, Axes.X, 85, new HashMap<String, Coordinates>(), 4));
-		divisions.put("ab-arp", new DivisionData("ab-arp", .5, Axes.X, 78, new HashMap<String, Coordinates>(), 4));
-		divisions.put("ab-pla", new DivisionData("ab-pla", .5, Axes.X, 85, new HashMap<String, Coordinates>(), 4));
-		divisions.put("ab-plp", new DivisionData("ab-plp", .5, Axes.X, 77, new HashMap<String, Coordinates>(), 4));
-		divisions.put("ab-pra", new DivisionData("ab-pra", .5, Axes.X, 85, new HashMap<String, Coordinates>(), 4));
-		divisions.put("ab-prp", new DivisionData("ab-prp", .5, Axes.X, 85, new HashMap<String, Coordinates>(), 4));
-		divisions.put("p-3", new DivisionData("p-3", .5, Axes.X, 78, new HashMap<String, Coordinates>(), 3));
-		divisions.put("ms-a", new DivisionData("ms-a", .5, Axes.X, 95, new HashMap<String, Coordinates>(), 4));
-		divisions.put("ms-p", new DivisionData("ms-p", .5, Axes.X, 95, new HashMap<String, Coordinates>(), 4));
+		//populate events queue data from csv file
+		divisions = readEventsQueue("eventsQueue.csv");
 				
 		perShellMutations();
 		perCellMutations(startGenes);
 		
-		Cell start = new Cell(this.window, "p-0", startCenter, startLengths, null, startGenes, new RGB(250, 250, 250), divisions.get("p-0"), 0);
+		Cell start = new Cell(this.window, "p-0", startCenter, startLengths, null, startGenes, new RGB(255, 255, 0), divisions.get("p-0"), 0);
 		this.cells.put(start.getName(), start);		
 	}
 	
@@ -168,17 +104,20 @@ public class Shell{
 	/** calculates the genes that a child will contain; to be called during cell division
 	 * @param parent the parent that is dividing
 	 * @param axis the axis along which the division is occurring
-	 * @param geneCompartments genes that are changing compartments at the time of this division
 	 * @param daughter1 true if we are calculating genes for daughter1, false if we're calculating for daughter2
 	 * @return the genes that the child will contain
 	 */
-	public HashMap<String, Gene> childGenes(String parent, Axes axis, HashMap<String, Coordinates> geneCompartments, boolean daughter1){
+	public HashMap<String, Gene> childGenes(String parent, Axes axis, boolean daughter1){
 		HashMap<String, Gene> parentGenes = this.cells.get(parent).getGenes(); //get the parent's genes out of the hashmap
 		HashMap<String, Gene> childGenes = new HashMap<String, Gene>(); //create a new hashmap to hold the child's genes; this will be returned
 		//must move genes that are changing compartments before we calculate child genes
-		for(String s: geneCompartments.keySet()){
+		for(String s: parentGenes.keySet()){
 			Gene g = parentGenes.get(s);
-			g.setLocation(geneCompartments.get(s));
+			if(!(g.getChanges() == null)){
+				if(g.getChanges().getChangeDivision().equals(parent)){
+					g.setLocation(g.getChanges().getChangedLocation());
+				}
+			}
 		}
 		switch(axis){ //now our actions will depend on which axis we're dividing along.
 		case X:
@@ -188,7 +127,7 @@ public class Shell{
 				//since daughter1 is always on the anterior side, gene should not go in if we're calculating for daughter1 and it's located in the posterior compartment
 				//equivalent with daughter2/anterior
 				if((comp != Compartment.POSTERIOR && daughter1) || (comp != Compartment.ANTERIOR && !daughter1)){ //so if neither situation is occurring...
-					childGenes.put(g.getName(), new Gene(g.getName(), g.getState(), g.getLocation()).populateCons()); //add a new instance of the gene to childGenes, and populate its relevantCons list
+					childGenes.put(g.getName(), g); //add a new instance of the gene to childGenes, and populate its relevantCons list
 				}
 			}
 			break;
@@ -197,7 +136,7 @@ public class Shell{
 				Gene g = parentGenes.get(s);
 				Compartment comp = g.getLocation().getDV();
 				if((comp != Compartment.VENTRAL && daughter1) || (comp != Compartment.DORSAL && !daughter1)){
-					childGenes.put(g.getName(), new Gene(g.getName(), g.getState(), g.getLocation()).populateCons());
+					childGenes.put(g.getName(), g);
 				}
 			}
 			break;
@@ -206,7 +145,7 @@ public class Shell{
 				Gene g = parentGenes.get(s);
 				Compartment comp = g.getLocation().getLR();
 				if((comp != Compartment.LEFT && daughter1) || (comp != Compartment.RIGHT && !daughter1)){
-					childGenes.put(g.getName(), new Gene(g.getName(), g.getState(), g.getLocation()).populateCons());
+					childGenes.put(g.getName(), g);
 				}
 			}
 			break;
@@ -220,8 +159,6 @@ public class Shell{
 		String parent = data.getParent();
 		double d1Percentage = data.getD1Percentage();
 		Axes axis = data.getAxis();
-		HashMap<String, Coordinates> geneCompartments = data.getGeneCompartments();
-		
 		Cell ofInterest = this.cells.get(parent); //retrieve the dividing cell from the hashmap
 		Coordinates d1Center;
 		Coordinates d1Lengths;
@@ -231,21 +168,38 @@ public class Shell{
 		Cell daughter2;
 		String d1name = nameCalc(parent, axis, true);
 		String d2name = nameCalc(parent, axis, false);
-		HashMap<String, Gene> d1genes = childGenes(parent, axis, geneCompartments, true); //call childgenes to determine the genes inherited by daughter1
+		HashMap<String, Gene> d1genes = childGenes(parent, axis, true); //call childgenes to determine the genes inherited by daughter1
 		d1genes = perCellMutations(d1genes);
-		HashMap<String, Gene> d2genes = childGenes(parent, axis, geneCompartments, false); //equivalent for daughter2
+		HashMap<String, Gene> d2genes = childGenes(parent, axis, false); //equivalent for daughter2
 		d2genes = perCellMutations(d2genes);
+		RGB color1 = new RGB(255, 255, 255);
+		RGB color2 = new RGB (255, 255, 255);
+		switch(colorMode){
+		case FATE:
+			color1 = cellColorFate(d1genes);
+			color2 = cellColorFate(d2genes);
+			break;
+		case PARS:
+			color1 = cellColorPars(d1genes);
+			color2 = cellColorPars(d2genes);
+			break;
+		case LINEAGE:
+			color1 = cellColorLineage(d1name);
+			color2 = cellColorLineage(d2name);
+			break;
+		}
+		
 		CellChangesData changes = new CellChangesData(new ArrayList<String>(), new ArrayList<Cell>()); //will hold all the added/removed cells; this is returned and the changes will propagate within other functions
 		switch(axis){ //how we proceed depends on which axis we're dividing along
 			case X:
 				d1Center = new Coordinates((float) ((d1Percentage - 1) * (ofInterest.getLengths().getX() / 2.0) + ofInterest.getCenter().getX()),
 						ofInterest.getCenter().getY(), ofInterest.getCenter().getZ()); //calculations to get the center of daughter1
 				d1Lengths = new Coordinates((float) (d1Percentage*ofInterest.getLengths().getX()), ofInterest.getLengths().getY(), ofInterest.getLengths().getZ()); //calculations to get the dimensions of daughter1
-				daughter1 = new Cell(this.window, d1name, d1Center, d1Lengths, parent, d1genes, calcCellColor(d1genes), divisions.get(d1name), ofInterest.getGeneration()+1); //create daughter1 with all the fields we have calculated
+				daughter1 = new Cell(this.window, d1name, d1Center, d1Lengths, parent, d1genes, color1, divisions.get(d1name), ofInterest.getGeneration()+1); //create daughter1 with all the fields we have calculated
 				d2Center = new Coordinates((float) (d1Percentage * ofInterest.getLengths().getX() / 2.0 + ofInterest.getCenter().getX()), //repeat for daughter2
 						ofInterest.getCenter().getY(), ofInterest.getCenter().getZ());
 				d2Lengths = new Coordinates((float) ((1-d1Percentage)*ofInterest.getLengths().getX()), ofInterest.getLengths().getY(), ofInterest.getLengths().getZ());
-				daughter2 = new Cell(this.window, d2name, d2Center, d2Lengths, parent, d2genes, calcCellColor(d2genes), divisions.get(d2name), ofInterest.getGeneration()+1);
+				daughter2 = new Cell(this.window, d2name, d2Center, d2Lengths, parent, d2genes, color2, divisions.get(d2name), ofInterest.getGeneration()+1);
 				changes.cellsRemoved.add(parent); //store parent cell in changes to be removed later
 				changes.cellsAdded.add(daughter1); //store daughters in changes to be added to the actual cells hashmap later
 				changes.cellsAdded.add(daughter2);
@@ -255,12 +209,12 @@ public class Shell{
 						(float) ((d1Percentage - 1) * (ofInterest.getLengths().getY() / 2.0) + ofInterest.getCenter().getY()),
 						ofInterest.getCenter().getZ());
 				d1Lengths = new Coordinates(ofInterest.getLengths().getX(), (float) (d1Percentage*ofInterest.getLengths().getY()), ofInterest.getLengths().getZ());
-				daughter1 = new Cell(this.window, d1name, d1Center, d1Lengths, parent, d1genes, calcCellColor(d1genes), divisions.get(d1name), ofInterest.getGeneration()+1);
+				daughter1 = new Cell(this.window, d1name, d1Center, d1Lengths, parent, d1genes, color1, divisions.get(d1name), ofInterest.getGeneration()+1);
 				d2Center = new Coordinates(ofInterest.getCenter().getX(),
 						(float) (d1Percentage * ofInterest.getLengths().getY() / 2.0 + ofInterest.getCenter().getY()),
 						ofInterest.getCenter().getZ());
 				d2Lengths = new Coordinates(ofInterest.getLengths().getX(), (float) ((1-d1Percentage)*ofInterest.getLengths().getY()), ofInterest.getLengths().getZ());
-				daughter2 = new Cell(this.window, d2name, d2Center, d2Lengths, parent, d2genes, calcCellColor(d1genes), divisions.get(d2name), ofInterest.getGeneration()+1);
+				daughter2 = new Cell(this.window, d2name, d2Center, d2Lengths, parent, d2genes, color2, divisions.get(d2name), ofInterest.getGeneration()+1);
 				changes.cellsRemoved.add(parent);
 				changes.cellsAdded.add(daughter1);
 				changes.cellsAdded.add(daughter2);
@@ -269,11 +223,11 @@ public class Shell{
 				d1Center = new Coordinates(ofInterest.getCenter().getX(), ofInterest.getCenter().getY(),
 						(float) ((d1Percentage - 1) * (ofInterest.getLengths().getZ() / 2.0) + ofInterest.getCenter().getZ()));
 				d1Lengths = new Coordinates(ofInterest.getLengths().getX(), ofInterest.getLengths().getY(), (float) (d1Percentage*ofInterest.getLengths().getZ()));
-				daughter1 = new Cell(this.window, d1name, d1Center, d1Lengths, parent, d1genes, calcCellColor(d1genes), divisions.get(d1name), ofInterest.getGeneration()+1);
+				daughter1 = new Cell(this.window, d1name, d1Center, d1Lengths, parent, d1genes, color1, divisions.get(d1name), ofInterest.getGeneration()+1);
 				d2Center = new Coordinates(ofInterest.getCenter().getX(), ofInterest.getCenter().getY(),
 						(float) (d1Percentage * ofInterest.getLengths().getZ() / 2.0 + ofInterest.getCenter().getZ()));
 				d2Lengths = new Coordinates(ofInterest.getLengths().getX(), ofInterest.getLengths().getY(), (float) ((1-d1Percentage)*ofInterest.getLengths().getZ()));
-				daughter2 = new Cell(this.window, d2name, d2Center, d2Lengths, parent, d2genes, calcCellColor(d2genes), divisions.get(d2name), ofInterest.getGeneration()+1);
+				daughter2 = new Cell(this.window, d2name, d2Center, d2Lengths, parent, d2genes, color2, divisions.get(d2name), ofInterest.getGeneration()+1);
 				changes.cellsRemoved.add(parent);
 				changes.cellsAdded.add(daughter1);
 				changes.cellsAdded.add(daughter2);
@@ -283,7 +237,7 @@ public class Shell{
 	}
 	
 	//color codes cells based on what par proteins they contain
-	public RGB calcCellColor(HashMap<String, Gene> genes){
+	public RGB cellColorPars(HashMap<String, Gene> genes){
 		int red = 10;
 		int green = 10;
 		int blue = 10;
@@ -314,6 +268,102 @@ public class Shell{
 		return new RGB(red, green, blue);
 	}
 	
+	//color codes based on lineage
+	public RGB cellColorLineage(String cellName){
+		if(cellName.startsWith("ab-a")) return new RGB(255, 0, 0);
+		else if(cellName.startsWith("ab-p")) return new RGB(0, 0, 255);
+		else if(cellName.startsWith("e") || cellName.equals("ab")) return new RGB(0, 255, 0);
+		else if(cellName.startsWith("ms")) return new RGB(0, 255, 255);
+		else if(cellName.startsWith("c")) return new RGB(255, 0, 255);
+		else if(cellName.startsWith("d")) return new RGB(200, 100, 200);
+		else if(cellName.startsWith("p")) return new RGB(255, 255, 0);
+		else return new RGB(255, 255, 255);
+	}
+	
+	//color codes based on cell fate
+	public RGB cellColorFate(HashMap<String, Gene> genes){
+		Gene pie = genes.get("pie-1");
+		Gene skn = genes.get("skn-1");
+		Gene pal = genes.get("pal-1");
+		Gene wrm = genes.get("wrm-1");
+		Gene pop = genes.get("pop-1");
+		Gene pha = genes.get("pha-4");
+		
+		boolean germline = false;
+		boolean MS = false;
+		boolean C = false;
+		boolean D = false;
+		boolean E = false;
+		boolean pharynx = false;
+		
+		if(pie != null){
+			if(!pie.getState().isUnknown()){
+				if(pie.getState().isOn()){
+					germline = true;
+				}
+			}
+		}
+		if(skn != null){
+			if(!skn.getState().isUnknown()){
+				if(skn.getState().isOn()){
+					MS = true;
+				}
+			}
+		}
+		if(pal != null){
+			if(!pal.getState().isUnknown()){
+				if(pal.getState().isOn()){
+					C = true;
+				}
+			}
+		}
+		if(pal != null){
+			if(!pal.getState().isUnknown()){
+				if(pal.getState().isOn()){
+					D = true;
+				}
+			}
+		}
+		if(skn != null && wrm != null && pop != null){
+			if(!skn.getState().isUnknown() && !wrm.getState().isUnknown() && !pop.getState().isUnknown()){
+				if(skn.getState().isOn() && wrm.getState().isOn() && !pop.getState().isOn()){
+					E = true;
+				}
+			}
+		}
+		if(pha != null){
+			if(!pha.getState().isUnknown()){
+				if(pha.getState().isOn()){
+					pharynx = true;
+				}
+			}
+		}
+		if(germline && !MS && !C && !D && !E && !pharynx) return new RGB(102, 194, 165);
+		else if(!germline && MS && !C && !D && !E && !pharynx) return new RGB(252, 141, 98);
+		else if(!germline && !MS && C && !D && !E && !pharynx) return new RGB(141, 160, 203);
+		else if(!germline && !MS && !C && D && !E && !pharynx) return new RGB(231, 138, 195);
+		else if(!germline && !MS && !C && !D && E && !pharynx) return new RGB(166, 216, 84);
+		else if(!germline && !MS && !C && !D && !E && pharynx) return new RGB(255, 217, 47);
+		else return new RGB(196, 196, 196);
+	}
+	
+	public void updateColorMode(){
+		for(String s: this.cells.keySet()){
+			Cell c = cells.get(s);
+			switch(this.colorMode){
+			case FATE:
+				c.setColor(cellColorFate(c.getGenes()));
+				break;
+			case LINEAGE:
+				c.setColor(cellColorLineage(c.getName()));
+				break;
+			case PARS:
+				c.setColor(cellColorPars(c.getGenes()));
+				break;
+			}
+		}
+	}
+	
 	public void drawAllCells(){
 		for(String s: this.cells.keySet()){
 			this.cells.get(s).drawCell();
@@ -331,8 +381,10 @@ public class Shell{
 		ArrayList<CellChangesData> cellChanges = new ArrayList<CellChangesData>();
 		for(String s: cells.keySet()){
 			Cell c = cells.get(s);
-			if(c.getDivide().getTime() == simTime){ //need to get division data from the cell, not what's in Shell's division list, in case of mutations
-				cellChanges.add(cellDivision(c.getDivide()));
+			if(c.getDivide() != null){ //we might not have the division data on the the children, if they divide after gastrulation.
+				if(c.getDivide().getTime() == simTime){ //need to get division data from the cell, not what's in Shell's division list, in case of mutations
+					cellChanges.add(cellDivision(c.getDivide()));
+				}
 			}
 		}
 		for(CellChangesData d: cellChanges){
@@ -382,7 +434,7 @@ public class Shell{
 		}
 		
 		//calculate color based on the new, mutated genes.
-		RGB mutatedColor = calcCellColor(mutatedGenes);
+		RGB mutatedColor = cellColorPars(mutatedGenes);
 		
 		//now deal with the possibility of mutated division data
 		DivisionData cData = c.getDivide();
@@ -408,7 +460,7 @@ public class Shell{
 		}
 		
 		//place all of the parts into a divisiondata structure
-		DivisionData mutatedData = new DivisionData(cData.getParent(), mutatedPercent, cData.getAxis(), mutatedTime, cData.getGeneCompartments(), c.getGeneration());
+		DivisionData mutatedData = new DivisionData(cData.getParent(), mutatedPercent, cData.getAxis(), mutatedTime, c.getGeneration());
 		//and finally place all of the parts into a cell to be returned. the non-mutatable attribute are drawn directly from the original cell.
 		return new Cell(c.window, c.getName(), c.getCenter(), c.getLengths(), c.getParent(), mutatedGenes, mutatedColor, mutatedData, c.getGeneration());
 	}
@@ -631,5 +683,83 @@ public class Shell{
 			else genes.put("mex-5", genes.get("mex-5").setLocation(new Coordinates(Compartment.POSTERIOR, Compartment.YCENTER, Compartment.ZCENTER)));
 		}
 		return genes;
-	}	
+	}
+	
+	public HashMap<String, Gene> readGeneInfo(String file){
+		String name = null;
+		GeneState state = null;
+		Coordinates location = null;
+		HashMap<String, Gene> genes = new HashMap<String, Gene>();
+		try{
+			BufferedReader reader = new BufferedReader(new FileReader(file));
+			String line = "";
+			while((line = reader.readLine()) != null){
+				String[] geneInfo = line.split(",");
+				name = geneInfo[0];
+				if(geneInfo[1].equals("A")) state = new GeneState(true);
+				else if(geneInfo[1].equals("I")) state = new GeneState(false);
+				else if(geneInfo[1].equals("U")) state = new GeneState();
+				else state = new GeneState(Integer.parseInt(geneInfo[1]));
+				Compartment x = Compartment.XCENTER;
+				Compartment y = Compartment.YCENTER;
+				Compartment z = Compartment.ZCENTER;
+				if(geneInfo[2].equals("anterior")) x = Compartment.ANTERIOR;
+				else if(geneInfo[2].equals("posterior")) x = Compartment.POSTERIOR;
+				if(geneInfo[3].equals("dorsal")) y = Compartment.DORSAL;
+				else if(geneInfo[3].equals("ventral")) y = Compartment.VENTRAL;
+				if(geneInfo[4].equals("left")) z = Compartment.LEFT;
+				else if(geneInfo[4].equals("right")) z = Compartment.RIGHT;
+				location = new Coordinates(x, y, z);
+				if(geneInfo.length > 5){
+					Compartment newX = Compartment.XCENTER;
+					Compartment newY = Compartment.YCENTER;
+					Compartment newZ = Compartment.ZCENTER;
+					if(geneInfo[5].equals("anterior")) newX = Compartment.ANTERIOR;
+					else if(geneInfo[5].equals("posterior")) newX = Compartment.POSTERIOR;
+					if(geneInfo[6].equals("dorsal")) newY = Compartment.DORSAL;
+					else if(geneInfo[6].equals("ventral")) newY = Compartment.VENTRAL;
+					if(geneInfo[7].equals("left")) newZ = Compartment.LEFT;
+					else if(geneInfo[7].equals("right")) newZ = Compartment.RIGHT;
+					String changeTime = geneInfo[8];
+					LocationData changes = new LocationData(new Coordinates(x, y, z), new Coordinates(newX, newY, newZ), changeTime);
+					genes.put(name, new Gene(name, state, location, changes).populateCons());
+				}
+				else genes.put(name, new Gene(name, state, location).populateCons());
+			}
+		}
+		catch (FileNotFoundException e){
+			e.printStackTrace();
+		}
+		catch (IOException e){
+			e.printStackTrace();
+		}
+		return genes;
+	}
+	
+	public HashMap<String, DivisionData> readEventsQueue(String file){
+		HashMap<String, DivisionData> queue = new HashMap<String, DivisionData>();
+		try{
+			BufferedReader reader = new BufferedReader(new FileReader(file));
+			String line = "";
+			while((line = reader.readLine()) != null){
+				String[] queueInfo = line.split(",");
+				String parent = queueInfo[0];
+				double d1Percentage = Integer.parseInt(queueInfo[1])/100.0;
+				Axes axis = Axes.X;
+				if(queueInfo[2].equals("Y")) axis = Axes.Y;
+				if(queueInfo[2].equals("Z")) axis = Axes.Z;
+				int time = Integer.parseInt(queueInfo[3]);
+				int generation = Integer.parseInt(queueInfo[4]);
+				queue.put(parent, new DivisionData(parent, d1Percentage, axis, time, generation));
+			}
+		}
+		catch (FileNotFoundException e){
+			e.printStackTrace();
+		}
+		catch (IOException e){
+			e.printStackTrace();
+		}
+		return queue;
+	}
+	
 }

@@ -12,6 +12,7 @@ import processing.BasicVisual;
 import dataStructures.Cell;
 import dataStructures.CellChangesData;
 import dataStructures.Compartment;
+import dataStructures.ConsList;
 import dataStructures.Coordinates;
 import dataStructures.DivisionData;
 import dataStructures.Gene;
@@ -29,6 +30,12 @@ public class MethodsTests {
 		abChanges.put("pkc-3", new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER));
 		abChanges.put("par-3", new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER));
 		abChanges.put("par-6", new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER));
+		abChanges.put("mex-5", new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER));
+		abChanges.put("mex-3", new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER));
+		HashMap<String, Coordinates> p1Changes = new HashMap<String, Coordinates>();
+		p1Changes.put("lgl-1", new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER));
+		p1Changes.put("skn-1", new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER));
+		p1Changes.put("pal-1", new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER));
 		
 		DivisionData data = testShell.getDivisions().get("p-0");
 		cellChanges.add(testShell.cellDivision(data));
@@ -73,8 +80,8 @@ public class MethodsTests {
 	
 	@Test
 	public void testTimeLapse(){
-		//System.out.println("Begin time lapse tests");
-		for(int i = 0; i<45; i++){
+		System.out.println("Begin time lapse tests");
+		for(int i = 0; i<100; i++){
 			testShell.timeStep();
 		}
 	}
@@ -394,10 +401,10 @@ public class MethodsTests {
 				genes.get("mex-5").getLocation().getAP() == Compartment.XCENTER ||
 				genes.get("mex-5").getLocation().getAP() == Compartment.POSTERIOR);
 		//System.out.println("mex-5 " + genes.get("mex-5").getLocation().getAP());
-		boolean mex5AB = true;
-		boolean mex5P1 = true;
-		if(genes.get("mex-5").getLocation().getAP() == Compartment.POSTERIOR) mex5AB = false;
-		if(genes.get("mex-5").getLocation().getAP() == Compartment.ANTERIOR) mex5P1 = false; 
+		//boolean mex5AB = true;
+		//boolean mex5P1 = true;
+		//if(genes.get("mex-5").getLocation().getAP() == Compartment.POSTERIOR) mex5AB = false;
+		//if(genes.get("mex-5").getLocation().getAP() == Compartment.ANTERIOR) mex5P1 = false; 
 		assertTrue(genes.containsKey("par-3"));
 		assertTrue(genes.get("par-3").getLocation().getAP() == Compartment.ANTERIOR ||
 				genes.get("par-3").getLocation().getAP() == Compartment.XCENTER ||
@@ -426,5 +433,47 @@ public class MethodsTests {
 		//if(mex5P1) System.out.println("mex-5 p-1 " + genes.get("mex-5").getLocation().getAP());
 		genes = testShell.getCells().get("ab").getGenes();
 		//if(mex5AB) System.out.println("mex-5 ab " + genes.get("mex-5").getLocation().getAP());	
+	}
+	
+	@Test 
+	public void testInstantiation(){
+		//primitive
+		Compartment x = Compartment.XCENTER;
+		Coordinates test = new Coordinates(x, Compartment.YCENTER, Compartment.ZCENTER);
+		x = null;
+		assertTrue(test.getAP() == Compartment.XCENTER);
+		//non-primitive
+		GeneState s = new GeneState(true);
+		Gene g = new Gene("test", s);
+		s = null;
+		assertFalse(g.getState().equals(null));
+	}
+	
+	@Test
+	public void testReadingCSV(){
+		ConsList list = new ConsList();
+		//list.AandC = new ArrayList<Consequence>();
+		//list.startLate = new ArrayList<Consequence>();
+		//list.readAandCInfo("AandC.csv");
+		assertEquals(29, list.AandC.size());
+		assertEquals("pal-1", list.AandC.get(0).getConsequence().getName());
+		assertEquals("pie-1", list.AandC.get(0).getAntecedents()[0].getName());
+		assertEquals("mex-3", list.AandC.get(28).getConsequence().getName());
+		assertEquals("mex-3", list.AandC.get(28).getAntecedents()[1].getName());
+		assertFalse(list.AandC.get(0).getConsequence().getState().isOn());
+		assertTrue(list.AandC.get(28).getAntecedents()[1].getState().isOn());
+		assertEquals("pie-1", list.AandC.get(1).getAntecedents()[0].getName());
+		Gene g = new Gene("par-6", new GeneState(true), new Coordinates(Compartment.ANTERIOR, Compartment.YCENTER, Compartment.ZCENTER));
+		g.populateCons();
+	}
+	
+	@Test
+	public void testHashMapInstances(){
+		Coordinates testCoor = new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER);
+		HashMap<String, Coordinates> test = new HashMap<String, Coordinates>();
+		test.put("a", testCoor);
+		testCoor = null;
+		assertNotNull(test.get("a"));
+		
 	}
 }

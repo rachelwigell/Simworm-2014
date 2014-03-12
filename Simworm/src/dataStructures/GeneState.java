@@ -14,6 +14,10 @@ public class GeneState {
 		this.firstUsed = firstUsed;
 		this.unknown = true;
 	}
+	
+	public GeneState(){
+		this.unknown = true;
+	}
 
 	//getters
 	public boolean isOn() {

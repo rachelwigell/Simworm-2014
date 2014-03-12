@@ -11,12 +11,23 @@ public class Gene /*implements Comparable<Gene>*/{
 	//private double concentration;
 	private List<Consequence> relevantCons; //consequences that involve this gene as an antecedent
 	Coordinates location; //compartment in cell
+	LocationData changes;
 	
+	//genes that don't change location
 	public Gene(String name, GeneState state, /*double concentration,*/ Coordinates location){
 		this.name = name;
 		this.state = state;		
 		//this.concentration = concentration;
 		this.location = location;
+	}
+	
+	//genes that change location
+	public Gene(String name, GeneState state, /*double concentration,*/ Coordinates location, LocationData changes){
+		this.name = name;
+		this.state = state;		
+		//this.concentration = concentration;
+		this.location = location;
+		this.changes = changes;
 	}
 	
 	//constructor for a "simple gene" which doesn't hold as much info - used to avoid storing excess info in antecedents and consequences
@@ -86,6 +97,10 @@ public class Gene /*implements Comparable<Gene>*/{
 
 	public Coordinates getLocation() {
 		return location;
+	}
+
+	public LocationData getChanges() {
+		return changes;
 	}
 
 	public Gene setState(GeneState state) {
