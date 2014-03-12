@@ -56,20 +56,29 @@ public class BasicVisual extends PApplet{
 		info = new ControlP5(this);
 		info.setAutoDraw(false);
 		
-		new Textarea(info, "boxeslabel").setPosition(600, 450).setText("CHOOSE MUTANTS");
+		Textarea choose = new Textarea(info, "boxeslabel").setPosition(600, 300).setText("CHOOSE MUTANTS");
+		choose.setFont(new ControlFont(createFont("arial", 16)));
 		chooseMutants = new CheckBox(info, "boxes");
 		chooseMutants.setItemsPerRow(3)
-		.setSpacingColumn(30)
+		.setSpacingColumn(50)
 		.setSpacingRow(20)
-		.setPosition(600, 500)
+		.setPosition(600, 335)
 		.addItem("par-1", 0)
 		.addItem("par-2", 1)
 		.addItem("par-3", 2)
 		.addItem("par-4", 3)
 		.addItem("par-5", 4)
 		.addItem("par-6", 5)
-		.addItem("pkc-3", 6);
-		createShell = new Button(info, "createShell").setPosition(600, 600).setLabel("create shell");
+		.addItem("pkc-3", 6)
+		.setSize(20, 20)
+		.setColorBackground(color(49, 130, 189))
+		.setColorForeground(color(107, 174, 214))
+		.setColorActive(color(189, 215, 231));
+		for(Toggle t: chooseMutants.getItems()){
+			t.captionLabel().setControlFont(new ControlFont(createFont("arial", 12)));
+		}
+		createShell = new Button(info, "createShell").setPosition(600, 450).setLabel("create shell").setSize(130, 20);
+		createShell.captionLabel().setControlFont(new ControlFont(createFont("arial", 16)));
 		
 		camera = new PeasyCam(this, 500, 400, 0, 600);
 		
@@ -83,50 +92,98 @@ public class BasicVisual extends PApplet{
 		info.remove("createShell");
 		mutantsChosen = true;
 		displayShell = new Shell(this, mutants);
-		userTextArea = new Textarea(info, "infoText");
-		userTextArea.setPosition(1200, 20).setSize(200, 600);
 		
-		frontB = new Button(info, "front").setPosition(1100, 700);
-		backB = new Button(info, "back").setPosition(1100, 730);
-		topB = new Button(info, "top").setPosition(1200, 700);
-		bottomB = new Button(info, "bottom").setPosition(1200, 730);
-		leftB = new Button(info, "left").setPosition(1300, 700);
-		rightB = new Button(info, "right").setPosition(1300, 730);
+		userTextArea = new Textarea(info, "infoText");
+		userTextArea.setPosition(1100, 20)
+		.setSize(280, 500).
+		setFont(createFont("arial", 14));
+		
+		frontB = new Button(info, "front").setPosition(1100, 700).setColorBackground(color(49, 130, 189))
+				.setColorForeground(color(107, 174, 214))
+				.setColorActive(color(189, 215, 231));;
+		frontB.captionLabel().setControlFont(new ControlFont(createFont("arial", 12)));
+		backB = new Button(info, "back").setPosition(1100, 730).setColorBackground(color(49, 130, 189))
+				.setColorForeground(color(107, 174, 214))
+				.setColorActive(color(189, 215, 231));
+		backB.captionLabel().setControlFont(new ControlFont(createFont("arial", 12)));
+		topB = new Button(info, "top").setPosition(1200, 700).setColorBackground(color(49, 130, 189))
+				.setColorForeground(color(107, 174, 214))
+				.setColorActive(color(189, 215, 231));
+		topB.captionLabel().setControlFont(new ControlFont(createFont("arial", 12)));
+		bottomB = new Button(info, "bottom").setPosition(1200, 730).setColorBackground(color(49, 130, 189))
+				.setColorForeground(color(107, 174, 214))
+				.setColorActive(color(189, 215, 231));
+		bottomB.captionLabel().setControlFont(new ControlFont(createFont("arial", 12)));
+		leftB = new Button(info, "left").setPosition(1300, 700).setColorBackground(color(49, 130, 189))
+				.setColorForeground(color(107, 174, 214))
+				.setColorActive(color(189, 215, 231));
+		leftB.captionLabel().setControlFont(new ControlFont(createFont("arial", 12)));
+		rightB = new Button(info, "right").setPosition(1300, 730).setColorBackground(color(49, 130, 189))
+				.setColorForeground(color(107, 174, 214))
+				.setColorActive(color(189, 215, 231));
+		rightB.captionLabel().setControlFont(new ControlFont(createFont("arial", 12)));
 		
 		fateKey0 = new Button(info, "germline").setPosition(1100, 570).setColorBackground(color(102, 194, 165)).setColorActive(color(102, 194, 165)).setColorForeground(color(102, 194, 165)).setVisible(false);
+		fateKey0.captionLabel().setControlFont(new ControlFont(createFont("arial", 12)));
 		fateKey1 = new Button(info, "MS").setPosition(1100, 600).setColorBackground(color(252, 141, 98)).setColorActive(color(252, 141, 98)).setColorForeground(color(252, 141, 98)).setVisible(false);
+		fateKey1.captionLabel().setControlFont(new ControlFont(createFont("arial", 12)));
 		fateKey2 = new Button(info, "C").setPosition(1200, 570).setColorBackground(color(141, 160, 203)).setColorActive(color(141, 160, 203)).setColorForeground(color(141, 160, 203)).setVisible(false);
+		fateKey2.captionLabel().setControlFont(new ControlFont(createFont("arial", 12)));
 		fateKey3 = new Button(info, "D").setPosition(1200, 600).setColorBackground(color(231, 138, 195)).setColorActive(color(231, 138, 195)).setColorForeground(color(231, 138, 195)).setVisible(false);
+		fateKey3.captionLabel().setControlFont(new ControlFont(createFont("arial", 12)));
 		fateKey4 = new Button(info, "intestine").setPosition(1300, 570).setColorBackground(color(166, 216, 84)).setColorActive(color(166, 216, 84)).setColorForeground(color(166, 216, 84)).setVisible(false);
+		fateKey4.captionLabel().setControlFont(new ControlFont(createFont("arial", 12)));
 		fateKey5 = new Button(info, "pharynx").setPosition(1300, 600).setColorBackground(color(255, 217, 47)).setColorActive(color(255, 217, 47)).setColorForeground(color(255, 217, 47)).setVisible(false);
+		fateKey5.captionLabel().setControlFont(new ControlFont(createFont("arial", 12)));
 		fateKey6 = new Button(info, "error").setPosition(1100, 630).setColorBackground(color(196, 196, 196)).setColorActive(color(196, 196, 196)).setColorForeground(color(196, 196, 196)).setVisible(false);
+		fateKey6.captionLabel().setControlFont(new ControlFont(createFont("arial", 12)));
 		
 		parsKey0 = new Button(info, "par-1").setPosition(1100, 570).setColorBackground(color(255, 0, 255)).setColorActive(color(255, 0, 255)).setColorForeground(color(255, 0, 255)).setVisible(false);
+		parsKey0.captionLabel().setControlFont(new ControlFont(createFont("arial", 12)));
 		parsKey1 = new Button(info, "par-2").setPosition(1100, 600).setColorBackground(color(255, 0, 0)).setColorActive(color(255, 0, 0)).setColorForeground(color(255, 0, 0)).setVisible(false);
+		parsKey1.captionLabel().setControlFont(new ControlFont(createFont("arial", 12)));
 		parsKey2 = new Button(info, "par-3").setPosition(1200, 570).setColorBackground(color(0, 255, 255)).setColorActive(color(0, 255, 255)).setColorForeground(color(0, 255, 255)).setVisible(false);
+		parsKey2.captionLabel().setControlFont(new ControlFont(createFont("arial", 12)));
 		parsKey3 = new Button(info, "par-4").setPosition(1200, 600).setColorBackground(color(0, 0, 255)).setColorActive(color(0, 0, 255)).setColorForeground(color(0, 0, 255)).setVisible(false);
+		parsKey3.captionLabel().setControlFont(new ControlFont(createFont("arial", 12)));
 		parsKey4 = new Button(info, "par-5").setPosition(1300, 570).setColorBackground(color(255, 255, 0)).setColorActive(color(255, 255, 0)).setColorForeground(color(255, 255, 0)).setVisible(false);
+		parsKey4.captionLabel().setControlFont(new ControlFont(createFont("arial", 12)));
 		parsKey5 = new Button(info, "par-6").setPosition(1300, 600).setColorBackground(color(0, 255, 0)).setColorActive(color(0, 255, 0)).setColorForeground(color(0, 255, 0)).setVisible(false);
+		parsKey5.captionLabel().setControlFont(new ControlFont(createFont("arial", 12)));
 		
 		lineageKey0 = new Button(info, "ab-a").setPosition(1100, 570).setColorBackground(color(255, 0, 0)).setColorActive(color(255, 0, 0)).setColorForeground(color(255, 0, 0)).setVisible(true);
+		lineageKey0.captionLabel().setControlFont(new ControlFont(createFont("arial", 12)));
 		lineageKey1 = new Button(info, "ab-p").setPosition(1100, 600).setColorBackground(color(0, 0, 255)).setColorActive(color(0, 0, 255)).setColorForeground(color(0, 0, 255)).setVisible(true);
+		lineageKey1.captionLabel().setControlFont(new ControlFont(createFont("arial", 12)));
 		lineageKey2 = new Button(info, "e, ab").setPosition(1200, 570).setColorBackground(color(0, 255, 0)).setColorActive(color(0, 255, 0)).setColorForeground(color(0, 255, 0)).setVisible(true);
+		lineageKey2.captionLabel().setControlFont(new ControlFont(createFont("arial", 12)));
 		lineageKey3 = new Button(info, "ms").setPosition(1200, 600).setColorBackground(color(0, 255, 255)).setColorActive(color(0, 255, 255)).setColorForeground(color(0, 255, 255)).setVisible(true);
+		lineageKey3.captionLabel().setControlFont(new ControlFont(createFont("arial", 12)));
 		lineageKey4 = new Button(info, "c").setPosition(1300, 570).setColorBackground(color(255, 0, 255)).setColorActive(color(255, 0, 255)).setColorForeground(color(255, 0, 255)).setVisible(true);
+		lineageKey4.captionLabel().setControlFont(new ControlFont(createFont("arial", 12)));
 		lineageKey5 = new Button(info, "d").setPosition(1300, 600).setColorBackground(color(200, 100, 200)).setColorActive(color(200, 100, 200)).setColorForeground(color(200, 100, 200)).setVisible(true);
+		lineageKey5.captionLabel().setControlFont(new ControlFont(createFont("arial", 12)));
 		lineageKey6 = new Button(info, "p").setPosition(1100, 630).setColorBackground(color(255, 255, 0)).setColorActive(color(255, 255, 0)).setColorForeground(color(255, 255, 0)).setVisible(true);		
+		lineageKey6.captionLabel().setControlFont(new ControlFont(createFont("arial", 12)));
 		
-		new Button(info, "Choose color mode").setPosition(1100, 665).setColorBackground(color(0, 0, 0)).setColorActive(color(0, 0, 0)).setColorForeground(color(0, 0, 0));
+		new Button(info, "color mode").setPosition(1095, 665).setColorBackground(color(0, 0, 0)).setColorActive(color(0, 0, 0)).setColorForeground(color(0, 0, 0)).captionLabel().setControlFont(new ControlFont(createFont("arial", 12)));
 		chooseColorMode = new RadioButton(info, "radios");
 		chooseColorMode.setItemsPerRow(3)
-		.setSpacingColumn(60)
+		.setSpacingColumn(58)
 		.setSpacingRow(20)
-		.setPosition(1200, 670)
+		.setPosition(1188, 665)
 		.addItem("Lineage", 0)
 		.addItem("Fate", 1)
 		.addItem("Pars", 2)
 		.activate(0)
-		.setNoneSelectedAllowed(false);
+		.setNoneSelectedAllowed(false)
+		.setSize(16, 16)
+		.setColorBackground(color(49, 130, 189))
+		.setColorForeground(color(107, 174, 214))
+		.setColorActive(color(189, 215, 231));
+		for(Toggle t: chooseColorMode.getItems()){
+			t.captionLabel().setControlFont(new ControlFont(createFont("arial", 12)));
+		}
 		
 		drawKey(displayShell.colorMode);
 	}
