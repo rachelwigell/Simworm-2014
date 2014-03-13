@@ -81,7 +81,7 @@ public class MethodsTests {
 	@Test
 	public void testTimeLapse(){
 		System.out.println("Begin time lapse tests");
-		for(int i = 0; i<100; i++){
+		for(int i = 0; i<45; i++){
 			testShell.timeStep();
 		}
 	}

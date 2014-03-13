@@ -18,10 +18,10 @@ public class Shell{
 	private Coordinates dimensions;
 	private HashMap<String, DivisionData> divisions = new HashMap<String, DivisionData>(); //holds the information about when and how cells divide in theory (according to events queue)
 	int simTime = 1;
-	public float mutationProb = (float) 0; // number between 0 and 1 to indicate the probability of a mutation happening at any time
-	public HashMap<String, Gene> startGenes = new HashMap<String, Gene>();
-	public HashMap<String, Boolean> mutants = new HashMap<String, Boolean>();
-	public ColorMode colorMode = ColorMode.LINEAGE;
+	public float mutationProb = (float) 0; // number between 0 and 1 to indicate the probability of a mutation happening at any time - NO LONGER USED
+	public HashMap<String, Gene> startGenes = new HashMap<String, Gene>(); //genes in p-0
+	public HashMap<String, Boolean> mutants = new HashMap<String, Boolean>(); //all of the genes that have the potential to be mutated, and their status (true = mutant)
+	public ColorMode colorMode = ColorMode.LINEAGE; //set colorMode to lineage initially
 	
 	public Shell(BasicVisual window, HashMap<String, Boolean> mutants){
 		this.window = window;
@@ -41,13 +41,16 @@ public class Shell{
 		//populate events queue data from csv file
 		divisions = readEventsQueue("eventsQueue.csv");
 				
+		//calculate mutations
 		perShellMutations();
 		perCellMutations(startGenes);
 		
+		//create p-0 with all the info calculated
 		Cell start = new Cell(this.window, "p-0", startCenter, startLengths, null, startGenes, new RGB(255, 255, 0), divisions.get("p-0"), 0);
-		this.cells.put(start.getName(), start);		
+		this.cells.put("p-0", start);		
 	}
 	
+	//getters
 	public HashMap<String, Cell> getCells() {
 		return cells;
 	}
@@ -111,11 +114,11 @@ public class Shell{
 		HashMap<String, Gene> parentGenes = this.cells.get(parent).getGenes(); //get the parent's genes out of the hashmap
 		HashMap<String, Gene> childGenes = new HashMap<String, Gene>(); //create a new hashmap to hold the child's genes; this will be returned
 		//must move genes that are changing compartments before we calculate child genes
-		for(String s: parentGenes.keySet()){
+		for(String s: parentGenes.keySet()){ //look at all genes in the cell
 			Gene g = parentGenes.get(s);
-			if(!(g.getChanges() == null)){
-				if(g.getChanges().getChangeDivision().equals(parent)){
-					g.setLocation(g.getChanges().getChangedLocation());
+			if(!(g.getChanges() == null)){ //if this is a gene that changes compartments mid-sim
+				if(g.getChanges().getChangeDivision().equals(parent)){ //check if the division it changes during is the one that's occurring
+					g.setLocation(g.getChanges().getChangedLocation()); //set new compartment
 				}
 			}
 		}
@@ -174,7 +177,7 @@ public class Shell{
 		d2genes = perCellMutations(d2genes);
 		RGB color1 = new RGB(255, 255, 255);
 		RGB color2 = new RGB (255, 255, 255);
-		switch(colorMode){
+		switch(colorMode){ //choose cell color based on current colormode
 		case FATE:
 			color1 = cellColorFate(d1genes);
 			color2 = cellColorFate(d2genes);
@@ -268,7 +271,7 @@ public class Shell{
 		return new RGB(red, green, blue);
 	}
 	
-	//color codes based on lineage
+	//color codes based on lineage, which can be determined from the cell name
 	public RGB cellColorLineage(String cellName){
 		if(cellName.startsWith("ab-a")) return new RGB(255, 0, 0);
 		else if(cellName.startsWith("ab-p")) return new RGB(0, 0, 255);
@@ -280,7 +283,7 @@ public class Shell{
 		else return new RGB(255, 255, 255);
 	}
 	
-	//color codes based on cell fate
+	//color codes based on cell fate, which is determined by the states of various genes
 	public RGB cellColorFate(HashMap<String, Gene> genes){
 		Gene pie = genes.get("pie-1");
 		Gene skn = genes.get("skn-1");
@@ -347,6 +350,7 @@ public class Shell{
 		else return new RGB(196, 196, 196);
 	}
 	
+	//recolors all cells to match a new color mode
 	public void updateColorMode(){
 		for(String s: this.cells.keySet()){
 			Cell c = cells.get(s);
@@ -685,21 +689,24 @@ public class Shell{
 		return genes;
 	}
 	
+	//populates the initial gene list from a CSV
 	public HashMap<String, Gene> readGeneInfo(String file){
 		String name = null;
 		GeneState state = null;
 		Coordinates location = null;
 		HashMap<String, Gene> genes = new HashMap<String, Gene>();
 		try{
-			BufferedReader reader = new BufferedReader(new FileReader(file));
+			BufferedReader reader = new BufferedReader(new FileReader(file)); //open the file
 			String line = "";
-			while((line = reader.readLine()) != null){
-				String[] geneInfo = line.split(",");
-				name = geneInfo[0];
-				if(geneInfo[1].equals("A")) state = new GeneState(true);
-				else if(geneInfo[1].equals("I")) state = new GeneState(false);
-				else if(geneInfo[1].equals("U")) state = new GeneState();
-				else state = new GeneState(Integer.parseInt(geneInfo[1]));
+			while((line = reader.readLine()) != null){ //read one line
+				String[] geneInfo = line.split(","); //split line into an array using commas as separators
+				name = geneInfo[0]; //name of the gene is in the first cell in the row
+				//second cell is gene state. should only be A, I, U, or a number
+				if(geneInfo[1].equals("A")) state = new GeneState(true); //if A, gene set to active
+				else if(geneInfo[1].equals("I")) state = new GeneState(false); //I is inactive
+				else if(geneInfo[1].equals("U")) state = new GeneState(); //U is unknown indefinitely
+				else state = new GeneState(Integer.parseInt(geneInfo[1])); //if a number, gene set to unknown but will become known at the given time
+				//next three cells contain compartment of the gene
 				Compartment x = Compartment.XCENTER;
 				Compartment y = Compartment.YCENTER;
 				Compartment z = Compartment.ZCENTER;
@@ -710,7 +717,8 @@ public class Shell{
 				if(geneInfo[4].equals("left")) z = Compartment.LEFT;
 				else if(geneInfo[4].equals("right")) z = Compartment.RIGHT;
 				location = new Coordinates(x, y, z);
-				if(geneInfo.length > 5){
+				if(geneInfo.length > 5){ //row might be over now, but if not, the remaining cells hold data for genes that switch compartments during the sim
+					//first three are the compartment it switches into
 					Compartment newX = Compartment.XCENTER;
 					Compartment newY = Compartment.YCENTER;
 					Compartment newZ = Compartment.ZCENTER;
@@ -720,11 +728,11 @@ public class Shell{
 					else if(geneInfo[6].equals("ventral")) newY = Compartment.VENTRAL;
 					if(geneInfo[7].equals("left")) newZ = Compartment.LEFT;
 					else if(geneInfo[7].equals("right")) newZ = Compartment.RIGHT;
-					String changeTime = geneInfo[8];
+					String changeTime = geneInfo[8]; //ninth is the division in which the change takes place
 					LocationData changes = new LocationData(new Coordinates(x, y, z), new Coordinates(newX, newY, newZ), changeTime);
-					genes.put(name, new Gene(name, state, location, changes).populateCons());
+					genes.put(name, new Gene(name, state, location, changes).populateCons()); //make a gene with all the info
 				}
-				else genes.put(name, new Gene(name, state, location).populateCons());
+				else genes.put(name, new Gene(name, state, location).populateCons()); //make a gene with all the info (different constructor)
 			}
 		}
 		catch (FileNotFoundException e){
@@ -736,21 +744,23 @@ public class Shell{
 		return genes;
 	}
 	
+	
+	//reads info about the events queue from CSV
 	public HashMap<String, DivisionData> readEventsQueue(String file){
 		HashMap<String, DivisionData> queue = new HashMap<String, DivisionData>();
 		try{
-			BufferedReader reader = new BufferedReader(new FileReader(file));
+			BufferedReader reader = new BufferedReader(new FileReader(file)); //open the file
 			String line = "";
-			while((line = reader.readLine()) != null){
-				String[] queueInfo = line.split(",");
-				String parent = queueInfo[0];
-				double d1Percentage = Integer.parseInt(queueInfo[1])/100.0;
-				Axes axis = Axes.X;
+			while((line = reader.readLine()) != null){ //read one row
+				String[] queueInfo = line.split(","); //split into an array using commas as separators
+				String parent = queueInfo[0]; //name of the splitting cell is in first cell of the row
+				double d1Percentage = Integer.parseInt(queueInfo[1])/100.0; //percentage of the volume that goes to daughter1 in second cell of the row (convert to double)
+				Axes axis = Axes.X; //axis of split in the third cell
 				if(queueInfo[2].equals("Y")) axis = Axes.Y;
 				if(queueInfo[2].equals("Z")) axis = Axes.Z;
-				int time = Integer.parseInt(queueInfo[3]);
-				int generation = Integer.parseInt(queueInfo[4]);
-				queue.put(parent, new DivisionData(parent, d1Percentage, axis, time, generation));
+				int time = Integer.parseInt(queueInfo[3]); //time of split in fourth cell
+				int generation = Integer.parseInt(queueInfo[4]); //generation of the splitting cell in fifth row
+				queue.put(parent, new DivisionData(parent, d1Percentage, axis, time, generation)); //put data into queue
 			}
 		}
 		catch (FileNotFoundException e){

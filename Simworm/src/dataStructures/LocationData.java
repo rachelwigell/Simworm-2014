@@ -1,13 +1,9 @@
 package dataStructures;
 
 public class LocationData {
-	Coordinates initialLocation;
-	Coordinates changedLocation; //optional, for genes that change location at some cell division
+	Coordinates initialLocation; //start location
+	Coordinates changedLocation; //new location
 	String changeDivision; //the division that the change occurs during
-
-	public LocationData(Coordinates location){//for genes that don't move
-		this.initialLocation = location;
-	}
 	
 	public LocationData(Coordinates initialLocation, Coordinates changedLocation, String changeAfterDivision){
 		this.initialLocation = initialLocation;
@@ -15,6 +11,7 @@ public class LocationData {
 		this.changeDivision = changeAfterDivision;
 	}
 
+	//getters
 	public Coordinates getInitialLocation() {
 		return initialLocation;
 	}

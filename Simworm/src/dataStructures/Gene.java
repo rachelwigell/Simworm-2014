@@ -6,31 +6,26 @@ import java.util.List;
 public class Gene /*implements Comparable<Gene>*/{
 	private String name;
 	private GeneState state; //active or inactive
-	//concentration data affects the genes but we don't have enough information in order to populate this in a useful way.
-	//uncomment if concentration data is ever found
-	//private double concentration;
 	private List<Consequence> relevantCons; //consequences that involve this gene as an antecedent
 	Coordinates location; //compartment in cell
-	LocationData changes;
+	LocationData changes; //optional field for genes that change compartments during the course of the sim
 	
 	//genes that don't change location
-	public Gene(String name, GeneState state, /*double concentration,*/ Coordinates location){
+	public Gene(String name, GeneState state, Coordinates location){
 		this.name = name;
 		this.state = state;		
-		//this.concentration = concentration;
 		this.location = location;
 	}
 	
 	//genes that change location
-	public Gene(String name, GeneState state, /*double concentration,*/ Coordinates location, LocationData changes){
+	public Gene(String name, GeneState state, Coordinates location, LocationData changes){
 		this.name = name;
 		this.state = state;		
-		//this.concentration = concentration;
 		this.location = location;
 		this.changes = changes;
 	}
 	
-	//constructor for a "simple gene" which doesn't hold as much info - used to avoid storing excess info in antecedents and consequences
+	//constructor for a "simple gene" which doesn't hold as much info - used to avoid storing excess info in antecedents and consequences which only need name and state
 	public Gene(String name, GeneState state){
 		this.name = name;
 		this.state = state;
@@ -45,7 +40,7 @@ public class Gene /*implements Comparable<Gene>*/{
 		for(Consequence c: allCons.AandC){
 			for(Gene g: c.getAntecedents()){
 				if (g.name.equals(this.name)){
-					relevantCons.add(c); //genes in consequences contain ONLY NAME AND STATE to avoid cyclical data
+					relevantCons.add(c); //genes in consequences contain ONLY NAME AND STATE to avoid cyclical data and redundant data
 				}
 			}
 		}
@@ -59,7 +54,7 @@ public class Gene /*implements Comparable<Gene>*/{
 		ConsList allCons = new ConsList();
 		ArrayList<Integer> toRemove = new ArrayList<Integer>();
 		for(Consequence c: this.relevantCons){
-			if(c.getEndStage() > time && c.getEndStage() != 0){
+			if(c.getEndStage() > time && c.getEndStage() != 0){ //0 is what we put for end if we never want the rule to end
 				toRemove.add(i);
 			}
 			i++;
@@ -82,7 +77,7 @@ public class Gene /*implements Comparable<Gene>*/{
 		return this;
 	}
 	
-	//getters
+	//getters and setters
 	public String getName() {
 		return name;
 	}
@@ -112,11 +107,4 @@ public class Gene /*implements Comparable<Gene>*/{
 		this.location = location;
 		return this;
 	}
-	
-	//genes get sorted by concentration
-	/*public int compareTo(Gene to){
-		if(this.concentration > to.concentration) return 1;
-		if(this.concentration == to.concentration) return 0;
-		else return -1;
-	}*/
 }
