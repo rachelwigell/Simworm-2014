@@ -13,7 +13,7 @@ public class ConsList { //holds data about antecedents and consequences
 		
 	public ConsList(){
 		//populate AandC and startLate from the CSV
-		readAandCInfo("AandC.csv");	
+		readAandCInfo("csv/AandC.csv");	
 	}
 	
 	//parses a CSV to create the antecedent and consequence rules

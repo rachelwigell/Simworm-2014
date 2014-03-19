@@ -36,10 +36,10 @@ public class Shell{
 		Coordinates startLengths = new Coordinates(500, 300, 300);
 		
 		//populate the cell's genes from csv file
-		startGenes = readGeneInfo("genes.csv");
+		startGenes = readGeneInfo("csv/genes.csv");
 		
 		//populate events queue data from csv file
-		divisions = readEventsQueue("eventsQueue.csv");
+		divisions = readEventsQueue("csv/eventsQueue.csv");
 				
 		//calculate mutations
 		perShellMutations();

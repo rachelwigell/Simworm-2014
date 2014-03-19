@@ -476,7 +476,4 @@ public class MethodsTests {
 		assertNotNull(test.get("a"));
 		
 	}
-	
-	//test push
-	//second test
 }
