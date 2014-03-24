@@ -13,6 +13,7 @@ import dataStructures.Cell;
 import dataStructures.CellChangesData;
 import dataStructures.Compartment;
 import dataStructures.ConsList;
+import dataStructures.Consequence;
 import dataStructures.Coordinates;
 import dataStructures.DivisionData;
 import dataStructures.Gene;
@@ -81,9 +82,36 @@ public class MethodsTests {
 	@Test
 	public void testTimeLapse(){
 		System.out.println("Begin time lapse tests");
-		for(int i = 0; i<45; i++){
+		for(int i = 0; i<5; i++){
 			testShell.timeStep();
 		}
+		boolean found = false;
+		for(Consequence c: testShell.getCells().get("p-0").getGenes().get("tbx-37").getRelevantCons()){
+			if(c.getConsequence().getName().equals("tbx-37")){
+				found = true;
+			}
+		}
+		assertFalse(found);
+		for(int i = 0; i<25; i++){
+			testShell.timeStep();
+		}
+		found = false;
+		for(Consequence c: testShell.getCells().get("ems").getGenes().get("tbx-37").getRelevantCons()){
+			if(c.getConsequence().getName().equals("tbx-37")){
+				found = true;
+			}
+		}
+		assertTrue(found);
+		found = false;
+		for(int i = 0; i<20; i++){
+			testShell.timeStep();
+		}
+		for(Consequence c: testShell.getCells().get("ab-pr").getGenes().get("tbx-37").getRelevantCons()){
+			if(c.getConsequence().getName().equals("tbx-37")){
+				found = true;
+			}
+		}
+		//assertFalse(found);
 	}
 	
 	@Test

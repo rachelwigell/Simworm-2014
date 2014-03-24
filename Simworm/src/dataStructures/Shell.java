@@ -23,6 +23,11 @@ public class Shell{
 	public HashMap<String, Boolean> mutants = new HashMap<String, Boolean>(); //all of the genes that have the potential to be mutated, and their status (true = mutant)
 	public ColorMode colorMode = ColorMode.LINEAGE; //set colorMode to lineage initially
 	
+	/**
+	 * Constructor for a cell - initializes everything
+	 * @param window The PApplet in which the shell will be drawn
+	 * @param mutants The user's choice for which genes should be mutated in this shell
+	 */
 	public Shell(BasicVisual window, HashMap<String, Boolean> mutants){
 		this.window = window;
 		this.mutants = mutants;
@@ -63,7 +68,14 @@ public class Shell{
 		return divisions;
 	}
 	
-	//determines the name of a daughter cell based on what the parent cell and what axis it's dividing along
+	
+	/**
+	 * Determines the name of a daughter cell based on what the parent cell is and what axis it's dividing along
+	 * @param parent The name of the cell that is dividing
+	 * @param axis The axis along which the cell is dividing
+	 * @param d1 Indicates whether we are calculating the name of daughter1 or daughter2
+	 * @return The name that the corresponding daughter cell should have
+	 */
 	public String nameCalc(String parent, Axes axis, boolean d1){
 		//first handle non-programmatically determined names
 		if(parent.equals("p-0")){
@@ -156,8 +168,12 @@ public class Shell{
 		return childGenes;
 	}
 
-	//simulates division of cell by calculating new names, centers, dimensions, and gene states of daughter cells
-	//daughter1 is always the more anterior, dorsal, or right child
+	/**
+	 * simulates division of cell by calculating new names, centers, dimensions, and gene states of daughter cells
+	 * daughter1 is always the more anterior, dorsal, or right child
+	 * @param data The divisionData for the cell that is dividing; contains name, axis, percentages, etc.
+	 * @return Data on which cells are now gone or new cells that were created
+	 */
 	public CellChangesData cellDivision(DivisionData data){
 		String parent = data.getParent();
 		double d1Percentage = data.getD1Percentage();
@@ -239,7 +255,11 @@ public class Shell{
 		return changes;
 	}
 	
-	//color codes cells based on what par proteins they contain
+	/**
+	 * Color codes cells based on what par proteins they contain
+	 * @param genes The geneslist of the cell to be colored
+	 * @return The RGB value of the cell's color
+	 */
 	public RGB cellColorPars(HashMap<String, Gene> genes){
 		int red = 10;
 		int green = 10;
@@ -271,7 +291,11 @@ public class Shell{
 		return new RGB(red, green, blue);
 	}
 	
-	//color codes based on lineage, which can be determined from the cell name
+	/**
+	 * color codes based on lineage, which can be determined from the cell name
+	 * @param genes The name of the cell to be colored
+	 * @return The RGB value of the cell's color
+	 */
 	public RGB cellColorLineage(String cellName){
 		if(cellName.startsWith("ab-a")) return new RGB(255, 0, 0);
 		else if(cellName.startsWith("ab-p")) return new RGB(0, 0, 255);
@@ -283,7 +307,11 @@ public class Shell{
 		else return new RGB(255, 255, 255);
 	}
 	
-	//color codes based on cell fate, which is determined by the states of various genes
+	/**
+	 * color codes based on cell fate, which is determined by the states of various genes
+	 * @param genes The geneslist of the cell to be colored
+	 * @return The RGB value of the cell's color
+	 */
 	public RGB cellColorFate(HashMap<String, Gene> genes){
 		Gene pie = genes.get("pie-1");
 		Gene skn = genes.get("skn-1");
@@ -350,7 +378,9 @@ public class Shell{
 		else return new RGB(196, 196, 196);
 	}
 	
-	//recolors all cells to match a new color mode
+	/**
+	 * Recolors all cells to match a new color mode
+	 */
 	public void updateColorMode(){
 		for(String s: this.cells.keySet()){
 			Cell c = cells.get(s);
@@ -368,13 +398,18 @@ public class Shell{
 		}
 	}
 	
+	/**
+	 * Draws all cells present in the shell to the screen
+	 */
 	public void drawAllCells(){
 		for(String s: this.cells.keySet()){
 			this.cells.get(s).drawCell();
 		}
 	}
 	
-	//runs cell timeStep on each cell and then checks for cell divisions
+	/**
+	 * runs cell timeStep on each cell and then checks for cell divisions 
+	 */
 	public void timeStep(){
 		//System.out.println("Beginning new time step " + simTime);
 		//System.out.println("Beginning check of genes in all cells");
@@ -469,6 +504,11 @@ public class Shell{
 		return new Cell(c.window, c.getName(), c.getCenter(), c.getLengths(), c.getParent(), mutatedGenes, mutatedColor, mutatedData, c.getGeneration());
 	}
 	
+	/**
+	 * Calculates mutations for each cell
+	 * @param genes The genes that the cell contains
+	 * @return The updated list of genes with mutations calculated
+	 */
 	public HashMap<String, Gene> perCellMutations (HashMap<String, Gene> genes){
 		for(String s: mutants.keySet()){ //go through the set of mutants; this contains each of the par's and an associated boolean value indicating whether it is mutant.
 			if(mutants.get(s)){ //if a par is mutant...
@@ -492,7 +532,9 @@ public class Shell{
 		}
 		return genes;
 	}
-	
+	 /**
+	  * Calculates mutations for the overall shell
+	  */
 	public void perShellMutations(){
 		Random r = new Random();
 		int mutateTimes = 0; //times mutate if there are any mutant pars
@@ -560,6 +602,11 @@ public class Shell{
 		}
 	}
 	
+	/**
+	 * Calculates mutations that occur in a cell due to par1 being mutant
+	 * @param genes the cell's genes
+	 * @return the updated genes with effects from mutation
+	 */
 	public HashMap<String, Gene> par1Mutations(HashMap<String, Gene> genes){
 		Random r = new Random();
 		int var;
@@ -605,6 +652,11 @@ public class Shell{
 		return genes;
 	}
 	
+	/**
+	 * Calculates mutations that occur in a cell due to par2 being mutant
+	 * @param genes the cell's genes
+	 * @return the updated genes with effects from mutation
+	 */
 	public HashMap<String, Gene> par2Mutations(HashMap<String, Gene> genes){
 		Random r = new Random();
 		int var;
@@ -633,7 +685,11 @@ public class Shell{
 		return genes;
 	}
 	
-	//also run for par-6 and pkc-3; these mutations all behave the same way
+	/**
+	 * Calculates mutations that occur in a cell due to par3, par6, or pkc-3 being mutant (these mutants all behave the same way)
+	 * @param genes the cell's genes
+	 * @return the updated genes with effects from mutation
+	 */
 	public HashMap<String, Gene> par3Mutations(HashMap<String, Gene> genes){
 		Random r = new Random();
 		int var;
@@ -662,12 +718,22 @@ public class Shell{
 		return genes;
 	}
 	
+	/**
+	 * Calculates mutations that occur in a cell due to par4 being mutant
+	 * @param genes the cell's genes
+	 * @return the updated genes with effects from mutation
+	 */
 	public HashMap<String, Gene> par4Mutations(HashMap<String, Gene> genes){
 		//glp-1 moves to center
 		genes.put("glp-1", genes.get("glp-1").setLocation(new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER)));	
 		return genes;
 	}
 	
+	/**
+	 * Calculates mutations that occur in a cell due to par5 being mutant
+	 * @param genes the cell's genes
+	 * @return the updated genes with effects from mutation
+	 */
 	public HashMap<String, Gene> par5Mutations(HashMap<String, Gene> genes){
 		Random r = new Random();
 		int var;
@@ -689,7 +755,11 @@ public class Shell{
 		return genes;
 	}
 	
-	//populates the initial gene list from a CSV
+	/**
+	 * Populates the initial gene list from a CSV
+	 * @param file the name of the CSV as a string
+	 * @return The genes list as populated
+	 */
 	public HashMap<String, Gene> readGeneInfo(String file){
 		String name = null;
 		GeneState state = null;
@@ -745,7 +815,11 @@ public class Shell{
 	}
 	
 	
-	//reads info about the events queue from CSV
+	/**
+	 * Reads info about the events queue from CSV
+	 * @param file the name of the CSV as a string
+	 * @return The events queue as populated
+	 */
 	public HashMap<String, DivisionData> readEventsQueue(String file){
 		HashMap<String, DivisionData> queue = new HashMap<String, DivisionData>();
 		try{

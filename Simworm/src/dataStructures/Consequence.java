@@ -6,6 +6,13 @@ public class Consequence /*implements Comparable<Consequence>*/ {
 	private int startStage;
 	private int endStage;
 	
+	/**
+	 * Constructor for a consequence object
+	 * @param antecedents All of the gene names and their states (see simple gene constructor) required for this consequence to occur
+	 * @param consequence The gene and its state that will be set if the antecedents are fulfilled
+	 * @param startStage The cell stage (number of cells present) at which this rule starts being considered
+	 * @param endStage The cell stage at which this rule stops being considered
+	 */
 	public Consequence(Gene[] antecedents, Gene consequence, int startStage, int endStage){
 		this.antecedents = antecedents;
 		this.consequence = consequence;

@@ -19,6 +19,18 @@ public class Cell {
 	
 	Coordinates sphereLocation;
 	
+	/**
+	 * Constructor for a cell object
+	 * @param window The PApplet where the cell will be displayed
+	 * @param name The name of the cell
+	 * @param center The coordinates of the center point of the cell
+	 * @param lengths The length of the cell on each axis
+	 * @param parent The name of this cell's parent (the cell that divides to create this cell)
+	 * @param genes The list of genes present in this cell
+	 * @param color The color the cell should be rendered in
+	 * @param divide The data that will be required to calculate this cell's division
+	 * @param generation Generation that the cell belongs to (p-0 is 0th generation, ab and p-1 are first generation, etc)
+	 */
 	public Cell(BasicVisual window, String name, Coordinates center, Coordinates lengths, String parent, HashMap<String, Gene> genes, RGB color, DivisionData divide, int generation){
 		this.window = window;
 		this.name = name;
@@ -77,8 +89,10 @@ public class Cell {
 		this.color = color;
 	}
 
-	//MUST be handed gene instances from inside of cell, as these are the only ones fully initialized past name/state
-	//collect changes to be made to cell, get applied at end of function. cascading effects handled on next timestep
+	/**
+	 * Checks for fulfilled antecedents and applies their consequences. Cascading effects handled on next timestep.
+	 * @return The updated list of genes - cell's genelist should be set equal to this result after this method is called.
+	 */
 	public HashMap<String, Gene> applyCons(){ //use list of genes that have recently changed, to calculate effects
 		HashMap<String, Gene> effects = new HashMap<String, Gene>(); //will hold all changes to be made to the cell
 		for(String s: recentlyChanged.keySet()){ //look through list of genes that have been changed
@@ -155,7 +169,11 @@ public class Cell {
 		return effects;
 	}
 	
-	//checks for fulfilled antecedents and applies them
+	/**
+	 * Per cell effects that occur on a timestep. Updates the relevantCons list and calls applyCons.
+	 * @param stage The number of cells present in the shell right now
+	 * @return The updated cell
+	 */
 	public Cell timeLapse(int stage){
 		for(String s: this.genes.keySet()){
 			genes.put(s, genes.get(s).updateCons(stage));
@@ -164,6 +182,9 @@ public class Cell {
 		return this;
 	}
 	
+	/**
+	 * Draws the cell to the PApplet
+	 */
 	public void drawCell(){
 		window.pushMatrix();
 		window.translate(this.center.getX(), this.center.getY(), this.center.getZ());
@@ -175,6 +196,10 @@ public class Cell {
 		window.popMatrix();
 	}
 	
+	/**
+	 * Returns the string that is printed to the screen when information about the cell is requested by the user
+	 * @return String containing list of genes and their states
+	 */
 	public String getInfo(){
 		String parsInfo = this.name+" genes present:\n\n";
 		String otherInfo = "\n\n";

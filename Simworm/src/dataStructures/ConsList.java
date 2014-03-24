@@ -8,15 +8,22 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ConsList { //holds data about antecedents and consequences
-		public List<Consequence> AandC = new ArrayList<Consequence>(); //antecedents and consequences that are active at the beginning
-		public List<Consequence> startLate = new ArrayList<Consequence>(); //rules that don't start until midway through the simulation
-		
+	public List<Consequence> AandC = new ArrayList<Consequence>(); //antecedents and consequences that are active at the beginning
+	public List<Consequence> startLate = new ArrayList<Consequence>(); //rules that don't start until midway through the simulation
+
+	/**
+	 * Constructor for a ConsList object
+	 * Just populates AandC and startLate from the CSV
+	 */
 	public ConsList(){
 		//populate AandC and startLate from the CSV
 		readAandCInfo("csv/AandC.csv");	
 	}
-	
-	//parses a CSV to create the antecedent and consequence rules
+
+	/**
+	 * Parses a CSV to create the antecedent and consequence rules
+	 * @param file The name of the CSV file as a string
+	 */
 	public void readAandCInfo(String file){
 		String name = null;
 		GeneState state = null;

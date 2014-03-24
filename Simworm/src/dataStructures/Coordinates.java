@@ -9,14 +9,24 @@ public class Coordinates {
 	private Compartment DV;
 	private Compartment LR;
 	
-	//used to indicate location	
+	/**
+	 * Constructor that indicates location
+	 * @param x The x coordinate of the location
+	 * @param y The y coordinate
+	 * @param z The z coordinate
+	 */
 	public Coordinates(float x, float y, float z){
 		this.x = x;
 		this.y = y;
 		this.z = z;
 	}
 	
-	//used in genes to indicate compartment
+	/**
+	 * Constructor that indicates compartment
+	 * @param AP The compartment on the anterior-posterior axis
+	 * @param DV The compartment on the dorsal-ventral axis
+	 * @param LR The compartment on the left-right axis
+	 */
 	public Coordinates(Compartment AP, Compartment DV, Compartment LR){
 		this.AP = AP;
 		this.DV = DV;

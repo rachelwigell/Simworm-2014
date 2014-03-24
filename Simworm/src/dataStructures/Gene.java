@@ -10,14 +10,25 @@ public class Gene /*implements Comparable<Gene>*/{
 	Coordinates location; //compartment in cell
 	LocationData changes; //optional field for genes that change compartments during the course of the sim
 	
-	//genes that don't change location
+	/**
+	 * Constructor for genes that don't change compartment
+	 * @param name Name of the gene
+	 * @param state Active/inactive state of the gene (also can be unknown)
+	 * @param location Compartment in which the gene is located
+	 */
 	public Gene(String name, GeneState state, Coordinates location){
 		this.name = name;
 		this.state = state;		
 		this.location = location;
 	}
 	
-	//genes that change location
+	/**
+	 * Constructor for genes that change compartment during the course of development
+	 * @param name Name of the gene
+	 * @param state Active/inactive state of the gene
+	 * @param location  Compartment in which the gene is located
+	 * @param changes Info on compartment that the gene moves to and what time the move occurs
+	 */
 	public Gene(String name, GeneState state, Coordinates location, LocationData changes){
 		this.name = name;
 		this.state = state;		
@@ -25,15 +36,22 @@ public class Gene /*implements Comparable<Gene>*/{
 		this.changes = changes;
 	}
 	
-	//constructor for a "simple gene" which doesn't hold as much info - used to avoid storing excess info in antecedents and consequences which only need name and state
+	/**
+	 * Cnstructor for a "simple gene" which only has name and state - used to avoid storing excess info in antecedents and consequences which only need name and state
+	 * @param name Name of the gene
+	 * @param state Active/inactive state of the gene
+	 */
 	public Gene(String name, GeneState state){
 		this.name = name;
 		this.state = state;
 	}
-	
-	//populates relevantCons
-	//must be called before any gene's list of relevant consequences should be used. otherwise it is a "shallow" gene just containing the name/isOn/concentration/location info
-	//only the gene instances that are in a cell's gene list generally need to call this
+
+	/**
+	 * Populates relevantCons
+	 * Must be called before any gene's list of relevant consequences should be used. Otherwise this list will be null.
+	 * Only the gene instances that are in a cell's gene list generally need to call this
+	 * @return The gene with its populated list
+	 */
 	public Gene populateCons(){
 		relevantCons = new ArrayList<Consequence>();
 		ConsList allCons = new ConsList(); //cannot be a field in Gene to avoid cyclical data
@@ -47,8 +65,13 @@ public class Gene /*implements Comparable<Gene>*/{
 		return this;
 	}
 	
-	//updates the relevantCons list to remove consequences whose time period is over, or add new ones whose time periods have begun
-	//should be called every time step
+	/**
+	 * Updates the relevantCons list to remove consequences whose time period is over, or add new ones whose time periods have begun
+	 * Should be called every time step
+	 * TODO inefficient now that we're reading from CSV and might not be working exactly right - see testApplyingConsequences
+	 * @param time The cell stage that the simulation is currently at (number of cells present)
+	 * @return The gene with its relevantCons list updated
+	 */
 	public Gene updateCons(int time){
 		int i = 0;
 		ConsList allCons = new ConsList();
