@@ -51,4 +51,21 @@ public class Consequence /*implements Comparable<Consequence>*/ {
 		else if(thisTotal == cTotal) return 0;
 		else return -1;
 	}*/
+	
+	/*
+	 * detects whether the given consequence object has all the same fields as this one
+	 * @param compareTo
+	 * @return true if they're the same, false if anything's different
+	 *
+	public boolean identicalConsequence(Consequence compareTo){
+		if(!this.consequence.getName().equals(compareTo.consequence.getName())) return false;
+		if(this.consequence.getState().isOn() != compareTo.consequence.getState().isOn()) return false;
+		if(this.startStage != compareTo.startStage) return false;
+		if(this.antecedents.length != compareTo.antecedents.length) return false;
+		for(int i=0; i<this.antecedents.length; i++){
+			if(!this.antecedents[i].getName().equals(compareTo.antecedents[i].getName())) return false;
+			if(this.antecedents[i].getState().isOn() != compareTo.antecedents[i].getState().isOn()) return false;
+		}
+		return true;
+	}*/
 }

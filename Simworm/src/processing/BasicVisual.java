@@ -311,8 +311,8 @@ public class BasicVisual extends PApplet{
 					userText = displayShell.getCells().get(userText).getInfo();
 				}
 			}
-			else{ //if it's any other key, just add that letter to the userText
-				if (userText.length() > 10) userText = ""; //clear it if it gets to more than 10 characters
+			else if(((int) keyCode) >= 33 && ((int) keyCode) <= 126){ //if it's any other ("normal" ascii) key, just add that letter to the userText
+				if (userText.length() > 10) userText = ""; //clear it if it gets to more than 10 characters so the user never has to delete a bunch of text; no useful commands are over 10 char anyway
 				userText = userText + key;
 			}
 		}

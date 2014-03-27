@@ -172,11 +172,13 @@ public class Cell {
 	/**
 	 * Per cell effects that occur on a timestep. Updates the relevantCons list and calls applyCons.
 	 * @param stage The number of cells present in the shell right now
+	 * @param recentGrowth indicates whether the shell has gained new cells since the last timestep
 	 * @return The updated cell
 	 */
-	public Cell timeLapse(int stage){
+	public Cell timeLapse(int stage, boolean recentGrowth){
 		for(String s: this.genes.keySet()){
-			genes.put(s, genes.get(s).updateCons(stage));
+			System.out.println("Cell " + this.name + " gene " + s);
+			genes.put(s, genes.get(s).updateCons(stage, recentGrowth));
 		}
 		this.applyCons();
 		return this;

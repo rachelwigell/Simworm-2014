@@ -22,6 +22,7 @@ public class Shell{
 	public HashMap<String, Gene> startGenes = new HashMap<String, Gene>(); //genes in p-0
 	public HashMap<String, Boolean> mutants = new HashMap<String, Boolean>(); //all of the genes that have the potential to be mutated, and their status (true = mutant)
 	public ColorMode colorMode = ColorMode.LINEAGE; //set colorMode to lineage initially
+	public boolean recentGrowth = false;
 	
 	/**
 	 * Constructor for a cell - initializes everything
@@ -142,7 +143,7 @@ public class Shell{
 				//since daughter1 is always on the anterior side, gene should not go in if we're calculating for daughter1 and it's located in the posterior compartment
 				//equivalent with daughter2/anterior
 				if((comp != Compartment.POSTERIOR && daughter1) || (comp != Compartment.ANTERIOR && !daughter1)){ //so if neither situation is occurring...
-					childGenes.put(g.getName(), g); //add a new instance of the gene to childGenes, and populate its relevantCons list
+					childGenes.put(g.getName(), new Gene(g.getName(), g.getState(), g.getLocation(), g.getChanges()).populateCons()); //add a new instance of the gene to childGenes, and populate its relevantCons list
 				}
 			}
 			break;
@@ -151,7 +152,7 @@ public class Shell{
 				Gene g = parentGenes.get(s);
 				Compartment comp = g.getLocation().getDV();
 				if((comp != Compartment.VENTRAL && daughter1) || (comp != Compartment.DORSAL && !daughter1)){
-					childGenes.put(g.getName(), g);
+					childGenes.put(g.getName(), new Gene(g.getName(), g.getState(), g.getLocation(), g.getChanges()).populateCons());
 				}
 			}
 			break;
@@ -160,7 +161,7 @@ public class Shell{
 				Gene g = parentGenes.get(s);
 				Compartment comp = g.getLocation().getLR();
 				if((comp != Compartment.LEFT && daughter1) || (comp != Compartment.RIGHT && !daughter1)){
-					childGenes.put(g.getName(), g);
+					childGenes.put(g.getName(), new Gene(g.getName(), g.getState(), g.getLocation(), g.getChanges()).populateCons());
 				}
 			}
 			break;
@@ -408,20 +409,17 @@ public class Shell{
 	}
 	
 	/**
-	 * runs cell timeStep on each cell and then checks for cell divisions 
+	 * does any divisions that occur at this timestep then runs per cell timestep function on each cell 
 	 */
 	public void timeStep(){
-		//System.out.println("Beginning new time step " + simTime);
-		//System.out.println("Beginning check of genes in all cells");
-		for(String s: this.cells.keySet()){
-			cells.put(s, cells.get(s).timeLapse(cells.size()));		
-		}
+		recentGrowth = false;
 		//System.out.println("Beginning cell divisions, if any");
 		ArrayList<CellChangesData> cellChanges = new ArrayList<CellChangesData>();
 		for(String s: cells.keySet()){
 			Cell c = cells.get(s);
 			if(c.getDivide() != null){ //we might not have the division data on the the children, if they divide after gastrulation.
 				if(c.getDivide().getTime() == simTime){ //need to get division data from the cell, not what's in Shell's division list, in case of mutations
+					recentGrowth = true;
 					cellChanges.add(cellDivision(c.getDivide()));
 				}
 			}
@@ -433,6 +431,11 @@ public class Shell{
 			for(Cell c: d.cellsAdded){
 				cells.put(c.getName(), c);
 			}
+		}
+		//System.out.println("Beginning new time step " + simTime);
+		//System.out.println("Beginning check of genes in all cells");
+		for(String s: this.cells.keySet()){
+			cells.put(s, cells.get(s).timeLapse(cells.size(), recentGrowth));		
 		}
 		simTime++;
 	}

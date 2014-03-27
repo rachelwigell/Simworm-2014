@@ -111,7 +111,7 @@ public class MethodsTests {
 				found = true;
 			}
 		}
-		//assertFalse(found);
+		assertFalse(found);
 	}
 	
 	@Test

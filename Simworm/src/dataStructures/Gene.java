@@ -53,7 +53,7 @@ public class Gene /*implements Comparable<Gene>*/{
 	 * @return The gene with its populated list
 	 */
 	public Gene populateCons(){
-		relevantCons = new ArrayList<Consequence>();
+		this.relevantCons = new ArrayList<Consequence>();
 		ConsList allCons = new ConsList(); //cannot be a field in Gene to avoid cyclical data
 		for(Consequence c: allCons.AandC){
 			for(Gene g: c.getAntecedents()){
@@ -68,34 +68,32 @@ public class Gene /*implements Comparable<Gene>*/{
 	/**
 	 * Updates the relevantCons list to remove consequences whose time period is over, or add new ones whose time periods have begun
 	 * Should be called every time step
-	 * TODO inefficient now that we're reading from CSV and might not be working exactly right - see testApplyingConsequences
 	 * @param time The cell stage that the simulation is currently at (number of cells present)
+	 * @param indicates whether the shell has gained new cells since the last timestep
 	 * @return The gene with its relevantCons list updated
 	 */
-	public Gene updateCons(int time){
+	public Gene updateCons(int time, boolean recentGrowth){
 		int i = 0;
 		ConsList allCons = new ConsList();
 		ArrayList<Integer> toRemove = new ArrayList<Integer>();
+		System.out.println(this.relevantCons.size() + " " + recentGrowth);
 		for(Consequence c: this.relevantCons){
-			if(c.getEndStage() > time && c.getEndStage() != 0){ //0 is what we put for end if we never want the rule to end
+			if(c.getEndStage() < time && c.getEndStage() != 0){ //0 is what we put for end if we never want the rule to end
 				toRemove.add(i);
+				//System.out.println("queueing rule involving " + c.getConsequence().getName() + " at index " + i + " for removal");
 			}
 			i++;
 		}
 		for(Integer j: toRemove){
 			this.relevantCons.remove(j);
 		}
-		i = 0;
-		toRemove = new ArrayList<Integer>();
-		for(Consequence c: allCons.startLate){
-			if(c.getStartStage() <= time){
-				this.relevantCons.add(c);
-				toRemove.add(i);
+		if(recentGrowth){ //to prevent duplicate versions of the rule from being added every time step in which the number of cells stays the same
+			for(Consequence c: allCons.startLate){
+				if(c.getStartStage() == time){
+					this.relevantCons.add(c);
+					System.out.println("adding rule involving " + c.getConsequence().getName());
+				}
 			}
-			i++;
-		}
-		for(Integer j: toRemove){
-			allCons.startLate.remove(j);
 		}
 		return this;
 	}
