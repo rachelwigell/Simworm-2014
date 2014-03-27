@@ -22,7 +22,7 @@ public class Shell{
 	public HashMap<String, Gene> startGenes = new HashMap<String, Gene>(); //genes in p-0
 	public HashMap<String, Boolean> mutants = new HashMap<String, Boolean>(); //all of the genes that have the potential to be mutated, and their status (true = mutant)
 	public ColorMode colorMode = ColorMode.LINEAGE; //set colorMode to lineage initially
-	public boolean recentGrowth = false;
+	public boolean recentGrowth = false; //indicates when the shell has recently gained cells
 	
 	/**
 	 * Constructor for a cell - initializes everything
@@ -376,7 +376,7 @@ public class Shell{
 		else if(!germline && !MS && !C && D && !E && !pharynx) return new RGB(231, 138, 195);
 		else if(!germline && !MS && !C && !D && E && !pharynx) return new RGB(166, 216, 84);
 		else if(!germline && !MS && !C && !D && !E && pharynx) return new RGB(255, 217, 47);
-		else return new RGB(196, 196, 196);
+		else return new RGB(196, 196, 196); //occurs if no or more than 1 cell fates are satisfied; indicates error
 	}
 	
 	/**
