@@ -72,6 +72,7 @@ public class Shell{
 	
 	/**
 	 * Determines the name of a daughter cell based on what the parent cell is and what axis it's dividing along
+	 * daughter1 is always the more anterior, dorsal, or right child
 	 * @param parent The name of the cell that is dividing
 	 * @param axis The axis along which the cell is dividing
 	 * @param d1 Indicates whether we are calculating the name of daughter1 or daughter2
@@ -317,16 +318,10 @@ public class Shell{
 		Gene pie = genes.get("pie-1");
 		Gene skn = genes.get("skn-1");
 		Gene pal = genes.get("pal-1");
-		Gene wrm = genes.get("wrm-1");
-		Gene pop = genes.get("pop-1");
-		Gene pha = genes.get("pha-4");
 		
 		boolean germline = false;
-		boolean MS = false;
-		boolean C = false;
-		boolean D = false;
-		boolean E = false;
-		boolean pharynx = false;
+		boolean MSE = false;
+		boolean CD = false;
 		
 		if(pie != null){
 			if(!pie.getState().isUnknown()){
@@ -338,45 +333,21 @@ public class Shell{
 		if(skn != null){
 			if(!skn.getState().isUnknown()){
 				if(skn.getState().isOn()){
-					MS = true;
+					MSE = true;
 				}
 			}
 		}
 		if(pal != null){
 			if(!pal.getState().isUnknown()){
 				if(pal.getState().isOn()){
-					C = true;
+					CD = true;
 				}
 			}
 		}
-		if(pal != null){
-			if(!pal.getState().isUnknown()){
-				if(pal.getState().isOn()){
-					D = true;
-				}
-			}
-		}
-		if(skn != null && wrm != null && pop != null){
-			if(!skn.getState().isUnknown() && !wrm.getState().isUnknown() && !pop.getState().isUnknown()){
-				if(skn.getState().isOn() && wrm.getState().isOn() && !pop.getState().isOn()){
-					E = true;
-				}
-			}
-		}
-		if(pha != null){
-			if(!pha.getState().isUnknown()){
-				if(pha.getState().isOn()){
-					pharynx = true;
-				}
-			}
-		}
-		if(germline && !MS && !C && !D && !E && !pharynx) return new RGB(102, 194, 165);
-		else if(!germline && MS && !C && !D && !E && !pharynx) return new RGB(252, 141, 98);
-		else if(!germline && !MS && C && !D && !E && !pharynx) return new RGB(141, 160, 203);
-		else if(!germline && !MS && !C && D && !E && !pharynx) return new RGB(231, 138, 195);
-		else if(!germline && !MS && !C && !D && E && !pharynx) return new RGB(166, 216, 84);
-		else if(!germline && !MS && !C && !D && !E && pharynx) return new RGB(255, 217, 47);
-		else return new RGB(196, 196, 196); //occurs if no or more than 1 cell fates are satisfied; indicates error
+		if(germline && !MSE && !CD) return new RGB(102, 194, 165);
+		else if(!germline && MSE && !CD) return new RGB(252, 141, 98);
+		else if(!germline && !MSE && CD) return new RGB(141, 160, 203);
+		else return new RGB(231, 138, 195); //occurs if no or more than 1 cell fates are satisfied; default situation
 	}
 	
 	/**
@@ -436,6 +407,10 @@ public class Shell{
 		//System.out.println("Beginning check of genes in all cells");
 		for(String s: this.cells.keySet()){
 			cells.put(s, cells.get(s).timeLapse(cells.size(), recentGrowth));		
+		}
+		//fate color mode the only one in which cells can change colors between divisions
+		if(this.colorMode == ColorMode.FATE){
+			updateColorMode();
 		}
 		simTime++;
 	}

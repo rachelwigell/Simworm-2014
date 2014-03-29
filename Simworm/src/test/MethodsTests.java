@@ -23,6 +23,8 @@ import dataStructures.Shell;
 public class MethodsTests {
 	BasicVisual testVis = new BasicVisual();
 	Shell testShell = new Shell(testVis, new HashMap<String, Boolean>());
+
+	//These tests were written for a fully populated genes.csv and AandC.csv. We have since pared these down, and many tests fail.
 	
 	@Test
 	public void firstDivision() {
@@ -502,6 +504,12 @@ public class MethodsTests {
 		test.put("a", testCoor);
 		testCoor = null;
 		assertNotNull(test.get("a"));
+		
+	}
+	
+	//These tests were written for the pared down CSVs.
+	@Test
+	public void testCascade(){
 		
 	}
 }

@@ -33,9 +33,6 @@ public class BasicVisual extends PApplet{
 	Button fateKey1;
 	Button fateKey2;
 	Button fateKey3;
-	Button fateKey4;
-	Button fateKey5;
-	Button fateKey6;
 	Button parsKey0;
 	Button parsKey1;
 	Button parsKey2;
@@ -125,18 +122,12 @@ public class BasicVisual extends PApplet{
 		//initialize the color keys; these are not interactive
 		fateKey0 = new Button(info, "germline").setPosition(1100, 570).setColorBackground(color(102, 194, 165)).setColorActive(color(102, 194, 165)).setColorForeground(color(102, 194, 165)).setVisible(false);
 		fateKey0.captionLabel().setControlFont(new ControlFont(createFont("arial", 12)));
-		fateKey1 = new Button(info, "MS").setPosition(1100, 600).setColorBackground(color(252, 141, 98)).setColorActive(color(252, 141, 98)).setColorForeground(color(252, 141, 98)).setVisible(false);
+		fateKey1 = new Button(info, "MS/E").setPosition(1100, 600).setColorBackground(color(252, 141, 98)).setColorActive(color(252, 141, 98)).setColorForeground(color(252, 141, 98)).setVisible(false);
 		fateKey1.captionLabel().setControlFont(new ControlFont(createFont("arial", 12)));
-		fateKey2 = new Button(info, "C").setPosition(1200, 570).setColorBackground(color(141, 160, 203)).setColorActive(color(141, 160, 203)).setColorForeground(color(141, 160, 203)).setVisible(false);
+		fateKey2 = new Button(info, "C/D").setPosition(1200, 570).setColorBackground(color(141, 160, 203)).setColorActive(color(141, 160, 203)).setColorForeground(color(141, 160, 203)).setVisible(false);
 		fateKey2.captionLabel().setControlFont(new ControlFont(createFont("arial", 12)));
-		fateKey3 = new Button(info, "D").setPosition(1200, 600).setColorBackground(color(231, 138, 195)).setColorActive(color(231, 138, 195)).setColorForeground(color(231, 138, 195)).setVisible(false);
+		fateKey3 = new Button(info, "Default").setPosition(1200, 600).setColorBackground(color(231, 138, 195)).setColorActive(color(231, 138, 195)).setColorForeground(color(231, 138, 195)).setVisible(false);
 		fateKey3.captionLabel().setControlFont(new ControlFont(createFont("arial", 12)));
-		fateKey4 = new Button(info, "intestine").setPosition(1300, 570).setColorBackground(color(166, 216, 84)).setColorActive(color(166, 216, 84)).setColorForeground(color(166, 216, 84)).setVisible(false);
-		fateKey4.captionLabel().setControlFont(new ControlFont(createFont("arial", 12)));
-		fateKey5 = new Button(info, "pharynx").setPosition(1300, 600).setColorBackground(color(255, 217, 47)).setColorActive(color(255, 217, 47)).setColorForeground(color(255, 217, 47)).setVisible(false);
-		fateKey5.captionLabel().setControlFont(new ControlFont(createFont("arial", 12)));
-		fateKey6 = new Button(info, "error").setPosition(1100, 630).setColorBackground(color(196, 196, 196)).setColorActive(color(196, 196, 196)).setColorForeground(color(196, 196, 196)).setVisible(false);
-		fateKey6.captionLabel().setControlFont(new ControlFont(createFont("arial", 12)));
 		
 		parsKey0 = new Button(info, "par-1").setPosition(1100, 570).setColorBackground(color(255, 0, 255)).setColorActive(color(255, 0, 255)).setColorForeground(color(255, 0, 255)).setVisible(false);
 		parsKey0.captionLabel().setControlFont(new ControlFont(createFont("arial", 12)));
@@ -326,9 +317,6 @@ public class BasicVisual extends PApplet{
 			fateKey1.setVisible(true);
 			fateKey2.setVisible(true);
 			fateKey3.setVisible(true);
-			fateKey4.setVisible(true);
-			fateKey5.setVisible(true);
-			fateKey6.setVisible(true);
 			parsKey0.setVisible(false);
 			parsKey1.setVisible(false);
 			parsKey2.setVisible(false);
@@ -348,9 +336,6 @@ public class BasicVisual extends PApplet{
 			fateKey1.setVisible(false);
 			fateKey2.setVisible(false);
 			fateKey3.setVisible(false);
-			fateKey4.setVisible(false);
-			fateKey5.setVisible(false);
-			fateKey6.setVisible(false);
 			parsKey0.setVisible(true);
 			parsKey1.setVisible(true);
 			parsKey2.setVisible(true);
@@ -370,9 +355,6 @@ public class BasicVisual extends PApplet{
 			fateKey1.setVisible(false);
 			fateKey2.setVisible(false);
 			fateKey3.setVisible(false);
-			fateKey4.setVisible(false);
-			fateKey5.setVisible(false);
-			fateKey6.setVisible(false);
 			parsKey0.setVisible(false);
 			parsKey1.setVisible(false);
 			parsKey2.setVisible(false);

@@ -144,13 +144,18 @@ public class Cell {
 						break checkAnte; //stop looking through antecedents as soon as one contradictory one is found
 					}
 					Coordinates compartment = consInGenes.getLocation(); //holds location of the consequence gene
-					if(compartment.getAP() != aInGenes.getLocation().getAP() //check that antecedent is in the same compartment as the consequence
-							|| compartment.getDV() != aInGenes.getLocation().getDV()
-							|| compartment.getLR() != aInGenes.getLocation().getLR()){
-						//System.out.println(aInGenes.getName() + " not in right compartment");
-						allFulfilled = false; //if not, the two genes can't interact
-						break checkAnte;
-					}				
+					//check that antecedent is in the same compartment as the consequence - by making sure that all antecedents match the consequence,
+					//we also make sure that all antecedents are in the same compartment
+					//only a problem if we're not in the center
+					if(compartment.getAP() != Compartment.XCENTER || compartment.getDV() != Compartment.YCENTER || compartment.getLR() != Compartment.ZCENTER){
+						if((compartment.getAP() != aInGenes.getLocation().getAP() && aInGenes.getLocation().getAP() != Compartment.XCENTER)
+								|| (compartment.getDV() != aInGenes.getLocation().getDV() && aInGenes.getLocation().getDV() != Compartment.YCENTER)
+								|| (compartment.getLR() != aInGenes.getLocation().getLR() && aInGenes.getLocation().getLR() != Compartment.ZCENTER)){
+							//System.out.println(aInGenes.getName() + " not in right compartment");
+							allFulfilled = false; //if not, the two genes can't interact
+							break checkAnte;
+						}
+					}
 				}
 				if(allFulfilled){
 					//System.out.println("\tsetting " + c.getConsequence().getName() + " to " + c.getConsequence().getState().isOn() + " in " + name);
@@ -177,7 +182,6 @@ public class Cell {
 	 */
 	public Cell timeLapse(int stage, boolean recentGrowth){
 		for(String s: this.genes.keySet()){
-			System.out.println("Cell " + this.name + " gene " + s);
 			genes.put(s, genes.get(s).updateCons(stage, recentGrowth));
 		}
 		this.applyCons();

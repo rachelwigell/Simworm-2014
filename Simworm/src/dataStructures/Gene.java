@@ -76,7 +76,6 @@ public class Gene /*implements Comparable<Gene>*/{
 		int i = 0;
 		ConsList allCons = new ConsList();
 		ArrayList<Integer> toRemove = new ArrayList<Integer>();
-		System.out.println(this.relevantCons.size() + " " + recentGrowth);
 		for(Consequence c: this.relevantCons){
 			if(c.getEndStage() < time && c.getEndStage() != 0){ //0 is what we put for end if we never want the rule to end
 				toRemove.add(i);
@@ -91,7 +90,6 @@ public class Gene /*implements Comparable<Gene>*/{
 			for(Consequence c: allCons.startLate){
 				if(c.getStartStage() == time){
 					this.relevantCons.add(c);
-					System.out.println("adding rule involving " + c.getConsequence().getName());
 				}
 			}
 		}
