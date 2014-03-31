@@ -66,7 +66,7 @@ public class MethodsTests {
 	
 	@Test
 	public void testGeneInitiation(){
-		Gene testGene = new Gene("pal-1", new GeneState(true), new Coordinates(Compartment.XCENTER,Compartment.YCENTER,Compartment.ZCENTER));
+		Gene testGene = new Gene("pal-1", new GeneState(true), new Coordinates(Compartment.XCENTER,Compartment.YCENTER,Compartment.ZCENTER), new HashMap<String, Coordinates>());
 		testGene.populateCons();
 		assertEquals(3, testGene.getRelevantCons().size());
 	}
@@ -120,7 +120,7 @@ public class MethodsTests {
 	public void enumTests(){
 		Coordinates testCoor = new Coordinates(Compartment.POSTERIOR, Compartment.YCENTER, Compartment.ZCENTER);
 		assertEquals(Compartment.POSTERIOR, testCoor.getAP());
-		Gene testGene = new Gene("par-1", new GeneState(true), new Coordinates(Compartment.POSTERIOR, Compartment.YCENTER, Compartment.ZCENTER)).populateCons();
+		Gene testGene = new Gene("par-1", new GeneState(true), new Coordinates(Compartment.POSTERIOR, Compartment.YCENTER, Compartment.ZCENTER), new HashMap<String, Coordinates>()).populateCons();
 		assertEquals(Compartment.POSTERIOR, testGene.getLocation().getAP());
 	}
 	
@@ -196,13 +196,13 @@ public class MethodsTests {
 	
 	@Test
 	public void instancesTest(){
-		Gene g = new Gene("test", new GeneState(true), new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER));
+		Gene g = new Gene("test", new GeneState(true), new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER), new HashMap<String, Coordinates>());
 		Gene g2 = g;
 		g2.setState(new GeneState(false));
 		assertFalse(g.getState().isOn());
 		
-		Gene h = new Gene("test", new GeneState(true), new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER));
-		Gene h2 = new Gene(h.getName(), h.getState(), h.getLocation());
+		Gene h = new Gene("test", new GeneState(true), new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER), new HashMap<String, Coordinates>());
+		Gene h2 = new Gene(h.getName(), h.getState(), h.getLocation(), h.getChanges());
 		h2.setState(new GeneState(false));
 		assertTrue(h.getState().isOn());
 	}
@@ -493,7 +493,7 @@ public class MethodsTests {
 		assertFalse(list.AandC.get(0).getConsequence().getState().isOn());
 		assertTrue(list.AandC.get(28).getAntecedents()[1].getState().isOn());
 		assertEquals("pie-1", list.AandC.get(1).getAntecedents()[0].getName());
-		Gene g = new Gene("par-6", new GeneState(true), new Coordinates(Compartment.ANTERIOR, Compartment.YCENTER, Compartment.ZCENTER));
+		Gene g = new Gene("par-6", new GeneState(true), new Coordinates(Compartment.ANTERIOR, Compartment.YCENTER, Compartment.ZCENTER), new HashMap<String, Coordinates>());
 		g.populateCons();
 	}
 	

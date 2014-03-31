@@ -45,7 +45,6 @@ public class Cell {
 		for(String s: genes.keySet()){
 			recentlyChanged.put(s, genes.get(s));
 		}
-		//I think everything is fine at the time of cell creation but more pars get added somehow to ab before its children are calculated
 	}
 	
 	//getters	
@@ -168,6 +167,17 @@ public class Cell {
 				//System.out.println(s);
 				genes.get(s).setState(effects.get(s).getState());
 				
+			}
+		}
+		//now carry out "special" rules involving pie's absence
+		if(!this.genes.keySet().contains("pie-1")){
+			if(this.genes.keySet().contains("skn-1")){
+				this.genes.get("skn-1").setState(new GeneState(true));
+				effects.put("skn-1", this.genes.get("skn-1"));
+			}
+			else if(this.genes.keySet().contains("pal-1")){
+				this.genes.get("pal-1").setState(new GeneState(true));
+				effects.put("pal-1", this.genes.get("pal-1"));
 			}
 		}
 		this.recentlyChanged = effects; //cell must track recent changes for the next call to applyCons

@@ -1,9 +1,10 @@
 package dataStructures;
 
+import java.util.HashMap;
+
 public class LocationData {
 	Coordinates initialLocation; //start location
-	Coordinates changedLocation; //new location
-	String changeDivision; //the division that the change occurs during
+	HashMap<String, Coordinates> changes; //holds changes, key is the cell division in which the change takes place, value is the new location
 	
 	/**
 	 * Constructor for a locationData object - holds information about genes that change location
@@ -11,10 +12,9 @@ public class LocationData {
 	 * @param changedLocation The location that it changes to
 	 * @param changeAfterDivision The name of the cell who division triggers the change in location
 	 */
-	public LocationData(Coordinates initialLocation, Coordinates changedLocation, String changeAfterDivision){
+	public LocationData(Coordinates initialLocation, HashMap<String, Coordinates> changes){
 		this.initialLocation = initialLocation;
-		this.changedLocation = changedLocation;
-		this.changeDivision = changeAfterDivision;
+		this.changes = changes;
 	}
 
 	//getters
@@ -22,11 +22,7 @@ public class LocationData {
 		return initialLocation;
 	}
 
-	public Coordinates getChangedLocation() {
-		return changedLocation;
-	}
-
-	public String getChangeDivision() {
-		return changeDivision;
+	public HashMap<String, Coordinates> getChanges() {
+		return changes;
 	}
 }

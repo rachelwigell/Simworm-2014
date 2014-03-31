@@ -10,7 +10,7 @@ import peasy.*;
 
 public class BasicVisual extends PApplet{	
 	Shell displayShell;
-	String userText = "Type a cell name";
+	String userText = "Type a cell name to see its contents,\nor press spacebar to progress 1 timestep.";
 	PeasyCam camera;
 	PMatrix matScene;
 	ControlP5 info;

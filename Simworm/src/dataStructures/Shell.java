@@ -130,9 +130,9 @@ public class Shell{
 		//must move genes that are changing compartments before we calculate child genes
 		for(String s: parentGenes.keySet()){ //look at all genes in the cell
 			Gene g = parentGenes.get(s);
-			if(!(g.getChanges() == null)){ //if this is a gene that changes compartments mid-sim
-				if(g.getChanges().getChangeDivision().equals(parent)){ //check if the division it changes during is the one that's occurring
-					g.setLocation(g.getChanges().getChangedLocation()); //set new compartment
+			if(g.getChanges().keySet().size() != 0){ //if this is a gene that changes compartments mid-sim
+				if(g.getChanges().keySet().contains(parent)){ //check if the division it changes during is the one that's occurring
+					g.setLocation(g.getChanges().get(parent)); //set new compartment
 				}
 			}
 		}
@@ -765,22 +765,37 @@ public class Shell{
 				if(geneInfo[4].equals("left")) z = Compartment.LEFT;
 				else if(geneInfo[4].equals("right")) z = Compartment.RIGHT;
 				location = new Coordinates(x, y, z);
-				if(geneInfo.length > 5){ //row might be over now, but if not, the remaining cells hold data for genes that switch compartments during the sim
+				int i = 0;
+				HashMap <String, Coordinates> changes = new HashMap<String, Coordinates>();
+				Compartment newX = Compartment.XCENTER;
+				Compartment newY = Compartment.YCENTER;
+				Compartment newZ = Compartment.ZCENTER;
+				String changeTime = "";
+				for(String s: geneInfo){ //row might be over now, but if not, the remaining cells hold data for genes that switch compartments during the sim
 					//first three are the compartment it switches into
-					Compartment newX = Compartment.XCENTER;
-					Compartment newY = Compartment.YCENTER;
-					Compartment newZ = Compartment.ZCENTER;
-					if(geneInfo[5].equals("anterior")) newX = Compartment.ANTERIOR;
-					else if(geneInfo[5].equals("posterior")) newX = Compartment.POSTERIOR;
-					if(geneInfo[6].equals("dorsal")) newY = Compartment.DORSAL;
-					else if(geneInfo[6].equals("ventral")) newY = Compartment.VENTRAL;
-					if(geneInfo[7].equals("left")) newZ = Compartment.LEFT;
-					else if(geneInfo[7].equals("right")) newZ = Compartment.RIGHT;
-					String changeTime = geneInfo[8]; //ninth is the division in which the change takes place
-					LocationData changes = new LocationData(new Coordinates(x, y, z), new Coordinates(newX, newY, newZ), changeTime);
-					genes.put(name, new Gene(name, state, location, changes).populateCons()); //make a gene with all the info
+					if(i > 4){ //get past the first few cells not pertaining to switches
+						switch(i % 4){
+						case 0:
+							if(s.equals("left")) newZ = Compartment.LEFT;
+							else if(s.equals("right")) newZ = Compartment.RIGHT;
+							changes.put(changeTime, new Coordinates(newX, newY, newZ));
+							break;
+						case 1:
+							changeTime = s; //the division in which the change takes place
+							break;							
+						case 2:
+							if(s.equals("anterior")) newX = Compartment.ANTERIOR;
+							else if(s.equals("posterior")) newX = Compartment.POSTERIOR;
+							break;
+						case 3:
+							if(s.equals("dorsal")) newY = Compartment.DORSAL;
+							else if(s.equals("ventral")) newY = Compartment.VENTRAL;
+							break;
+						}
+					}
+					i++;
 				}
-				else genes.put(name, new Gene(name, state, location).populateCons()); //make a gene with all the info (different constructor)
+				genes.put(name, new Gene(name, state, location, changes).populateCons()); //make a gene with all the info	
 			}
 		}
 		catch (FileNotFoundException e){

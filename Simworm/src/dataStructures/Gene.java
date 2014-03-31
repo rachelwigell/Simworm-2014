@@ -1,6 +1,7 @@
 package dataStructures;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class Gene /*implements Comparable<Gene>*/{
@@ -8,19 +9,7 @@ public class Gene /*implements Comparable<Gene>*/{
 	private GeneState state; //active or inactive
 	private List<Consequence> relevantCons; //consequences that involve this gene as an antecedent
 	Coordinates location; //compartment in cell
-	LocationData changes; //optional field for genes that change compartments during the course of the sim
-	
-	/**
-	 * Constructor for genes that don't change compartment
-	 * @param name Name of the gene
-	 * @param state Active/inactive state of the gene (also can be unknown)
-	 * @param location Compartment in which the gene is located
-	 */
-	public Gene(String name, GeneState state, Coordinates location){
-		this.name = name;
-		this.state = state;		
-		this.location = location;
-	}
+	HashMap<String, Coordinates> changes; //optional field for genes that change compartments during the course of the sim
 	
 	/**
 	 * Constructor for genes that change compartment during the course of development
@@ -29,7 +18,7 @@ public class Gene /*implements Comparable<Gene>*/{
 	 * @param location  Compartment in which the gene is located
 	 * @param changes Info on compartment that the gene moves to and what time the move occurs
 	 */
-	public Gene(String name, GeneState state, Coordinates location, LocationData changes){
+	public Gene(String name, GeneState state, Coordinates location, HashMap<String, Coordinates> changes){
 		this.name = name;
 		this.state = state;		
 		this.location = location;
@@ -113,7 +102,7 @@ public class Gene /*implements Comparable<Gene>*/{
 		return location;
 	}
 
-	public LocationData getChanges() {
+	public HashMap<String, Coordinates> getChanges() {
 		return changes;
 	}
 
