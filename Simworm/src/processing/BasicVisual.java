@@ -122,11 +122,11 @@ public class BasicVisual extends PApplet{
 		//initialize the color keys; these are not interactive
 		fateKey0 = new Button(info, "germline").setPosition(1100, 570).setColorBackground(color(102, 194, 165)).setColorActive(color(102, 194, 165)).setColorForeground(color(102, 194, 165)).setVisible(false);
 		fateKey0.captionLabel().setControlFont(new ControlFont(createFont("arial", 12)));
-		fateKey1 = new Button(info, "MS/E").setPosition(1100, 600).setColorBackground(color(252, 141, 98)).setColorActive(color(252, 141, 98)).setColorForeground(color(252, 141, 98)).setVisible(false);
+		fateKey1 = new Button(info, "MS/E").setPosition(1200, 570).setColorBackground(color(252, 141, 98)).setColorActive(color(252, 141, 98)).setColorForeground(color(252, 141, 98)).setVisible(false);
 		fateKey1.captionLabel().setControlFont(new ControlFont(createFont("arial", 12)));
-		fateKey2 = new Button(info, "C/D").setPosition(1200, 570).setColorBackground(color(141, 160, 203)).setColorActive(color(141, 160, 203)).setColorForeground(color(141, 160, 203)).setVisible(false);
+		fateKey2 = new Button(info, "C/D").setPosition(1300, 570).setColorBackground(color(141, 160, 203)).setColorActive(color(141, 160, 203)).setColorForeground(color(141, 160, 203)).setVisible(false);
 		fateKey2.captionLabel().setControlFont(new ControlFont(createFont("arial", 12)));
-		fateKey3 = new Button(info, "Default").setPosition(1200, 600).setColorBackground(color(231, 138, 195)).setColorActive(color(231, 138, 195)).setColorForeground(color(231, 138, 195)).setVisible(false);
+		fateKey3 = new Button(info, "Default").setPosition(1100, 600).setColorBackground(color(231, 138, 195)).setColorActive(color(231, 138, 195)).setColorForeground(color(231, 138, 195)).setVisible(false);
 		fateKey3.captionLabel().setControlFont(new ControlFont(createFont("arial", 12)));
 		
 		parsKey0 = new Button(info, "par-1").setPosition(1100, 570).setColorBackground(color(255, 0, 255)).setColorActive(color(255, 0, 255)).setColorForeground(color(255, 0, 255)).setVisible(false);
