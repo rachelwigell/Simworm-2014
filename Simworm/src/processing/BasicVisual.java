@@ -15,6 +15,7 @@ public class BasicVisual extends PApplet{
 	PMatrix matScene;
 	ControlP5 info;
 	Textarea userTextArea;
+	Textarea cellNamesArea;
 	Button frontB;
 	Button backB;
 	Button topB;
@@ -90,7 +91,11 @@ public class BasicVisual extends PApplet{
 		
 		userTextArea = new Textarea(info, "infoText"); //textarea where the user can input commands and receive information
 		userTextArea.setPosition(1100, 20)
-		.setSize(280, 500).
+		.setSize(280, 200).
+		setFont(createFont("arial", 14));
+		cellNamesArea = new Textarea(info, "namesText"); //textarea where the names of the currently present cells are displayed
+		cellNamesArea.setPosition(1100, 340)
+		.setSize(280, 400).
 		setFont(createFont("arial", 14));
 		
 		//initialize buttons that control camera to choose orthogonal views
@@ -152,7 +157,7 @@ public class BasicVisual extends PApplet{
 		lineageKey3.captionLabel().setControlFont(new ControlFont(createFont("arial", 12)));
 		lineageKey4 = new Button(info, "c").setPosition(1300, 570).setColorBackground(color(255, 0, 255)).setColorActive(color(255, 0, 255)).setColorForeground(color(255, 0, 255)).setVisible(true);
 		lineageKey4.captionLabel().setControlFont(new ControlFont(createFont("arial", 12)));
-		lineageKey5 = new Button(info, "d").setPosition(1300, 600).setColorBackground(color(200, 100, 200)).setColorActive(color(200, 100, 200)).setColorForeground(color(200, 100, 200)).setVisible(true);
+		lineageKey5 = new Button(info, "d").setPosition(1300, 600).setColorBackground(color(200, 70, 150)).setColorActive(color(200, 70, 150)).setColorForeground(color(200, 70, 150)).setVisible(true);
 		lineageKey5.captionLabel().setControlFont(new ControlFont(createFont("arial", 12)));
 		lineageKey6 = new Button(info, "p").setPosition(1100, 630).setColorBackground(color(255, 255, 0)).setColorActive(color(255, 255, 0)).setColorForeground(color(255, 255, 0)).setVisible(true);		
 		lineageKey6.captionLabel().setControlFont(new ControlFont(createFont("arial", 12)));
@@ -198,6 +203,7 @@ public class BasicVisual extends PApplet{
 			drawAxes(); //draw the coordinate axes
 			displayShell.drawAllCells(); //draw the shell
 			userTextArea.setText(userText); //show the text output that userText is currently set to
+			cellNamesArea.setText(displayShell.getCellNames());
 			//boolean values for lineageState, fateState, parsState exist so that we don't have to continuously set the color
 			//they hold the current state of the color mode (that is, false for those that aren't currently set and true for the one that is)
 			//we only set colors when the colormode doesn't match these, which indicates that the colormode has been recently changed
@@ -285,6 +291,7 @@ public class BasicVisual extends PApplet{
 	
 	//when the user is typing, different things should happen
 	public void keyReleased(){
+		System.out.println(key + " " + keyCode);
 		if(mutantsChosen){ //only run if mutantsChosen is set, because userText doesn't exist yet if not
 			if(key == ' '){ //spacebar triggers a timestep
 				displayShell.timeStep();
@@ -302,7 +309,7 @@ public class BasicVisual extends PApplet{
 					userText = displayShell.getCells().get(userText).getInfo();
 				}
 			}
-			else if(((int) keyCode) >= 33 && ((int) keyCode) <= 126){ //if it's any other ("normal" ascii) key, just add that letter to the userText
+			else if(((int) key) >= 33 && ((int) key) <= 126){ //if it's any other ("normal" ascii) key, just add that letter to the userText
 				if (userText.length() > 10) userText = ""; //clear it if it gets to more than 10 characters so the user never has to delete a bunch of text; no useful commands are over 10 char anyway
 				userText = userText + key;
 			}

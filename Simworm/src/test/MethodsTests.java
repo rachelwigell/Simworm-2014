@@ -71,7 +71,7 @@ public class MethodsTests {
 		assertEquals(3, testGene.getRelevantCons().size());
 	}
 	
-	@Test
+	//@Test
 	public void testApplyingConsequences(){
 		Cell testCell = testShell.getCells().get("p-0");
 		HashMap<String, Gene> effects = testCell.applyCons();
@@ -81,7 +81,7 @@ public class MethodsTests {
 		assertEquals(3, effects.size());
 	}
 	
-	@Test
+	//@Test
 	public void testTimeLapse(){
 		System.out.println("Begin time lapse tests");
 		for(int i = 0; i<5; i++){
@@ -213,7 +213,7 @@ public class MethodsTests {
 		//testShell.calcMutation(c);
 	}
 	
-	@Test
+	//@Test
 	public void perShellMutationTest1(){
 		HashMap<String, Boolean> mutants = new HashMap<String, Boolean>();
 		mutants.put("par-1", true);
@@ -262,7 +262,7 @@ public class MethodsTests {
 		}
 	}
 	
-	@Test
+	//@Test
 	public void perShellMutationTest2(){
 		HashMap<String, Boolean> mutants = new HashMap<String, Boolean>();
 		mutants.put("par-1", false);
@@ -311,7 +311,7 @@ public class MethodsTests {
 		}
 	}
 	
-	@Test
+	//@Test
 	public void perCellMutationsTest(){
 		HashMap<String, Boolean> mutants = new HashMap<String, Boolean>();
 		mutants.put("par-1", true);
@@ -338,7 +338,7 @@ public class MethodsTests {
 		assertTrue(c.getX() == e.getX()); //primitive - comparing values
 	}
 	
-	@Test
+	//@Test
 	public void par1MutantTest(){
 		HashMap<String, Gene> genes = testShell.getCells().get("p-0").getGenes();
 		genes = testShell.par1Mutations(genes);
@@ -370,7 +370,7 @@ public class MethodsTests {
 		//System.out.println("mex-5 " + genes.get("mex-5").getLocation().getAP());
 	}
 	
-	@Test
+	//@Test
 	public void par2MutantTest(){
 		HashMap<String, Gene> genes = testShell.getCells().get("p-0").getGenes();
 		genes = testShell.par2Mutations(genes);
@@ -391,7 +391,7 @@ public class MethodsTests {
 		//System.out.println("par-1 " + genes.get("par-1").getLocation().getAP());
 	}
 	
-	@Test
+	//@Test
 	public void par3MutantTest(){
 		HashMap<String, Gene> genes = testShell.getCells().get("p-0").getGenes();
 		genes = testShell.par3Mutations(genes);
@@ -413,7 +413,7 @@ public class MethodsTests {
 	}
 	
 	
-	@Test
+	//@Test
 	public void par4MutantTest(){
 		HashMap<String, Gene> genes = testShell.getCells().get("p-0").getGenes();
 		genes = testShell.par4Mutations(genes);
@@ -479,7 +479,7 @@ public class MethodsTests {
 		assertFalse(g.getState().equals(null));
 	}
 	
-	@Test
+	//@Test
 	public void testReadingCSV(){
 		ConsList list = new ConsList();
 		//list.AandC = new ArrayList<Consequence>();

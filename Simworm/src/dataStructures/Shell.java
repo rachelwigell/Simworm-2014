@@ -23,6 +23,7 @@ public class Shell{
 	public HashMap<String, Boolean> mutants = new HashMap<String, Boolean>(); //all of the genes that have the potential to be mutated, and their status (true = mutant)
 	public ColorMode colorMode = ColorMode.LINEAGE; //set colorMode to lineage initially
 	public boolean recentGrowth = false; //indicates when the shell has recently gained cells
+	public ArrayList<String> mislocalized = new ArrayList<String>(); // genes that are mislocalized due to a mutation
 	
 	/**
 	 * Constructor for a cell - initializes everything
@@ -130,9 +131,11 @@ public class Shell{
 		//must move genes that are changing compartments before we calculate child genes
 		for(String s: parentGenes.keySet()){ //look at all genes in the cell
 			Gene g = parentGenes.get(s);
-			if(g.getChanges().keySet().size() != 0){ //if this is a gene that changes compartments mid-sim
-				if(g.getChanges().keySet().contains(parent)){ //check if the division it changes during is the one that's occurring
-					g.setLocation(g.getChanges().get(parent)); //set new compartment
+			if(!mislocalized.contains(g.getName())){ 
+				if(g.getChanges().keySet().size() != 0){ //if this is a gene that changes compartments mid-sim
+					if(g.getChanges().keySet().contains(parent)){ //check if the division it changes during is the one that's occurring
+						g.setLocation(g.getChanges().get(parent)); //set new compartment
+					}
 				}
 			}
 		}
@@ -304,7 +307,7 @@ public class Shell{
 		else if(cellName.startsWith("e") || cellName.equals("ab")) return new RGB(0, 255, 0);
 		else if(cellName.startsWith("ms")) return new RGB(0, 255, 255);
 		else if(cellName.startsWith("c")) return new RGB(255, 0, 255);
-		else if(cellName.startsWith("d")) return new RGB(200, 100, 200);
+		else if(cellName.startsWith("d")) return new RGB(200, 70, 150);
 		else if(cellName.startsWith("p")) return new RGB(255, 255, 0);
 		else return new RGB(255, 255, 255);
 	}
@@ -594,6 +597,7 @@ public class Shell{
 			if(var < 90) genes.put("skn-1", genes.get("skn-1").setLocation(new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER)));
 			else if(var < 95) genes.put("skn-1", genes.get("skn-1").setLocation(new Coordinates(Compartment.ANTERIOR, Compartment.YCENTER, Compartment.ZCENTER)));
 			else genes.put("skn-1", genes.get("skn-1").setLocation(new Coordinates(Compartment.POSTERIOR, Compartment.YCENTER, Compartment.ZCENTER)));
+			this.mislocalized.add("skn-1");
 		}
 		//pie-1 degrades
 		if(genes.get("pie-1") != null){
@@ -605,6 +609,7 @@ public class Shell{
 			if(var < 90) genes.put("glp-1", genes.get("glp-1").setLocation(new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER)));
 			else if(var < 95) genes.put("glp-1", genes.get("glp-1").setLocation(new Coordinates(Compartment.ANTERIOR, Compartment.YCENTER, Compartment.ZCENTER)));
 			else genes.put("glp-1", genes.get("glp-1").setLocation(new Coordinates(Compartment.POSTERIOR, Compartment.YCENTER, Compartment.ZCENTER)));
+			this.mislocalized.add("glp-1");
 		}
 		//par-3 mislocalized
 		if(genes.get("par-3") != null){
@@ -612,6 +617,7 @@ public class Shell{
 			if(var < 90) genes.put("par-3", genes.get("par-3").setLocation(new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER)));
 			else if(var < 95) genes.put("par-3", genes.get("par-3").setLocation(new Coordinates(Compartment.ANTERIOR, Compartment.YCENTER, Compartment.ZCENTER)));
 			else genes.put("par-3", genes.get("par-3").setLocation(new Coordinates(Compartment.POSTERIOR, Compartment.YCENTER, Compartment.ZCENTER)));
+			this.mislocalized.add("par-3");
 		}
 		//mex-3 mislocalized
 		if(genes.get("mex-3") != null){
@@ -619,6 +625,7 @@ public class Shell{
 			if(var < 90) genes.put("mex-3", genes.get("mex-3").setLocation(new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER)));
 			else if(var < 95) genes.put("mex-3", genes.get("mex-3").setLocation(new Coordinates(Compartment.ANTERIOR, Compartment.YCENTER, Compartment.ZCENTER)));
 			else genes.put("mex-3", genes.get("mex-3").setLocation(new Coordinates(Compartment.POSTERIOR, Compartment.YCENTER, Compartment.ZCENTER)));
+			this.mislocalized.add("mex-3");
 		}
 		//mex-5 mislocalized
 		if(genes.get("mex-5") != null){
@@ -626,6 +633,7 @@ public class Shell{
 			if(var < 90) genes.put("mex-5", genes.get("mex-5").setLocation(new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER)));
 			else if(var < 95) genes.put("mex-5", genes.get("mex-5").setLocation(new Coordinates(Compartment.ANTERIOR, Compartment.YCENTER, Compartment.ZCENTER)));
 			else genes.put("mex-5", genes.get("mex-5").setLocation(new Coordinates(Compartment.POSTERIOR, Compartment.YCENTER, Compartment.ZCENTER)));
+			this.mislocalized.add("mex-5");
 		}
 		return genes;
 	}
@@ -645,6 +653,7 @@ public class Shell{
 			var = r.nextInt(100);
 			if(var < 50) genes.put("glp-1", genes.get("glp-1").setLocation(new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER)));
 			else genes.put("glp-1", genes.get("glp-1").setLocation(new Coordinates(Compartment.POSTERIOR, Compartment.YCENTER, Compartment.ZCENTER)));
+			this.mislocalized.add("glp-1");
 		}
 		//par-1 mislocalized
 		if(genes.get("par-1") != null){
@@ -652,6 +661,7 @@ public class Shell{
 			if(var < 90) genes.put("par-1", genes.get("par-1").setLocation(new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER)));
 			else if(var < 95) genes.put("par-1", genes.get("par-1").setLocation(new Coordinates(Compartment.ANTERIOR, Compartment.YCENTER, Compartment.ZCENTER)));
 			else genes.put("par-1", genes.get("par-1").setLocation(new Coordinates(Compartment.POSTERIOR, Compartment.YCENTER, Compartment.ZCENTER)));
+			this.mislocalized.add("par-1");
 		}
 		//par-3 mislocalized
 		if(genes.get("par-3") != null){
@@ -659,6 +669,7 @@ public class Shell{
 			if(var < 90) genes.put("par-3", genes.get("par-3").setLocation(new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER)));
 			else if(var < 95) genes.put("par-3", genes.get("par-3").setLocation(new Coordinates(Compartment.ANTERIOR, Compartment.YCENTER, Compartment.ZCENTER)));
 			else genes.put("par-3", genes.get("par-3").setLocation(new Coordinates(Compartment.POSTERIOR, Compartment.YCENTER, Compartment.ZCENTER)));
+			this.mislocalized.add("par-3");
 		}
 		return genes;
 	}
@@ -677,6 +688,7 @@ public class Shell{
 			if(var < 90) genes.put("par-2", genes.get("par-2").setLocation(new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER)));
 			else if(var < 95) genes.put("par-2", genes.get("par-2").setLocation(new Coordinates(Compartment.ANTERIOR, Compartment.YCENTER, Compartment.ZCENTER)));
 			else genes.put("par-2", genes.get("par-2").setLocation(new Coordinates(Compartment.POSTERIOR, Compartment.YCENTER, Compartment.ZCENTER)));
+			this.mislocalized.add("par-2");
 		}
 		//par-1 mislocalized
 		if(genes.get("par-1") != null){
@@ -684,6 +696,7 @@ public class Shell{
 			if(var < 90) genes.put("par-1", genes.get("par-1").setLocation(new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER)));
 			else if(var < 95) genes.put("par-1", genes.get("par-1").setLocation(new Coordinates(Compartment.ANTERIOR, Compartment.YCENTER, Compartment.ZCENTER)));
 			else genes.put("par-1", genes.get("par-1").setLocation(new Coordinates(Compartment.POSTERIOR, Compartment.YCENTER, Compartment.ZCENTER)));
+			this.mislocalized.add("par-1");
 		}
 		//glp-1 mislocalized
 		if(genes.get("glp-1") != null){
@@ -692,6 +705,7 @@ public class Shell{
 			var = r.nextInt(100);
 			if(var < 50) genes.put("glp-1", genes.get("glp-1").setLocation(new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER)));
 			else genes.put("glp-1", genes.get("glp-1").setLocation(new Coordinates(Compartment.POSTERIOR, Compartment.YCENTER, Compartment.ZCENTER)));
+			this.mislocalized.add("glp-1");
 		}
 		return genes;
 	}
@@ -721,6 +735,7 @@ public class Shell{
 			if(var < 90) genes.put("par-3", genes.get("par-3").setLocation(new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER)));
 			else if(var < 95) genes.put("par-3", genes.get("par-3").setLocation(new Coordinates(Compartment.ANTERIOR, Compartment.YCENTER, Compartment.ZCENTER)));
 			else genes.put("par-3", genes.get("par-3").setLocation(new Coordinates(Compartment.POSTERIOR, Compartment.YCENTER, Compartment.ZCENTER)));
+			this.mislocalized.add("par-3");
 		}
 		//mex-5 mislocalized
 		if(genes.get("mex-5") != null){
@@ -729,8 +744,21 @@ public class Shell{
 			var = r.nextInt(100);
 			if(var < 50) genes.put("mex-5", genes.get("mex-5").setLocation(new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER)));
 			else genes.put("mex-5", genes.get("mex-5").setLocation(new Coordinates(Compartment.POSTERIOR, Compartment.YCENTER, Compartment.ZCENTER)));
+			this.mislocalized.add("mex-5");
 		}
 		return genes;
+	}
+	
+	/**
+	 * Produces list of all cell names present in the shell at the current time, to be displayed on the interface
+	 * @return The list
+	 */
+	public String getCellNames(){
+		String toReturn = "Cells present:\n";
+		for(String s: this.cells.keySet()){
+			toReturn += s + "\n";
+		}
+		return toReturn;
 	}
 	
 	/**
