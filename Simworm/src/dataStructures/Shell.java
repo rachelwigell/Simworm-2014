@@ -717,7 +717,9 @@ public class Shell{
 	 */
 	public HashMap<String, Gene> par4Mutations(HashMap<String, Gene> genes){
 		//glp-1 moves to center
-		genes.put("glp-1", genes.get("glp-1").setLocation(new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER)));	
+		if(genes.containsKey("glp-1")){
+			genes.put("glp-1", genes.get("glp-1").setLocation(new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER)));	
+		}	
 		return genes;
 	}
 	

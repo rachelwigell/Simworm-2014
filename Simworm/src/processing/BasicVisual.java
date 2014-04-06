@@ -291,7 +291,6 @@ public class BasicVisual extends PApplet{
 	
 	//when the user is typing, different things should happen
 	public void keyReleased(){
-		System.out.println(key + " " + keyCode);
 		if(mutantsChosen){ //only run if mutantsChosen is set, because userText doesn't exist yet if not
 			if(key == ' '){ //spacebar triggers a timestep
 				displayShell.timeStep();
@@ -301,7 +300,7 @@ public class BasicVisual extends PApplet{
 					userText = userText.substring(0, userText.length()-1);
 				}
 			}
-			else if(keyCode == ENTER){ //enter finalizes a command
+			else if(keyCode == ENTER || keyCode == RETURN){ //enter finalizes a command
 				if(!displayShell.getCells().containsKey(userText)){ //if the userText isn't currently an existing cell name, print that the cell doesn't exist
 					userText = "Cell not present";
 				}

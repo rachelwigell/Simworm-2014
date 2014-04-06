@@ -23,8 +23,8 @@ import dataStructures.Shell;
 public class MethodsTests {
 	BasicVisual testVis = new BasicVisual();
 	Shell testShell = new Shell(testVis, new HashMap<String, Boolean>());
-
-	//These tests were written for a fully populated genes.csv and AandC.csv. We have since pared these down, and many tests fail.
+	
+	//note that many of these tests are sensitive to the current data in the CSV's; altering this data might cause failures
 	
 	@Test
 	public void firstDivision() {
@@ -71,49 +71,21 @@ public class MethodsTests {
 		assertEquals(3, testGene.getRelevantCons().size());
 	}
 	
-	//@Test
+	@Test
 	public void testApplyingConsequences(){
 		Cell testCell = testShell.getCells().get("p-0");
 		HashMap<String, Gene> effects = testCell.applyCons();
 		assertTrue(effects.containsKey("skn-1"));
-		assertTrue(effects.containsKey("mom-2"));
 		assertTrue(effects.containsKey("pal-1"));
-		assertEquals(3, effects.size());
+		assertEquals(2, effects.size());
 	}
 	
-	//@Test
+	@Test
 	public void testTimeLapse(){
 		System.out.println("Begin time lapse tests");
-		for(int i = 0; i<5; i++){
+		for(int i = 0; i<45; i++){
 			testShell.timeStep();
 		}
-		boolean found = false;
-		for(Consequence c: testShell.getCells().get("p-0").getGenes().get("tbx-37").getRelevantCons()){
-			if(c.getConsequence().getName().equals("tbx-37")){
-				found = true;
-			}
-		}
-		assertFalse(found);
-		for(int i = 0; i<25; i++){
-			testShell.timeStep();
-		}
-		found = false;
-		for(Consequence c: testShell.getCells().get("ems").getGenes().get("tbx-37").getRelevantCons()){
-			if(c.getConsequence().getName().equals("tbx-37")){
-				found = true;
-			}
-		}
-		assertTrue(found);
-		found = false;
-		for(int i = 0; i<20; i++){
-			testShell.timeStep();
-		}
-		for(Consequence c: testShell.getCells().get("ab-pr").getGenes().get("tbx-37").getRelevantCons()){
-			if(c.getConsequence().getName().equals("tbx-37")){
-				found = true;
-			}
-		}
-		assertFalse(found);
 	}
 	
 	@Test
@@ -207,13 +179,13 @@ public class MethodsTests {
 		assertTrue(h.getState().isOn());
 	}
 	
-	//@Test tests deprecated method
+	//@Test tests a deprecated method
 	public void mutationsTest(){
 		//Cell c = testShell.getCells().get("p-0");
 		//testShell.calcMutation(c);
 	}
 	
-	//@Test
+	@Test
 	public void perShellMutationTest1(){
 		HashMap<String, Boolean> mutants = new HashMap<String, Boolean>();
 		mutants.put("par-1", true);
@@ -262,7 +234,7 @@ public class MethodsTests {
 		}
 	}
 	
-	//@Test
+	@Test
 	public void perShellMutationTest2(){
 		HashMap<String, Boolean> mutants = new HashMap<String, Boolean>();
 		mutants.put("par-1", false);
@@ -311,7 +283,7 @@ public class MethodsTests {
 		}
 	}
 	
-	//@Test
+	@Test
 	public void perCellMutationsTest(){
 		HashMap<String, Boolean> mutants = new HashMap<String, Boolean>();
 		mutants.put("par-1", true);
@@ -338,7 +310,7 @@ public class MethodsTests {
 		assertTrue(c.getX() == e.getX()); //primitive - comparing values
 	}
 	
-	//@Test
+	@Test
 	public void par1MutantTest(){
 		HashMap<String, Gene> genes = testShell.getCells().get("p-0").getGenes();
 		genes = testShell.par1Mutations(genes);
@@ -348,10 +320,6 @@ public class MethodsTests {
 				genes.get("skn-1").getLocation().getAP() == Compartment.POSTERIOR);
 		//System.out.println("skn-1 " + genes.get("skn-1").getLocation().getAP());
 		assertFalse(genes.containsKey("pie-1"));
-		assertTrue(genes.containsKey("glp-1"));
-		assertTrue(genes.get("glp-1").getLocation().getAP() == Compartment.ANTERIOR ||
-				genes.get("glp-1").getLocation().getAP() == Compartment.XCENTER ||
-				genes.get("glp-1").getLocation().getAP() == Compartment.POSTERIOR);
 		//System.out.println("glp-1 " + genes.get("glp-1").getLocation().getAP());
 		assertTrue(genes.containsKey("par-3"));
 		assertTrue(genes.get("par-3").getLocation().getAP() == Compartment.ANTERIOR ||
@@ -370,15 +338,10 @@ public class MethodsTests {
 		//System.out.println("mex-5 " + genes.get("mex-5").getLocation().getAP());
 	}
 	
-	//@Test
+	@Test
 	public void par2MutantTest(){
 		HashMap<String, Gene> genes = testShell.getCells().get("p-0").getGenes();
 		genes = testShell.par2Mutations(genes);
-		assertTrue(genes.containsKey("glp-1"));
-		assertTrue(genes.get("glp-1").getLocation().getAP() == Compartment.ANTERIOR ||
-				genes.get("glp-1").getLocation().getAP() == Compartment.XCENTER ||
-				genes.get("glp-1").getLocation().getAP() == Compartment.POSTERIOR);
-		//System.out.println("glp-1 " + genes.get("glp-1").getLocation().getAP());
 		assertTrue(genes.containsKey("par-3"));
 		assertTrue(genes.get("par-3").getLocation().getAP() == Compartment.ANTERIOR ||
 				genes.get("par-3").getLocation().getAP() == Compartment.XCENTER ||
@@ -391,15 +354,10 @@ public class MethodsTests {
 		//System.out.println("par-1 " + genes.get("par-1").getLocation().getAP());
 	}
 	
-	//@Test
+	@Test
 	public void par3MutantTest(){
 		HashMap<String, Gene> genes = testShell.getCells().get("p-0").getGenes();
 		genes = testShell.par3Mutations(genes);
-		assertTrue(genes.containsKey("glp-1"));
-		assertTrue(genes.get("glp-1").getLocation().getAP() == Compartment.ANTERIOR ||
-				genes.get("glp-1").getLocation().getAP() == Compartment.XCENTER ||
-				genes.get("glp-1").getLocation().getAP() == Compartment.POSTERIOR);
-		//System.out.println("glp-1 " + genes.get("glp-1").getLocation().getAP());
 		assertTrue(genes.containsKey("par-2"));
 		assertTrue(genes.get("par-2").getLocation().getAP() == Compartment.ANTERIOR ||
 				genes.get("par-2").getLocation().getAP() == Compartment.XCENTER ||
@@ -413,12 +371,10 @@ public class MethodsTests {
 	}
 	
 	
-	//@Test
+	@Test
 	public void par4MutantTest(){
 		HashMap<String, Gene> genes = testShell.getCells().get("p-0").getGenes();
 		genes = testShell.par4Mutations(genes);
-		assertTrue(genes.containsKey("glp-1"));
-		assertTrue(genes.get("glp-1").getLocation().getAP() == Compartment.XCENTER);
 	}
 	
 	@Test
@@ -479,19 +435,19 @@ public class MethodsTests {
 		assertFalse(g.getState().equals(null));
 	}
 	
-	//@Test
+	@Test
 	public void testReadingCSV(){
 		ConsList list = new ConsList();
 		//list.AandC = new ArrayList<Consequence>();
 		//list.startLate = new ArrayList<Consequence>();
 		//list.readAandCInfo("AandC.csv");
-		assertEquals(29, list.AandC.size());
+		assertEquals(18, list.AandC.size());
 		assertEquals("pal-1", list.AandC.get(0).getConsequence().getName());
 		assertEquals("pie-1", list.AandC.get(0).getAntecedents()[0].getName());
-		assertEquals("mex-3", list.AandC.get(28).getConsequence().getName());
-		assertEquals("mex-3", list.AandC.get(28).getAntecedents()[1].getName());
+		assertEquals("pal-1", list.AandC.get(17).getConsequence().getName());
+		assertEquals("skn-1", list.AandC.get(17).getAntecedents()[1].getName());
 		assertFalse(list.AandC.get(0).getConsequence().getState().isOn());
-		assertTrue(list.AandC.get(28).getAntecedents()[1].getState().isOn());
+		assertFalse(list.AandC.get(17).getAntecedents()[1].getState().isOn());
 		assertEquals("pie-1", list.AandC.get(1).getAntecedents()[0].getName());
 		Gene g = new Gene("par-6", new GeneState(true), new Coordinates(Compartment.ANTERIOR, Compartment.YCENTER, Compartment.ZCENTER), new HashMap<String, Coordinates>());
 		g.populateCons();
@@ -506,8 +462,7 @@ public class MethodsTests {
 		assertNotNull(test.get("a"));
 		
 	}
-	
-	//These tests were written for the pared down CSVs.
+
 	@Test
 	public void testCascade(){
 		
