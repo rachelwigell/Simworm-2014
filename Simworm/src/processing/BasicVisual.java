@@ -95,7 +95,7 @@ public class BasicVisual extends PApplet{
 		setFont(createFont("arial", 14));
 		cellNamesArea = new Textarea(info, "namesText"); //textarea where the names of the currently present cells are displayed
 		cellNamesArea.setPosition(1100, 340)
-		.setSize(280, 400).
+		.setSize(280, 200).
 		setFont(createFont("arial", 14));
 		
 		//initialize buttons that control camera to choose orthogonal views

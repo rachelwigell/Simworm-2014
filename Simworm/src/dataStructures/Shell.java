@@ -47,14 +47,15 @@ public class Shell{
 		
 		//populate events queue data from csv file
 		divisions = readEventsQueue("csv/eventsQueue.csv");
-				
-		//calculate mutations
-		perShellMutations();
-		perCellMutations(startGenes);
 		
 		//create p-0 with all the info calculated
 		Cell start = new Cell(this.window, "p-0", startCenter, startLengths, null, startGenes, new RGB(255, 255, 0), divisions.get("p-0"), 0);
-		this.cells.put("p-0", start);		
+		
+		//calculate mutations
+		perShellMutations();
+		perCellMutations(start);
+		
+		this.cells.put("p-0", start);
 	}
 	
 	//getters
@@ -193,9 +194,7 @@ public class Shell{
 		String d1name = nameCalc(parent, axis, true);
 		String d2name = nameCalc(parent, axis, false);
 		HashMap<String, Gene> d1genes = childGenes(parent, axis, true); //call childgenes to determine the genes inherited by daughter1
-		d1genes = perCellMutations(d1genes);
 		HashMap<String, Gene> d2genes = childGenes(parent, axis, false); //equivalent for daughter2
-		d2genes = perCellMutations(d2genes);
 		RGB color1 = new RGB(255, 255, 255);
 		RGB color2 = new RGB (255, 255, 255);
 		switch(colorMode){ //choose cell color based on current colormode
@@ -224,6 +223,8 @@ public class Shell{
 						ofInterest.getCenter().getY(), ofInterest.getCenter().getZ());
 				d2Lengths = new Coordinates((float) ((1-d1Percentage)*ofInterest.getLengths().getX()), ofInterest.getLengths().getY(), ofInterest.getLengths().getZ());
 				daughter2 = new Cell(this.window, d2name, d2Center, d2Lengths, parent, d2genes, color2, divisions.get(d2name), ofInterest.getGeneration()+1);
+				perCellMutations(daughter1);
+				perCellMutations(daughter2);
 				changes.cellsRemoved.add(parent); //store parent cell in changes to be removed later
 				changes.cellsAdded.add(daughter1); //store daughters in changes to be added to the actual cells hashmap later
 				changes.cellsAdded.add(daughter2);
@@ -239,6 +240,8 @@ public class Shell{
 						ofInterest.getCenter().getZ());
 				d2Lengths = new Coordinates(ofInterest.getLengths().getX(), (float) ((1-d1Percentage)*ofInterest.getLengths().getY()), ofInterest.getLengths().getZ());
 				daughter2 = new Cell(this.window, d2name, d2Center, d2Lengths, parent, d2genes, color2, divisions.get(d2name), ofInterest.getGeneration()+1);
+				perCellMutations(daughter1);
+				perCellMutations(daughter2);
 				changes.cellsRemoved.add(parent);
 				changes.cellsAdded.add(daughter1);
 				changes.cellsAdded.add(daughter2);
@@ -252,6 +255,8 @@ public class Shell{
 						(float) (d1Percentage * ofInterest.getLengths().getZ() / 2.0 + ofInterest.getCenter().getZ()));
 				d2Lengths = new Coordinates(ofInterest.getLengths().getX(), ofInterest.getLengths().getY(), (float) ((1-d1Percentage)*ofInterest.getLengths().getZ()));
 				daughter2 = new Cell(this.window, d2name, d2Center, d2Lengths, parent, d2genes, color2, divisions.get(d2name), ofInterest.getGeneration()+1);
+				perCellMutations(daughter1);
+				perCellMutations(daughter2);
 				changes.cellsRemoved.add(parent);
 				changes.cellsAdded.add(daughter1);
 				changes.cellsAdded.add(daughter2);
@@ -490,28 +495,36 @@ public class Shell{
 	 * @param genes The genes that the cell contains
 	 * @return The updated list of genes with mutations calculated
 	 */
-	public HashMap<String, Gene> perCellMutations (HashMap<String, Gene> genes){
-		for(String s: mutants.keySet()){ //go through the set of mutants; this contains each of the par's and an associated boolean value indicating whether it is mutant.
-			if(mutants.get(s)){ //if a par is mutant...
-				genes.remove(s); //remove it from the present genes
-				if(s.equals("par-1")){ //check which par it is and apply unique mutations
-					genes = par1Mutations(genes);
-				}
-				else if(s.equals("par-2")){
-					genes = par2Mutations(genes);
-				}
-				else if(s.equals("par-3") || s.equals("par-6") || s.equals("pkc-3")){ //par-3, 6, and pkc-3 all manifest mutations the same way
-					genes = par3Mutations(genes);
-				}
-				else if(s.equals("par-4")){
-					genes = par4Mutations(genes);
-				}
-				else if(s.equals("par-5")){
-					genes = par5Mutations(genes);
-				}
-			}
+	public Cell perCellMutations (Cell c){
+		//this order is strategic: rules get overwritten in the correct way
+		if(mutants.get("par-3")){
+			c.getGenes().remove("par-3");
+			c.getRecentlyChanged().remove("par-3");
+			par3Mutations(c);
 		}
-		return genes;
+		if(mutants.get("par-6")){
+			c.getGenes().remove("par-6");
+			c.getRecentlyChanged().remove("par-6");
+			par3Mutations(c); //par-3, par-6, pkc-3 mutations all behave the same
+		}
+		if(mutants.get("pkc-3")){
+			c.getGenes().remove("pkc-3");
+			c.getRecentlyChanged().remove("pkc-3");
+			par3Mutations(c);
+		}
+		if(mutants.get("par-2")){
+			par2Mutations(c); //removal of par-2 built into par2Mutations
+		}
+		if(mutants.get("par-5")){
+			par5Mutations(c);
+		}
+		if(mutants.get("par-1")){
+			par1Mutations(c);
+		}
+		if(mutants.get("par-4")){
+			par4Mutations(c);
+		}
+		return c;
 	}
 	 /**
 	  * Calculates mutations for the overall shell
@@ -588,54 +601,57 @@ public class Shell{
 	 * @param genes the cell's genes
 	 * @return the updated genes with effects from mutation
 	 */
-	public HashMap<String, Gene> par1Mutations(HashMap<String, Gene> genes){
+	public Cell par1Mutations(Cell c){
+		c.getGenes().remove("par-1");
+		c.getRecentlyChanged().remove("par-1");
 		Random r = new Random();
 		int var;
 		//skn-1 mislocalized
-		if(genes.get("skn-1") != null){
-			var = r.nextInt(100);
-			if(var < 90) genes.put("skn-1", genes.get("skn-1").setLocation(new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER)));
-			else if(var < 95) genes.put("skn-1", genes.get("skn-1").setLocation(new Coordinates(Compartment.ANTERIOR, Compartment.YCENTER, Compartment.ZCENTER)));
-			else genes.put("skn-1", genes.get("skn-1").setLocation(new Coordinates(Compartment.POSTERIOR, Compartment.YCENTER, Compartment.ZCENTER)));
+		if(c.getGenes().get("skn-1") != null){
+			var = r.nextInt(200);
+			if(var < 190) c.getGenes().get("skn-1").setLocation(new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER));
+			else if(var < 195) c.getGenes().get("skn-1").setLocation(new Coordinates(Compartment.ANTERIOR, Compartment.YCENTER, Compartment.ZCENTER));
+			else c.getGenes().get("skn-1").setLocation(new Coordinates(Compartment.POSTERIOR, Compartment.YCENTER, Compartment.ZCENTER));
 			this.mislocalized.add("skn-1");
 		}
 		//pie-1 degrades
-		if(genes.get("pie-1") != null){
-			genes.remove("pie-1");
+		if(c.getGenes().get("pie-1") != null){
+			c.getGenes().remove("pie-1");
+			c.getRecentlyChanged().remove("pie-1");
 		}
 		//glp-1 mislocalized
-		if(genes.get("glp-1") != null){
-			var = r.nextInt(100);
-			if(var < 90) genes.put("glp-1", genes.get("glp-1").setLocation(new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER)));
-			else if(var < 95) genes.put("glp-1", genes.get("glp-1").setLocation(new Coordinates(Compartment.ANTERIOR, Compartment.YCENTER, Compartment.ZCENTER)));
-			else genes.put("glp-1", genes.get("glp-1").setLocation(new Coordinates(Compartment.POSTERIOR, Compartment.YCENTER, Compartment.ZCENTER)));
+		if(c.getGenes().get("glp-1") != null){
+			var = r.nextInt(200);
+			if(var < 190) c.getGenes().get("glp-1").setLocation(new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER));
+			else if(var < 195) c.getGenes().get("glp-1").setLocation(new Coordinates(Compartment.ANTERIOR, Compartment.YCENTER, Compartment.ZCENTER));
+			else c.getGenes().get("glp-1").setLocation(new Coordinates(Compartment.POSTERIOR, Compartment.YCENTER, Compartment.ZCENTER));
 			this.mislocalized.add("glp-1");
 		}
 		//par-3 mislocalized
-		if(genes.get("par-3") != null){
-			var = r.nextInt(100);
-			if(var < 90) genes.put("par-3", genes.get("par-3").setLocation(new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER)));
-			else if(var < 95) genes.put("par-3", genes.get("par-3").setLocation(new Coordinates(Compartment.ANTERIOR, Compartment.YCENTER, Compartment.ZCENTER)));
-			else genes.put("par-3", genes.get("par-3").setLocation(new Coordinates(Compartment.POSTERIOR, Compartment.YCENTER, Compartment.ZCENTER)));
+		if(c.getGenes().get("par-3") != null){
+			var = r.nextInt(200);
+			if(var < 190) c.getGenes().get("par-3").setLocation(new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER));
+			else if(var < 195) c.getGenes().get("par-3").setLocation(new Coordinates(Compartment.ANTERIOR, Compartment.YCENTER, Compartment.ZCENTER));
+			else c.getGenes().get("par-3").setLocation(new Coordinates(Compartment.POSTERIOR, Compartment.YCENTER, Compartment.ZCENTER));
 			this.mislocalized.add("par-3");
 		}
 		//mex-3 mislocalized
-		if(genes.get("mex-3") != null){
-			var = r.nextInt(100);
-			if(var < 90) genes.put("mex-3", genes.get("mex-3").setLocation(new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER)));
-			else if(var < 95) genes.put("mex-3", genes.get("mex-3").setLocation(new Coordinates(Compartment.ANTERIOR, Compartment.YCENTER, Compartment.ZCENTER)));
-			else genes.put("mex-3", genes.get("mex-3").setLocation(new Coordinates(Compartment.POSTERIOR, Compartment.YCENTER, Compartment.ZCENTER)));
+		if(c.getGenes().get("mex-3") != null){
+			var = r.nextInt(200);
+			if(var < 190) c.getGenes().get("mex-3").setLocation(new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER));
+			else if(var < 195) c.getGenes().get("mex-3").setLocation(new Coordinates(Compartment.ANTERIOR, Compartment.YCENTER, Compartment.ZCENTER));
+			else c.getGenes().get("mex-3").setLocation(new Coordinates(Compartment.POSTERIOR, Compartment.YCENTER, Compartment.ZCENTER));
 			this.mislocalized.add("mex-3");
 		}
 		//mex-5 mislocalized
-		if(genes.get("mex-5") != null){
-			var = r.nextInt(100);
-			if(var < 90) genes.put("mex-5", genes.get("mex-5").setLocation(new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER)));
-			else if(var < 95) genes.put("mex-5", genes.get("mex-5").setLocation(new Coordinates(Compartment.ANTERIOR, Compartment.YCENTER, Compartment.ZCENTER)));
-			else genes.put("mex-5", genes.get("mex-5").setLocation(new Coordinates(Compartment.POSTERIOR, Compartment.YCENTER, Compartment.ZCENTER)));
+		if(c.getGenes().get("mex-5") != null){
+			var = r.nextInt(200);
+			if(var < 190) c.getGenes().get("mex-5").setLocation(new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER));
+			else if(var < 195) c.getGenes().get("mex-5").setLocation(new Coordinates(Compartment.ANTERIOR, Compartment.YCENTER, Compartment.ZCENTER));
+			else c.getGenes().get("mex-5").setLocation(new Coordinates(Compartment.POSTERIOR, Compartment.YCENTER, Compartment.ZCENTER));
 			this.mislocalized.add("mex-5");
 		}
-		return genes;
+		return c;
 	}
 	
 	/**
@@ -643,35 +659,36 @@ public class Shell{
 	 * @param genes the cell's genes
 	 * @return the updated genes with effects from mutation
 	 */
-	public HashMap<String, Gene> par2Mutations(HashMap<String, Gene> genes){
+	public Cell par2Mutations(Cell c){
+		c.getGenes().remove("par-2");
+		c.getRecentlyChanged().remove("par-2");
 		Random r = new Random();
 		int var;
 		//glp-1 mislocalized
-		if(genes.get("glp-1") != null){
-			var = r.nextInt(100);
-			if(var < 63) genes.put("glp-1", genes.get("glp-1").setLocation(new Coordinates(Compartment.ANTERIOR, Compartment.YCENTER, Compartment.ZCENTER)));
-			var = r.nextInt(100);
-			if(var < 50) genes.put("glp-1", genes.get("glp-1").setLocation(new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER)));
-			else genes.put("glp-1", genes.get("glp-1").setLocation(new Coordinates(Compartment.POSTERIOR, Compartment.YCENTER, Compartment.ZCENTER)));
+		if(c.getGenes().get("glp-1") != null){
+			var = r.nextInt(200);
+			if(var < 126) c.getGenes().get("glp-1").setLocation(new Coordinates(Compartment.ANTERIOR, Compartment.YCENTER, Compartment.ZCENTER));
+			else if(var < 163) c.getGenes().get("glp-1").setLocation(new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER));
+			else c.getGenes().get("glp-1").setLocation(new Coordinates(Compartment.POSTERIOR, Compartment.YCENTER, Compartment.ZCENTER));
 			this.mislocalized.add("glp-1");
 		}
 		//par-1 mislocalized
-		if(genes.get("par-1") != null){
-			var = r.nextInt(100);
-			if(var < 90) genes.put("par-1", genes.get("par-1").setLocation(new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER)));
-			else if(var < 95) genes.put("par-1", genes.get("par-1").setLocation(new Coordinates(Compartment.ANTERIOR, Compartment.YCENTER, Compartment.ZCENTER)));
-			else genes.put("par-1", genes.get("par-1").setLocation(new Coordinates(Compartment.POSTERIOR, Compartment.YCENTER, Compartment.ZCENTER)));
+		if(c.getGenes().get("par-1") != null){
+			var = r.nextInt(200);
+			if(var < 190) c.getGenes().get("par-1").setLocation(new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER));
+			else if(var < 195) c.getGenes().get("par-1").setLocation(new Coordinates(Compartment.ANTERIOR, Compartment.YCENTER, Compartment.ZCENTER));
+			else c.getGenes().get("par-1").setLocation(new Coordinates(Compartment.POSTERIOR, Compartment.YCENTER, Compartment.ZCENTER));
 			this.mislocalized.add("par-1");
 		}
 		//par-3 mislocalized
-		if(genes.get("par-3") != null){
-			var = r.nextInt(100);
-			if(var < 90) genes.put("par-3", genes.get("par-3").setLocation(new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER)));
-			else if(var < 95) genes.put("par-3", genes.get("par-3").setLocation(new Coordinates(Compartment.ANTERIOR, Compartment.YCENTER, Compartment.ZCENTER)));
-			else genes.put("par-3", genes.get("par-3").setLocation(new Coordinates(Compartment.POSTERIOR, Compartment.YCENTER, Compartment.ZCENTER)));
+		if(c.getGenes().get("par-3") != null){
+			var = r.nextInt(200);
+			if(var < 190) c.getGenes().get("par-3").setLocation(new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER));
+			else if(var < 195) c.getGenes().get("par-3").setLocation(new Coordinates(Compartment.ANTERIOR, Compartment.YCENTER, Compartment.ZCENTER));
+			else c.getGenes().get("par-3").setLocation(new Coordinates(Compartment.POSTERIOR, Compartment.YCENTER, Compartment.ZCENTER));
 			this.mislocalized.add("par-3");
 		}
-		return genes;
+		return c;
 	}
 	
 	/**
@@ -679,35 +696,34 @@ public class Shell{
 	 * @param genes the cell's genes
 	 * @return the updated genes with effects from mutation
 	 */
-	public HashMap<String, Gene> par3Mutations(HashMap<String, Gene> genes){
+	public Cell par3Mutations(Cell c){
 		Random r = new Random();
 		int var;
 		//par-2 mislocalized
-		if(genes.get("par-2") != null){
-			var = r.nextInt(100);
-			if(var < 90) genes.put("par-2", genes.get("par-2").setLocation(new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER)));
-			else if(var < 95) genes.put("par-2", genes.get("par-2").setLocation(new Coordinates(Compartment.ANTERIOR, Compartment.YCENTER, Compartment.ZCENTER)));
-			else genes.put("par-2", genes.get("par-2").setLocation(new Coordinates(Compartment.POSTERIOR, Compartment.YCENTER, Compartment.ZCENTER)));
+		if(c.getGenes().get("par-2") != null){
+			var = r.nextInt(200);
+			if(var < 190) c.getGenes().get("par-2").setLocation(new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER));
+			else if(var < 195) c.getGenes().get("par-2").setLocation(new Coordinates(Compartment.ANTERIOR, Compartment.YCENTER, Compartment.ZCENTER));
+			else c.getGenes().get("par-2").setLocation(new Coordinates(Compartment.POSTERIOR, Compartment.YCENTER, Compartment.ZCENTER));
 			this.mislocalized.add("par-2");
 		}
 		//par-1 mislocalized
-		if(genes.get("par-1") != null){
-			var = r.nextInt(100);
-			if(var < 90) genes.put("par-1", genes.get("par-1").setLocation(new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER)));
-			else if(var < 95) genes.put("par-1", genes.get("par-1").setLocation(new Coordinates(Compartment.ANTERIOR, Compartment.YCENTER, Compartment.ZCENTER)));
-			else genes.put("par-1", genes.get("par-1").setLocation(new Coordinates(Compartment.POSTERIOR, Compartment.YCENTER, Compartment.ZCENTER)));
+		if(c.getGenes().get("par-1") != null){
+			var = r.nextInt(200);
+			if(var < 190) c.getGenes().get("par-1").setLocation(new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER));
+			else if(var < 195) c.getGenes().get("par-1").setLocation(new Coordinates(Compartment.ANTERIOR, Compartment.YCENTER, Compartment.ZCENTER));
+			else c.getGenes().get("par-1").setLocation(new Coordinates(Compartment.POSTERIOR, Compartment.YCENTER, Compartment.ZCENTER));
 			this.mislocalized.add("par-1");
 		}
 		//glp-1 mislocalized
-		if(genes.get("glp-1") != null){
-			var = r.nextInt(100);
-			if(var < 23) genes.put("glp-1", genes.get("glp-1").setLocation(new Coordinates(Compartment.ANTERIOR, Compartment.YCENTER, Compartment.ZCENTER)));
-			var = r.nextInt(100);
-			if(var < 50) genes.put("glp-1", genes.get("glp-1").setLocation(new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER)));
-			else genes.put("glp-1", genes.get("glp-1").setLocation(new Coordinates(Compartment.POSTERIOR, Compartment.YCENTER, Compartment.ZCENTER)));
+		if(c.getGenes().get("glp-1") != null){
+			var = r.nextInt(200);
+			if(var < 46) c.getGenes().get("glp-1").setLocation(new Coordinates(Compartment.ANTERIOR, Compartment.YCENTER, Compartment.ZCENTER));
+			else if(var < 123) c.getGenes().get("glp-1").setLocation(new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER));
+			else c.getGenes().get("glp-1").setLocation(new Coordinates(Compartment.POSTERIOR, Compartment.YCENTER, Compartment.ZCENTER));
 			this.mislocalized.add("glp-1");
 		}
-		return genes;
+		return c;
 	}
 	
 	/**
@@ -715,12 +731,14 @@ public class Shell{
 	 * @param genes the cell's genes
 	 * @return the updated genes with effects from mutation
 	 */
-	public HashMap<String, Gene> par4Mutations(HashMap<String, Gene> genes){
+	public Cell par4Mutations(Cell c){
+		c.getGenes().remove("par-4");
+		c.getRecentlyChanged().remove("par-4");
 		//glp-1 moves to center
-		if(genes.containsKey("glp-1")){
-			genes.put("glp-1", genes.get("glp-1").setLocation(new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER)));	
+		if(c.getGenes().containsKey("glp-1")){
+			c.getGenes().get("glp-1").setLocation(new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER));	
 		}	
-		return genes;
+		return c;
 	}
 	
 	/**
@@ -728,27 +746,27 @@ public class Shell{
 	 * @param genes the cell's genes
 	 * @return the updated genes with effects from mutation
 	 */
-	public HashMap<String, Gene> par5Mutations(HashMap<String, Gene> genes){
+	public Cell par5Mutations(Cell c){
+		c.getGenes().remove("par-5");
+		c.getRecentlyChanged().remove("par-5");
 		Random r = new Random();
 		int var;
 		//par-3 mislocalized
-		if(genes.get("par-3") != null){
-			var = r.nextInt(100);
-			if(var < 90) genes.put("par-3", genes.get("par-3").setLocation(new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER)));
-			else if(var < 95) genes.put("par-3", genes.get("par-3").setLocation(new Coordinates(Compartment.ANTERIOR, Compartment.YCENTER, Compartment.ZCENTER)));
-			else genes.put("par-3", genes.get("par-3").setLocation(new Coordinates(Compartment.POSTERIOR, Compartment.YCENTER, Compartment.ZCENTER)));
+		if(c.getGenes().get("par-3") != null){
+			var = r.nextInt(200);
+			if(var < 190) c.getGenes().get("par-3").setLocation(new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER));
+			else if(var < 195) c.getGenes().get("par-3").setLocation(new Coordinates(Compartment.ANTERIOR, Compartment.YCENTER, Compartment.ZCENTER));
+			else c.getGenes().get("par-3").setLocation(new Coordinates(Compartment.POSTERIOR, Compartment.YCENTER, Compartment.ZCENTER));
 			this.mislocalized.add("par-3");
 		}
 		//mex-5 mislocalized
-		if(genes.get("mex-5") != null){
+		if(c.getGenes().get("mex-5") != null){
 			var = r.nextInt(100);
-			if(var < 28) genes.put("mex-5", genes.get("mex-5").setLocation(new Coordinates(Compartment.ANTERIOR, Compartment.YCENTER, Compartment.ZCENTER)));
-			var = r.nextInt(100);
-			if(var < 50) genes.put("mex-5", genes.get("mex-5").setLocation(new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER)));
-			else genes.put("mex-5", genes.get("mex-5").setLocation(new Coordinates(Compartment.POSTERIOR, Compartment.YCENTER, Compartment.ZCENTER)));
+			if(var < 72) c.getGenes().get("mex-5").setLocation(new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER));
+			else c.getGenes().get("mex-5").setLocation(new Coordinates(Compartment.ANTERIOR, Compartment.YCENTER, Compartment.ZCENTER));
 			this.mislocalized.add("mex-5");
 		}
-		return genes;
+		return c;
 	}
 	
 	/**

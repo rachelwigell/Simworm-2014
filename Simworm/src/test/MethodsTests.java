@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Random;
 
+import org.junit.Before;
 import org.junit.Test;
 
 import processing.BasicVisual;
@@ -22,7 +23,20 @@ import dataStructures.Shell;
 
 public class MethodsTests {
 	BasicVisual testVis = new BasicVisual();
-	Shell testShell = new Shell(testVis, new HashMap<String, Boolean>());
+	HashMap<String, Boolean> mutants = new HashMap<String, Boolean>();
+	Shell testShell;
+	
+	@Before
+	public void init(){
+		mutants.put("par-1", false);
+		mutants.put("par-2", false);
+		mutants.put("par-3", false);
+		mutants.put("par-4", false);
+		mutants.put("par-5", false);
+		mutants.put("par-6", false);
+		mutants.put("pkc-3", false);
+		testShell = new Shell(testVis, mutants);
+	}
 	
 	//note that many of these tests are sensitive to the current data in the CSV's; altering this data might cause failures
 	
@@ -294,7 +308,7 @@ public class MethodsTests {
 		mutants.put("par-6", false);
 		mutants.put("pkc-3",  false);
 		Shell mutantShell = new Shell(testVis, mutants);
-		mutantShell.perCellMutations(mutantShell.startGenes);
+		mutantShell.perCellMutations(mutantShell.getCells().get("p-0"));
 	}
 	
 	@Test
@@ -312,90 +326,84 @@ public class MethodsTests {
 	
 	@Test
 	public void par1MutantTest(){
-		HashMap<String, Gene> genes = testShell.getCells().get("p-0").getGenes();
-		genes = testShell.par1Mutations(genes);
-		assertTrue(genes.containsKey("skn-1"));
-		assertTrue(genes.get("skn-1").getLocation().getAP() == Compartment.ANTERIOR ||
-				genes.get("skn-1").getLocation().getAP() == Compartment.XCENTER ||
-				genes.get("skn-1").getLocation().getAP() == Compartment.POSTERIOR);
-		//System.out.println("skn-1 " + genes.get("skn-1").getLocation().getAP());
-		assertFalse(genes.containsKey("pie-1"));
-		//System.out.println("glp-1 " + genes.get("glp-1").getLocation().getAP());
-		assertTrue(genes.containsKey("par-3"));
-		assertTrue(genes.get("par-3").getLocation().getAP() == Compartment.ANTERIOR ||
-				genes.get("par-3").getLocation().getAP() == Compartment.XCENTER ||
-				genes.get("par-3").getLocation().getAP() == Compartment.POSTERIOR);
-		//System.out.println("par-3 " + genes.get("par-3").getLocation().getAP());
-		assertTrue(genes.containsKey("mex-3"));
-		assertTrue(genes.get("mex-3").getLocation().getAP() == Compartment.ANTERIOR ||
-				genes.get("mex-3").getLocation().getAP() == Compartment.XCENTER ||
-				genes.get("mex-3").getLocation().getAP() == Compartment.POSTERIOR);
-		//System.out.println("mex-3 " + genes.get("mex-3").getLocation().getAP());
-		assertTrue(genes.containsKey("mex-5"));
-		assertTrue(genes.get("mex-5").getLocation().getAP() == Compartment.ANTERIOR ||
-				genes.get("mex-5").getLocation().getAP() == Compartment.XCENTER ||
-				genes.get("mex-5").getLocation().getAP() == Compartment.POSTERIOR);
-		//System.out.println("mex-5 " + genes.get("mex-5").getLocation().getAP());
+		Cell c = testShell.par1Mutations(testShell.getCells().get("p-0"));
+		assertTrue(c.getGenes().containsKey("skn-1"));
+		assertTrue(c.getGenes().get("skn-1").getLocation().getAP() == Compartment.ANTERIOR ||
+				c.getGenes().get("skn-1").getLocation().getAP() == Compartment.XCENTER ||
+				c.getGenes().get("skn-1").getLocation().getAP() == Compartment.POSTERIOR);
+		//System.out.println("skn-1 " + c.getGenes().get("skn-1").getLocation().getAP());
+		assertFalse(c.getGenes().containsKey("pie-1"));
+		//System.out.println("glp-1 " + c.getGenes().get("glp-1").getLocation().getAP());
+		assertTrue(c.getGenes().containsKey("par-3"));
+		assertTrue(c.getGenes().get("par-3").getLocation().getAP() == Compartment.ANTERIOR ||
+				c.getGenes().get("par-3").getLocation().getAP() == Compartment.XCENTER ||
+				c.getGenes().get("par-3").getLocation().getAP() == Compartment.POSTERIOR);
+		//System.out.println("par-3 " + c.getGenes().get("par-3").getLocation().getAP());
+		assertTrue(c.getGenes().containsKey("mex-3"));
+		assertTrue(c.getGenes().get("mex-3").getLocation().getAP() == Compartment.ANTERIOR ||
+				c.getGenes().get("mex-3").getLocation().getAP() == Compartment.XCENTER ||
+				c.getGenes().get("mex-3").getLocation().getAP() == Compartment.POSTERIOR);
+		//System.out.println("mex-3 " + c.getGenes().get("mex-3").getLocation().getAP());
+		assertTrue(c.getGenes().containsKey("mex-5"));
+		assertTrue(c.getGenes().get("mex-5").getLocation().getAP() == Compartment.ANTERIOR ||
+				c.getGenes().get("mex-5").getLocation().getAP() == Compartment.XCENTER ||
+				c.getGenes().get("mex-5").getLocation().getAP() == Compartment.POSTERIOR);
+		//System.out.println("mex-5 " + c.getGenes().get("mex-5").getLocation().getAP());
 	}
 	
 	@Test
 	public void par2MutantTest(){
-		HashMap<String, Gene> genes = testShell.getCells().get("p-0").getGenes();
-		genes = testShell.par2Mutations(genes);
-		assertTrue(genes.containsKey("par-3"));
-		assertTrue(genes.get("par-3").getLocation().getAP() == Compartment.ANTERIOR ||
-				genes.get("par-3").getLocation().getAP() == Compartment.XCENTER ||
-				genes.get("par-3").getLocation().getAP() == Compartment.POSTERIOR);
-		//System.out.println("par-3 " + genes.get("par-3").getLocation().getAP());
-		assertTrue(genes.containsKey("par-1"));
-		assertTrue(genes.get("par-1").getLocation().getAP() == Compartment.ANTERIOR ||
-				genes.get("par-1").getLocation().getAP() == Compartment.XCENTER ||
-				genes.get("par-1").getLocation().getAP() == Compartment.POSTERIOR);
-		//System.out.println("par-1 " + genes.get("par-1").getLocation().getAP());
+		Cell c = testShell.par2Mutations(testShell.getCells().get("p-0"));
+		assertTrue(c.getGenes().containsKey("par-3"));
+		assertTrue(c.getGenes().get("par-3").getLocation().getAP() == Compartment.ANTERIOR ||
+				c.getGenes().get("par-3").getLocation().getAP() == Compartment.XCENTER ||
+				c.getGenes().get("par-3").getLocation().getAP() == Compartment.POSTERIOR);
+		//System.out.println("par-3 " + c.getGenes().get("par-3").getLocation().getAP());
+		assertTrue(c.getGenes().containsKey("par-1"));
+		assertTrue(c.getGenes().get("par-1").getLocation().getAP() == Compartment.ANTERIOR ||
+				c.getGenes().get("par-1").getLocation().getAP() == Compartment.XCENTER ||
+				c.getGenes().get("par-1").getLocation().getAP() == Compartment.POSTERIOR);
+		//System.out.println("par-1 " + c.getGenes().get("par-1").getLocation().getAP());
 	}
 	
 	@Test
 	public void par3MutantTest(){
-		HashMap<String, Gene> genes = testShell.getCells().get("p-0").getGenes();
-		genes = testShell.par3Mutations(genes);
-		assertTrue(genes.containsKey("par-2"));
-		assertTrue(genes.get("par-2").getLocation().getAP() == Compartment.ANTERIOR ||
-				genes.get("par-2").getLocation().getAP() == Compartment.XCENTER ||
-				genes.get("par-2").getLocation().getAP() == Compartment.POSTERIOR);
-		//System.out.println("par-2 " + genes.get("par-2").getLocation().getAP());
-		assertTrue(genes.containsKey("par-1"));
-		assertTrue(genes.get("par-1").getLocation().getAP() == Compartment.ANTERIOR ||
-				genes.get("par-1").getLocation().getAP() == Compartment.XCENTER ||
-				genes.get("par-1").getLocation().getAP() == Compartment.POSTERIOR);
-		//System.out.println("par-1 " + genes.get("par-1").getLocation().getAP());
+		Cell c = testShell.par3Mutations(testShell.getCells().get("p-0"));
+		assertTrue(c.getGenes().containsKey("par-2"));
+		assertTrue(c.getGenes().get("par-2").getLocation().getAP() == Compartment.ANTERIOR ||
+				c.getGenes().get("par-2").getLocation().getAP() == Compartment.XCENTER ||
+				c.getGenes().get("par-2").getLocation().getAP() == Compartment.POSTERIOR);
+		//System.out.println("par-2 " + c.getGenes().get("par-2").getLocation().getAP());
+		assertTrue(c.getGenes().containsKey("par-1"));
+		assertTrue(c.getGenes().get("par-1").getLocation().getAP() == Compartment.ANTERIOR ||
+				c.getGenes().get("par-1").getLocation().getAP() == Compartment.XCENTER ||
+				c.getGenes().get("par-1").getLocation().getAP() == Compartment.POSTERIOR);
+		//System.out.println("par-1 " + c.getGenes().get("par-1").getLocation().getAP());
 	}
 	
 	
 	@Test
 	public void par4MutantTest(){
-		HashMap<String, Gene> genes = testShell.getCells().get("p-0").getGenes();
-		genes = testShell.par4Mutations(genes);
+		Cell c = testShell.par4Mutations(testShell.getCells().get("p-0"));
 	}
 	
 	@Test
 	public void par5MutantTest(){
-		HashMap<String, Gene> genes = testShell.getCells().get("p-0").getGenes();
-		testShell.par5Mutations(genes);
-		genes = testShell.getCells().get("p-0").getGenes();
-		assertTrue(genes.containsKey("mex-5"));
-		assertTrue(genes.get("mex-5").getLocation().getAP() == Compartment.ANTERIOR ||
-				genes.get("mex-5").getLocation().getAP() == Compartment.XCENTER ||
-				genes.get("mex-5").getLocation().getAP() == Compartment.POSTERIOR);
-		//System.out.println("mex-5 " + genes.get("mex-5").getLocation().getAP());
+		Cell c = testShell.par5Mutations(testShell.getCells().get("p-0"));
+		assertTrue(c.getGenes().containsKey("mex-5"));
+		assertTrue(c.getGenes().get("mex-5").getLocation().getAP() == Compartment.ANTERIOR ||
+				c.getGenes().get("mex-5").getLocation().getAP() == Compartment.XCENTER ||
+				c.getGenes().get("mex-5").getLocation().getAP() == Compartment.POSTERIOR);
+		//System.out.println("mex-5 " + c.getGenes().get("mex-5").getLocation().getAP());
 		//boolean mex5AB = true;
 		//boolean mex5P1 = true;
-		//if(genes.get("mex-5").getLocation().getAP() == Compartment.POSTERIOR) mex5AB = false;
-		//if(genes.get("mex-5").getLocation().getAP() == Compartment.ANTERIOR) mex5P1 = false; 
-		assertTrue(genes.containsKey("par-3"));
-		assertTrue(genes.get("par-3").getLocation().getAP() == Compartment.ANTERIOR ||
-				genes.get("par-3").getLocation().getAP() == Compartment.XCENTER ||
-				genes.get("par-3").getLocation().getAP() == Compartment.POSTERIOR);
-		//System.out.println("par-3 " + genes.get("par-3").getLocation().getAP());
+		//if(c.getGenes().get("mex-5").getLocation().getAP() == Compartment.POSTERIOR) mex5AB = false;
+		//if(c.getGenes().get("mex-5").getLocation().getAP() == Compartment.ANTERIOR) mex5P1 = false; 
+		assertTrue(c.getGenes().containsKey("par-3"));
+		assertTrue(c.getGenes().get("par-3").getLocation().getAP() == Compartment.ANTERIOR ||
+				c.getGenes().get("par-3").getLocation().getAP() == Compartment.XCENTER ||
+				c.getGenes().get("par-3").getLocation().getAP() == Compartment.POSTERIOR);
+		//System.out.println("par-3 " + c.getGenes().get("par-3").getLocation().getAP());
 		
 		HashMap<String, Boolean> mutants = new HashMap<String, Boolean>();
 		mutants.put("par-1", false);
@@ -410,14 +418,14 @@ public class MethodsTests {
 		for(String s: d.cellsRemoved){
 			testShell.getCells().remove(s);
 		}
-		for(Cell c: d.cellsAdded){
-			testShell.getCells().put(c.getName(), c);
+		for(Cell e: d.cellsAdded){
+			testShell.getCells().put(e.getName(), e);
 		}
 		
-		genes = testShell.getCells().get("p-1").getGenes();
+		//genes = testShell.getCells().get("p-1").getGenes();
 		//System.out.println("cell division");
 		//if(mex5P1) System.out.println("mex-5 p-1 " + genes.get("mex-5").getLocation().getAP());
-		genes = testShell.getCells().get("ab").getGenes();
+		//genes = testShell.getCells().get("ab").getGenes();
 		//if(mex5AB) System.out.println("mex-5 ab " + genes.get("mex-5").getLocation().getAP());	
 	}
 	
@@ -462,9 +470,49 @@ public class MethodsTests {
 		assertNotNull(test.get("a"));
 		
 	}
-
+	
+	//Note that this set of tests may very occasionally fail due to random variation	
 	@Test
-	public void testCascade(){
+	public void testMutantVariation1(){
+		HashMap<String, Boolean> mutants = new HashMap<String, Boolean>();
+		mutants.put("par-1", true);
+		mutants.put("par-2", false);
+		mutants.put("par-3", false);
+		mutants.put("par-4", false);
+		mutants.put("par-5", false);
+		mutants.put("par-6", false);
+		mutants.put("pkc-3",  false);
+		int sknCount = 0;
+		int par3Count = 0;
+		int mex3Count = 0;
+		int mex5Count = 0;
+		for(int i = 0; i < 200; i++){
+			Shell mutantShell = new Shell(testVis, mutants);
+			assertFalse(mutantShell.getCells().get("p-0").getGenes().containsKey("par-1") ||
+					mutantShell.getCells().get("p-0").getGenes().containsKey("pie-1"));
+			assertTrue(mutantShell.getCells().get("p-0").getGenes().containsKey("par-2") &&
+					mutantShell.getCells().get("p-0").getGenes().containsKey("par-3") &&
+					mutantShell.getCells().get("p-0").getGenes().containsKey("par-4") &&
+					mutantShell.getCells().get("p-0").getGenes().containsKey("par-5") &&
+					mutantShell.getCells().get("p-0").getGenes().containsKey("par-6") &&
+					mutantShell.getCells().get("p-0").getGenes().containsKey("pkc-3"));
+			for(int j = 0; mutantShell.getCells().size() < 2; j++){
+				mutantShell.timeStep();
+			}
+			if(mutantShell.getCells().get("p-1").getGenes().containsKey("skn-1")) sknCount++;
+			if(mutantShell.getCells().get("p-1").getGenes().containsKey("par-3")) par3Count++;
+			if(mutantShell.getCells().get("p-1").getGenes().containsKey("mex-3")) mex3Count++;
+			if(mutantShell.getCells().get("p-1").getGenes().containsKey("mex-5")) mex5Count++;
+		}		
+		assertNotEquals(200, sknCount);
+		assertNotEquals(200, par3Count);
+		assertNotEquals(200, mex3Count);
+		assertNotEquals(200, mex5Count);
+		System.out.println(sknCount + " " + par3Count + " " + mex3Count + " " + mex5Count);
+	}
+	
+	@Test
+	public void testMutantVariation2(){
 		
 	}
 }
