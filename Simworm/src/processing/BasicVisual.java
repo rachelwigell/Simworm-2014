@@ -294,6 +294,7 @@ public class BasicVisual extends PApplet{
 		if(mutantsChosen){ //only run if mutantsChosen is set, because userText doesn't exist yet if not
 			if(key == ' '){ //spacebar triggers a timestep
 				displayShell.timeStep();
+				userText = "Type a cell name to see its contents,\nor press spacebar to progress 1 timestep.";
 			}
 			else if(keyCode == BACKSPACE){ //manually implement backspace
 				if (userText.length() > 0) {
@@ -305,6 +306,10 @@ public class BasicVisual extends PApplet{
 					userText = "Cell not present";
 				}
 				else{ //if it is a cell name, print the genes list for the cell
+					for(String s: displayShell.getCells().keySet()){
+						if(!s.equals(userText)) displayShell.getCells().get(s).setSelected(false);
+						else displayShell.getCells().get(s).setSelected(true);
+					}
 					userText = displayShell.getCells().get(userText).getInfo();
 				}
 			}

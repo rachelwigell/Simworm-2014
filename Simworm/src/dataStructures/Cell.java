@@ -16,6 +16,7 @@ public class Cell {
 	private RGB color;
 	private DivisionData divide;
 	private int generation;
+	private boolean selected;
 	
 	Coordinates sphereLocation;
 	
@@ -41,6 +42,7 @@ public class Cell {
 		this.color = color;
 		this.divide = divide;
 		this.generation = generation;
+		this.selected = true;
 		
 		for(String s: genes.keySet()){
 			recentlyChanged.put(s, genes.get(s));
@@ -86,6 +88,14 @@ public class Cell {
 
 	public void setColor(RGB color) {
 		this.color = color;
+	}
+
+	public boolean isSelected() {
+		return selected;
+	}
+
+	public void setSelected(boolean selected) {
+		this.selected = selected;
 	}
 
 	/**
@@ -195,6 +205,7 @@ public class Cell {
 			genes.put(s, genes.get(s).updateCons(stage, recentGrowth));
 		}
 		this.applyCons();
+		this.selected = true;
 		return this;
 	}
 	
@@ -207,7 +218,8 @@ public class Cell {
 		float smallSide = this.lengths.getSmallest();
 		Coordinates scaling = this.lengths.lengthsToScale();
 		window.scale(scaling.getX(), scaling.getY(), scaling.getZ());
-		window.fill(this.color.getRed(), this.color.getGreen(), this.color.getBlue());
+		if(selected) window.fill(this.color.getRed(), this.color.getGreen(), this.color.getBlue());
+		else window.fill((float) (this.color.getRed()/2.0), (float) (this.color.getGreen()/2.0), (float) (this.color.getBlue()/2.0));
 		window.sphere(smallSide);		
 		window.popMatrix();
 	}
