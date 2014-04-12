@@ -17,7 +17,10 @@ public class ConsList { //holds data about antecedents and consequences
 	 */
 	public ConsList(){
 		//populate AandC and startLate from the CSV
-		readAandCInfo("csv/AandC.csv");	
+		//for java application
+		readAandCInfo("src/components/AandC.csv");
+		//for java applet
+		//readAandCInfo("AandC.csv");
 	}
 
 	/**

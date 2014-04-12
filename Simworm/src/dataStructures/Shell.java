@@ -43,10 +43,18 @@ public class Shell{
 		Coordinates startLengths = new Coordinates(500, 300, 300);
 		
 		//populate the cell's genes from csv file
-		startGenes = readGeneInfo("csv/genes.csv");
+		
+		//works for java application
+		startGenes = readGeneInfo("src/components/genes.csv");
+		//works for java applet
+		//startGenes = readGeneInfo("genes.csv");
+		
 		
 		//populate events queue data from csv file
-		divisions = readEventsQueue("csv/eventsQueue.csv");
+		//for java application
+		divisions = readEventsQueue("src/components/eventsQueue.csv");
+		//for java applet
+		//divisions = readEventsQueue("eventsQueue.csv");
 		
 		//create p-0 with all the info calculated
 		Cell start = new Cell(this.window, "p-0", startCenter, startLengths, null, startGenes, new RGB(255, 255, 0), divisions.get("p-0"), 0);
