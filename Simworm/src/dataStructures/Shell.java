@@ -45,16 +45,16 @@ public class Shell{
 		//populate the cell's genes from csv file
 		
 		//works for java application
-		startGenes = readGeneInfo("src/components/genes.csv");
-		//works for java applet
-		//startGenes = readGeneInfo("genes.csv");
+		//startGenes = readGeneInfo("src/components/genes.csv");
+		//works for java applet or executable
+		startGenes = readGeneInfo("genes.csv");
 		
 		
 		//populate events queue data from csv file
 		//for java application
-		divisions = readEventsQueue("src/components/eventsQueue.csv");
-		//for java applet
-		//divisions = readEventsQueue("eventsQueue.csv");
+		//divisions = readEventsQueue("src/components/eventsQueue.csv");
+		//for java applet or executable
+		divisions = readEventsQueue("eventsQueue.csv");
 		
 		//create p-0 with all the info calculated
 		Cell start = new Cell(this.window, "p-0", startCenter, startLengths, null, startGenes, new RGB(255, 255, 0), divisions.get("p-0"), 0);
