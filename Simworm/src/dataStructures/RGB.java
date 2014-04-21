@@ -16,6 +16,12 @@ public class RGB {
 		this.green = green;
 		this.blue = blue;
 	}
+	
+	public RGB(RGB toDup){
+		this.red = toDup.red;
+		this.green = toDup.green;
+		this.blue = toDup.blue;
+	}
 
 	public int getRed() {
 		return red;

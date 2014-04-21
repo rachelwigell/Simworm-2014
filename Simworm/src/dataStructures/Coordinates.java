@@ -33,6 +33,15 @@ public class Coordinates {
 		this.LR = LR;
 	}
 	
+	public Coordinates(Coordinates toDup){
+		this.AP = toDup.AP;
+		this.DV = toDup.DV;
+		this.LR = toDup.LR;
+		this.x = toDup.x;
+		this.y = toDup.y;
+		this.z = toDup.z;
+	}
+	
 	//getters
 	public float getX() {
 		return x;
@@ -69,6 +78,14 @@ public class Coordinates {
 		return smallest;
 	}
 	
+	public void setAP(Compartment AP) {
+		this.AP = AP;
+	}
+	
+	public void setX(float x){
+		this.x = x;
+	}
+
 	public Coordinates lengthsToScale(){
 		float smallest = this.getSmallest();
 		return new Coordinates(this.x/(smallest*2), this.y/(smallest*2), this.z/(smallest*2)); //divide by two to convert diameter to radius

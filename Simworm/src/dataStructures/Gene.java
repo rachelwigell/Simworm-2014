@@ -34,6 +34,21 @@ public class Gene /*implements Comparable<Gene>*/{
 		this.name = name;
 		this.state = state;
 	}
+	
+	public Gene(Gene toDup){
+		this.name = toDup.name;
+		this.state = new GeneState(toDup.state);
+		if(toDup.location != null){
+			this.location = new Coordinates(toDup.location);
+		}
+		if(toDup.changes != null){
+			HashMap<String, Coordinates> map = new HashMap<String, Coordinates>();
+			for(String s: toDup.changes.keySet()){
+				map.put(s, new Coordinates(toDup.changes.get(s)));
+			}
+			this.changes = map;
+		}
+	}
 
 	/**
 	 * Populates relevantCons
@@ -113,6 +128,11 @@ public class Gene /*implements Comparable<Gene>*/{
 
 	public Gene setLocation(Coordinates location) {
 		this.location = location;
+		return this;
+	}
+	
+	public Gene setName(String name){
+		this.name = name;
 		return this;
 	}
 }

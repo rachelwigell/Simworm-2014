@@ -11,7 +11,9 @@ import processing.core.*;
 import peasy.*;
 
 public class BasicVisual extends PApplet{	
+	private static final long serialVersionUID = 1L;
 	Shell displayShell;
+	Shell farthestShell;
 	String userText = "Type a cell name to see its contents,\nor press spacebar to progress 1 timestep.";
 	PeasyCam camera;
 	PMatrix matScene;
@@ -49,12 +51,16 @@ public class BasicVisual extends PApplet{
 	Button lineageKey4;
 	Button lineageKey5;
 	Button lineageKey6;
+	int currentTime;
+	int farthestSeen;
+	HashMap<Integer, Shell> shellsOverTime = new HashMap<Integer, Shell>();
 	
 	Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 	float width = screenSize.width;
 	float height = screenSize.height;
 	
 	//called on start. opens the screen where the user chooses mutant genes
+	@SuppressWarnings("deprecation")
 	public void setup(){
 		size((int) width, (int) height, P3D);
 		info = new ControlP5(this);
@@ -88,15 +94,22 @@ public class BasicVisual extends PApplet{
 		createShell.captionLabel().setControlFont(new ControlFont(createFont("arial", (float) (width/80))));
 		
 		camera = new PeasyCam(this, 500, height/2, 0, 600); //initialize the peasycam
+		
+		currentTime = 1;
+		farthestSeen = 1;
 	}
 	
 	//called after mutants are confirmed, to set up the main simulation screen
+	@SuppressWarnings("deprecation")
 	public void secondarySetup(){
 		info.remove("Choose mutants"); //remove the elements that were used in the mutants choosing screen
 		info.remove("boxes");
 		info.remove("createShell");
 		mutantsChosen = true; //value used to choose what items are drawn in draw()
-		displayShell = new Shell(this, mutants); //create the shell!
+		farthestShell = new Shell(this, mutants); //create the shell!
+		displayShell = farthestShell; //at the start, should display farthestShell.
+		shellsOverTime.put(1, new Shell(farthestShell)); //populate the first member of the hashmap
+		
 		
 		userTextArea = new Textarea(info, "infoText"); //textarea where the user can input commands and receive information
 		userTextArea.setPosition((float) (width/1.25), height/40)
@@ -305,6 +318,28 @@ public class BasicVisual extends PApplet{
 			if(key == ' '){ //spacebar triggers a timestep
 				displayShell.timeStep();
 				userText = "Type a cell name to see its contents,\nor press spacebar to progress 1 timestep.";
+			}
+			else if(keyCode == RIGHT){
+				if(currentTime == farthestSeen){
+					farthestShell.timeStep();
+					displayShell = farthestShell;
+					currentTime++;
+					farthestSeen++;
+					shellsOverTime.put(currentTime, new Shell(farthestShell));
+				}
+				else{
+					currentTime++;
+					displayShell = shellsOverTime.get(currentTime);
+					updateColorMode();
+				}
+			}
+			else if(keyCode == LEFT){
+				if(currentTime > 1){
+					currentTime--;
+					displayShell = shellsOverTime.get(currentTime);
+					updateColorMode();
+				}
+				
 			}
 			else if(keyCode == BACKSPACE){ //manually implement backspace
 				if (userText.length() > 0) {

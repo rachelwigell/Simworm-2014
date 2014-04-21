@@ -29,6 +29,12 @@ public class GeneState {
 	public GeneState(){
 		this.unknown = true;
 	}
+	
+	public GeneState(GeneState toDup){
+		this.on = toDup.on;
+		this.firstUsed = toDup.firstUsed;
+		this.unknown = toDup.unknown;
+	}
 
 	//getters
 	public boolean isOn() {
@@ -41,5 +47,9 @@ public class GeneState {
 
 	public double getFirstUsed() {
 		return firstUsed;
+	}
+
+	public void setOn(boolean on) {
+		this.on = on;
 	}
 }
