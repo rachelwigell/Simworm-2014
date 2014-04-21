@@ -18,16 +18,17 @@ public class ConsList { //holds data about antecedents and consequences
 	public ConsList(){
 		//populate AandC and startLate from the CSV
 		//for java application
-		//readAandCInfo("src/components/AandC.csv");
-		//for java applet or executable
-		readAandCInfo("AandC.csv");
+		if(readAandCInfo("src/components/AandC.csv") == -1){
+			//for java applet or executable
+			readAandCInfo("AandC.csv");
+		}	
 	}
 
 	/**
 	 * Parses a CSV to create the antecedent and consequence rules
 	 * @param file The name of the CSV file as a string
 	 */
-	public void readAandCInfo(String file){
+	public int readAandCInfo(String file){
 		String name = null;
 		GeneState state = null;
 		try{
@@ -66,12 +67,16 @@ public class ConsList { //holds data about antecedents and consequences
 				if(start == 1) this.AandC.add(new Consequence(ante, cons, start, end)); //if the rule starts at the beginning, put in AandC
 				else this.startLate.add(new Consequence(ante, cons, start, end)); //else put in startLate
 			}
+			reader.close();
+			return 0;
 		}
 		catch (FileNotFoundException e){
-			e.printStackTrace();
+			//e.printStackTrace();
+			return -1; //indicates failure
 		}
 		catch (IOException e){
 			e.printStackTrace();
+			return -1;
 		}
 	}
 }

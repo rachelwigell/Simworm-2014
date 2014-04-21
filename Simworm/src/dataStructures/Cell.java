@@ -49,6 +49,28 @@ public class Cell {
 		}
 	}
 	
+	public Cell(Cell toDup){
+		this.window = toDup.window;
+		this.name = toDup.name;
+		this.center = new Coordinates(toDup.center);
+		this.lengths = new Coordinates(toDup.lengths);
+		this.parent = toDup.parent;
+		HashMap<String, Gene> genesmap = new HashMap<String, Gene>();
+		for(String s: toDup.genes.keySet()){
+			genesmap.put(s, new Gene(toDup.genes.get(s)));
+		}
+		this.genes = genesmap;
+		this.color = new RGB(toDup.color);
+		this.divide = new DivisionData(toDup.divide);
+		this.generation = toDup.generation;
+		this.selected = toDup.selected;
+		HashMap<String, Gene> changesmap = new HashMap<String, Gene>();
+		for(String s: toDup.recentlyChanged.keySet()){
+			changesmap.put(s, new Gene(toDup.recentlyChanged.get(s)));
+		}
+		this.recentlyChanged = changesmap;
+	}
+	
 	//getters	
 	public String getName() {
 		return name;

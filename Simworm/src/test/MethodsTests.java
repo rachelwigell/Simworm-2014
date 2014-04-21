@@ -14,7 +14,6 @@ import dataStructures.Cell;
 import dataStructures.CellChangesData;
 import dataStructures.Compartment;
 import dataStructures.ConsList;
-import dataStructures.Consequence;
 import dataStructures.Coordinates;
 import dataStructures.DivisionData;
 import dataStructures.Gene;
@@ -384,7 +383,7 @@ public class MethodsTests {
 	
 	@Test
 	public void par4MutantTest(){
-		Cell c = testShell.par4Mutations(testShell.getCells().get("p-0"));
+		testShell.par4Mutations(testShell.getCells().get("p-0"));
 	}
 	
 	@Test
@@ -471,8 +470,8 @@ public class MethodsTests {
 		
 	}
 	
-	//Note that this set of tests may very occasionally fail due to random variation	
-	@Test
+	//Note that this test may very occasionally fail due to random variation	
+	//@Test
 	public void testMutantVariation1(){
 		HashMap<String, Boolean> mutants = new HashMap<String, Boolean>();
 		mutants.put("par-1", true);
@@ -496,7 +495,7 @@ public class MethodsTests {
 					mutantShell.getCells().get("p-0").getGenes().containsKey("par-5") &&
 					mutantShell.getCells().get("p-0").getGenes().containsKey("par-6") &&
 					mutantShell.getCells().get("p-0").getGenes().containsKey("pkc-3"));
-			for(int j = 0; mutantShell.getCells().size() < 2; j++){
+			while(mutantShell.getCells().size() < 2){
 				mutantShell.timeStep();
 			}
 			if(mutantShell.getCells().get("p-1").getGenes().containsKey("skn-1")) sknCount++;
@@ -512,7 +511,105 @@ public class MethodsTests {
 	}
 	
 	@Test
-	public void testMutantVariation2(){
-		
+	public void testObjectInstantiation(){
+		HashMap<Integer, GeneState> map = new HashMap<Integer, GeneState>();
+		GeneState s = new GeneState(true);
+		map.put(1, s);
+		assertTrue(map.get(1).isOn());
+		s.setOn(false);
+		assertFalse(map.get(1).isOn());
+	}
+	
+	@Test
+	public void testObjectInstantiation2(){
+		HashMap<Integer, GeneState> map = new HashMap<Integer, GeneState>();
+		GeneState s = new GeneState(true);
+		GeneState t;
+		t = s;
+		map.put(1, t);
+		assertTrue(map.get(1).isOn());
+		s.setOn(false);
+		assertFalse(map.get(1).isOn());
+	}
+	
+	@Test
+	public void testObjectInstantiation3(){
+		HashMap<Integer, Gene> map = new HashMap<Integer, Gene>();
+		Gene g = new Gene("name", new GeneState(true));
+		Gene h = new Gene(g.getName(), g.getState());
+		map.put(1, h);
+		assertTrue(map.get(1).getState().isOn());
+		g.setState(new GeneState(false));
+		assertTrue(map.get(1).getState().isOn());
+	}
+	
+	@Test
+	public void testObjectInstantiation4(){
+		HashMap<Integer, Gene> map = new HashMap<Integer, Gene>();
+		Gene g = new Gene("name", new GeneState(true));
+		Gene h = new Gene(g.getName(), g.getState());
+		map.put(1, h);
+		assertTrue(map.get(1).getState().isOn());
+		g.getState().setOn(false);
+		assertFalse(map.get(1).getState().isOn());
+	}
+	
+	@Test
+	public void testObjectInstatiation5(){
+		HashMap<Integer, Gene> map = new HashMap<Integer, Gene>();
+		Gene g = new Gene("name", new GeneState(true));
+		Gene h = new Gene(g.getName(), g.getState());
+		map.put(1, h);
+		g.setName("new");
+		assertEquals("name", map.get(1).getName()); 
+	}
+	
+	@Test
+	public void testObjectInstatiation6(){
+		Coordinates x = new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER);
+		Coordinates y = new Coordinates(x.getAP(), x.getDV(), x.getLR());
+		x.setAP(Compartment.ANTERIOR);
+		assertNotEquals(x.getAP(), y.getAP());
+	}
+	
+	@Test
+	public void testDupCoord(){
+		Coordinates x = new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER);
+		Coordinates y = new Coordinates(x);
+		x.setAP(Compartment.ANTERIOR);
+		assertNotEquals(x.getAP(), y.getAP());
+	}
+	
+	@Test
+	public void testDupCoord2(){
+		Coordinates x = new Coordinates(1, 1, 1);
+		Coordinates y = new Coordinates(x);
+		x.setX(2);
+		assertNotEquals(x.getX(), y.getX());
+	}
+	
+	@Test
+	public void testShellDup(){
+		Shell aShell = new Shell(testVis, mutants);
+		Shell anotherShell = new Shell(aShell);
+		aShell.timeStep();
+		assertFalse(aShell.getCells().get("p-0").getGenes().get("skn-1").getState().isOn());
+		assertTrue(anotherShell.getCells().get("p-0").getGenes().get("skn-1").getState().isOn());
+	}
+	
+	@Test
+	public void testDup(){
+		Gene g = new Gene("name", new GeneState(true));
+		Gene h = g;
+		h.setName("new");
+		assertEquals("new", g.getName());
+	}
+	
+	@Test
+	public void testDup2(){
+		Gene g = new Gene("name", new GeneState(true));
+		Gene h = new Gene(g.getName(), g.getState());
+		h.setName("new");
+		assertEquals("name", g.getName());
 	}
 }
