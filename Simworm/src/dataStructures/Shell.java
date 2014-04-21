@@ -15,9 +15,10 @@ import processing.BasicVisual;
 public class Shell{
 	BasicVisual window; // window in which to display the shell
 	private HashMap<String, Cell> cells;
+	private Coordinates dimensions;
 	private HashMap<String, DivisionData> divisions = new HashMap<String, DivisionData>(); //holds the information about when and how cells divide in theory (according to events queue)
 	int simTime = 1;
-	@Deprecated public float mutationProb = (float) 0; // number between 0 and 1 to indicate the probability of a mutation happening at any time - NO LONGER USED
+	public float mutationProb = (float) 0; // number between 0 and 1 to indicate the probability of a mutation happening at any time - NO LONGER USED
 	public HashMap<String, Gene> startGenes = new HashMap<String, Gene>(); //genes in p-0
 	public HashMap<String, Boolean> mutants = new HashMap<String, Boolean>(); //all of the genes that have the potential to be mutated, and their status (true = mutant)
 	public ColorMode colorMode = ColorMode.LINEAGE; //set colorMode to lineage initially
@@ -25,7 +26,7 @@ public class Shell{
 	public ArrayList<String> mislocalized = new ArrayList<String>(); // genes that are mislocalized due to a mutation
 	
 	/**
-	 * Constructor for a shell - initializes everything
+	 * Constructor for a cell - initializes everything
 	 * @param window The PApplet in which the shell will be drawn
 	 * @param mutants The user's choice for which genes should be mutated in this shell
 	 */
@@ -35,6 +36,7 @@ public class Shell{
 		
 		//info about the shell itself
 		this.cells = new HashMap<String, Cell>();
+		this.dimensions = new Coordinates(500, 300, 300);
 		
 		//info about p-0, which fills the whole shell at the start
 		Coordinates startCenter = new Coordinates(250, 150, 150);
@@ -42,20 +44,17 @@ public class Shell{
 		
 		//populate the cell's genes from csv file
 		
-		//works for java application or junit
-		startGenes = readGeneInfo("src/components/genes.csv");
-		if(startGenes == null){
-			//works for java applet or executable
-			startGenes = readGeneInfo("genes.csv");
-		}
+		//works for java application
+		//startGenes = readGeneInfo("src/components/genes.csv");
+		//works for java applet or executable
+		startGenes = readGeneInfo("genes.csv");
+		
 		
 		//populate events queue data from csv file
-		//for java application or junit test
-		divisions = readEventsQueue("src/components/eventsQueue.csv");
-		if(divisions == null){
-			//for java applet or executable
-			divisions = readEventsQueue("eventsQueue.csv");
-		}
+		//for java application
+		//divisions = readEventsQueue("src/components/eventsQueue.csv");
+		//for java applet or executable
+		divisions = readEventsQueue("eventsQueue.csv");
 		
 		//create p-0 with all the info calculated
 		Cell start = new Cell(this.window, "p-0", startCenter, startLengths, null, startGenes, new RGB(255, 255, 0), divisions.get("p-0"), 0);
@@ -70,6 +69,10 @@ public class Shell{
 	//getters
 	public HashMap<String, Cell> getCells() {
 		return cells;
+	}
+
+	public Coordinates getDimensions() {
+		return dimensions;
 	}
 
 	public HashMap<String, DivisionData> getDivisions() {
@@ -179,26 +182,6 @@ public class Shell{
 		return childGenes;
 	}
 
-	/**
-	 * Duplication constructor - creates a new shell with all the properties of the given shell. Needed for the hashmap that allows for backward timesteps.
-	 * @param toDup The shell to be duplicated.
-	 */
-	public Shell(Shell toDup){
-		this.window = toDup.window;
-		//this.mutants = toDup.mutants;
-		//this.divisions = toDup.divisions;
-		this.simTime = toDup.simTime;
-		//this.startGenes = toDup.startGenes;
-		this.colorMode = toDup.colorMode;
-		HashMap<String, Cell> cellsmap = new HashMap<String, Cell>();
-		for(String s: toDup.cells.keySet()){
-			cellsmap.put(s, new Cell(toDup.cells.get(s)));
-		}
-		this.cells = cellsmap;
-		//this.recentGrowth = toDup.recentGrowth;
-		//this.mislocalized = toDup.mislocalized;
-	}
-	
 	/**
 	 * simulates division of cell by calculating new names, centers, dimensions, and gene states of daughter cells
 	 * daughter1 is always the more anterior, dorsal, or right child
@@ -870,11 +853,9 @@ public class Shell{
 				}
 				genes.put(name, new Gene(name, state, location, changes).populateCons()); //make a gene with all the info	
 			}
-			reader.close();
 		}
 		catch (FileNotFoundException e){
-			//e.printStackTrace();
-			return null;
+			e.printStackTrace();
 		}
 		catch (IOException e){
 			e.printStackTrace();
@@ -904,11 +885,9 @@ public class Shell{
 				int generation = Integer.parseInt(queueInfo[4]); //generation of the splitting cell in fifth row
 				queue.put(parent, new DivisionData(parent, d1Percentage, axis, time, generation)); //put data into queue
 			}
-			reader.close();
 		}
 		catch (FileNotFoundException e){
-			//e.printStackTrace();
-			return null;
+			e.printStackTrace();
 		}
 		catch (IOException e){
 			e.printStackTrace();

@@ -11,8 +11,6 @@ import processing.core.*;
 import peasy.*;
 
 public class BasicVisual extends PApplet{	
-	//private static final long serialVersionUID = 1L;
-	Shell currentShell;
 	Shell displayShell;
 	String userText = "Type a cell name to see its contents,\nor press spacebar to progress 1 timestep.";
 	PeasyCam camera;
@@ -51,16 +49,12 @@ public class BasicVisual extends PApplet{
 	Button lineageKey4;
 	Button lineageKey5;
 	Button lineageKey6;
-	int currentTime = 1;
-	int farthestSeen = 1;
-	public HashMap<Integer, Shell> timesteps = new HashMap<Integer, Shell>();
 	
 	Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 	float width = screenSize.width;
 	float height = screenSize.height;
 	
 	//called on start. opens the screen where the user chooses mutant genes
-	@SuppressWarnings("deprecation")
 	public void setup(){
 		size((int) width, (int) height, P3D);
 		info = new ControlP5(this);
@@ -97,14 +91,12 @@ public class BasicVisual extends PApplet{
 	}
 	
 	//called after mutants are confirmed, to set up the main simulation screen
-	@SuppressWarnings("deprecation")
 	public void secondarySetup(){
 		info.remove("Choose mutants"); //remove the elements that were used in the mutants choosing screen
 		info.remove("boxes");
 		info.remove("createShell");
 		mutantsChosen = true; //value used to choose what items are drawn in draw()
 		displayShell = new Shell(this, mutants); //create the shell!
-	//	currentShell = displayShell; //the shell currently being displayed should be the currentShell at the beginning
 		
 		userTextArea = new Textarea(info, "infoText"); //textarea where the user can input commands and receive information
 		userTextArea.setPosition((float) (width/1.25), height/40)
@@ -314,29 +306,6 @@ public class BasicVisual extends PApplet{
 				displayShell.timeStep();
 				userText = "Type a cell name to see its contents,\nor press spacebar to progress 1 timestep.";
 			}
-		/*	else if(keyCode == RIGHT){
-				if(currentTime >= farthestSeen){
-					timesteps.put(currentTime, new Shell(currentShell));
-					currentShell.timeStep();
-					displayShell = currentShell;
-					updateColorMode();
-					currentTime++;
-					farthestSeen++;
-				}
-				else{
-					currentTime++;
-					displayShell = timesteps.get(currentTime);
-					updateColorMode();
-				}
-				
-			}
-			else if(keyCode == LEFT){
-				if(currentTime >= 1){
-					currentTime--;
-					displayShell = timesteps.get(currentTime);
-					updateColorMode();
-				}
-			}*/
 			else if(keyCode == BACKSPACE){ //manually implement backspace
 				if (userText.length() > 0) {
 					userText = userText.substring(0, userText.length()-1);

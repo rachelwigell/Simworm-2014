@@ -23,14 +23,6 @@ public class DivisionData {
 		this.generation = generation;
 	}
 
-	public DivisionData(DivisionData toDup){
-		this.parent = toDup.parent;
-		this.d1Percentage = toDup.d1Percentage;
-		this.axis = toDup.axis;
-		this.time = toDup.time;
-		this.generation = toDup.generation;
-	}
-	
 	//getters
 	public String getParent() {
 		return parent;
