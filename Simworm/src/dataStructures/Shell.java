@@ -16,7 +16,7 @@ public class Shell{
 	BasicVisual window; // window in which to display the shell
 	private HashMap<String, Cell> cells;
 	private HashMap<String, DivisionData> divisions; //holds the information about when and how cells divide in theory (according to events queue)
-	int simTime;
+	public int simTime;
 	@Deprecated public float mutationProb = (float) 0; // number between 0 and 1 to indicate the probability of a mutation happening at any time - NO LONGER USED
 	public HashMap<String, Boolean> mutants = new HashMap<String, Boolean>(); //all of the genes that have the potential to be mutated, and their status (true = mutant)
 	public ColorMode colorMode; //set colorMode to lineage initially
@@ -595,9 +595,10 @@ public class Shell{
 				//then we'll sort the linkedList to find the extremes, and pick a random number within this range
 				//then each division in this generation will be set to occur at this same random time.
 				if(groupGenerations.keySet().contains(d.getGeneration())){ //if there is already an entry in the hashmap for this generation...
-					LinkedList<Integer> times = groupGenerations.get(d.getGeneration()); //get the list as it stands now
-					times.add(d.getTime()); //add the new time to it
-					groupGenerations.put(d.getGeneration(), times); //replace list in hashmap with larger list
+					groupGenerations.get(d.getGeneration()).add(d.getTime());
+					//LinkedList<Integer> times = groupGenerations.get(d.getGeneration()); //get the list as it stands now
+					//times.add(d.getTime()); //add the new time to it
+					//groupGenerations.put(d.getGeneration(), times); //replace list in hashmap with larger list
 				}
 				else{ //if the entry doesn't exist yet...
 					LinkedList<Integer> times = new LinkedList<Integer>(); //initialize with empty list
@@ -611,7 +612,16 @@ public class Shell{
 				Collections.sort(times); //sort it
 				LinkedList<Integer> chosen = new LinkedList<Integer>();	//new "list" will hold just one number, the randomly chosen one
 				if(times.getLast() - times.getFirst() == 0) chosen.add(times.getFirst()); //if there is no variation, just add the only choice. else...
-				else chosen.add(r.nextInt(times.getLast() - times.getFirst()) + times.getFirst()); //choose a random number between the smallest and largest time in the list
+				else{
+					int largerTime = times.getFirst(); //we must make sure we don't attempt to set a time for a generation that is sooner than the generation before it
+					if(i > 0){
+						if(groupGenerations.get(i-1).getFirst()+1 > largerTime){ //if the generation before is dividing late...
+							largerTime = groupGenerations.get(i-1).getFirst()+1; //set the start of range of possibilities to the generation before's gen time
+						}
+					}
+					int newTime = r.nextInt(times.getLast() - largerTime) + largerTime; //choose a random number between the smallest and largest time in the list
+					chosen.add(newTime);
+				}
 				groupGenerations.put(i, chosen); //replace entry in hashmap with the chosen number
 			}
 			for(String s: divisions.keySet()){ //now go through the divisions set

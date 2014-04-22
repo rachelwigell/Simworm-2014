@@ -613,4 +613,104 @@ public class MethodsTests {
 		h.setName("new");
 		assertEquals("name", g.getName());
 	}
+	
+	//Very slow test - generates data for histograms
+	//@Test
+	public void generateMutantData(){
+		double iterations = 1000;
+		HashMap<String, Boolean> mutants = new HashMap<String, Boolean>();
+		mutants.put("par-1", true);
+		mutants.put("par-2", false);
+		mutants.put("par-3", false);
+		mutants.put("par-4", false);
+		mutants.put("par-5", false);
+		mutants.put("par-6", false);
+		mutants.put("pkc-3",  false);
+		double mseFate = 0;
+		double cdFate = 0;
+		double germFate = 0;
+		double defFate = 0;
+		HashMap<Integer, Integer> mseValues = new HashMap<Integer, Integer>();
+		HashMap<Integer, Integer> cdValues = new HashMap<Integer, Integer>();
+		HashMap<Integer, Integer> germValues = new HashMap<Integer, Integer>();
+		HashMap<Integer, Integer> defValues = new HashMap<Integer, Integer>();
+		int j = 0;
+		for(int i = 0; i < iterations; i++){
+			int mse = 0;
+			int cd = 0;
+			int germ = 0;
+			int def = 0;
+			Shell mutantShell = new Shell(testVis, mutants);
+			while(mutantShell.simTime < 96){
+				mutantShell.timeStep();
+			}
+			j++;
+			System.out.println(j + "th shell processed: " + mutantShell.getCells().size() +" cells present");
+			for(String c: mutantShell.getCells().keySet()){
+				boolean germline = false;
+				boolean MSE = false;
+				boolean CD = false;
+				Gene pie = mutantShell.getCells().get(c).getGenes().get("pie-1");
+				if(pie != null){
+					if(!pie.getState().isUnknown()){
+						if(pie.getState().isOn()){
+							germline = true;
+						}
+					}
+				}
+				Gene skn = mutantShell.getCells().get(c).getGenes().get("skn-1");
+				if(skn != null){
+					if(!skn.getState().isUnknown()){
+						if(skn.getState().isOn()){
+							MSE = true;
+						}
+					}
+				}
+				Gene pal = mutantShell.getCells().get(c).getGenes().get("pal-1");
+				if(pal != null){
+					if(!pal.getState().isUnknown()){
+						if(pal.getState().isOn()){
+							CD = true;
+						}
+					}
+				}
+				if(germline && !MSE && !CD) germ++;
+				else if(!germline && MSE && !CD) mse++;
+				else if(!germline && !MSE && CD) cd++;
+				else def++;
+			}
+			if(mseValues.get(mse) == null) mseValues.put((int) mse, 1);
+			else mseValues.put((int) mse, mseValues.get(mse)+1);
+			if(cdValues.get(cd) == null) cdValues.put((int) cd, 1);
+			else cdValues.put((int) cd, cdValues.get(cd)+1);
+			if(germValues.get(germ) == null) germValues.put((int) germ, 1);
+			else germValues.put((int) germ, germValues.get(germ)+1);
+			if(defValues.get(def) == null) defValues.put((int) def, 1);
+			else defValues.put((int) def, defValues.get(def)+1);
+			
+			assertEquals(26, germ+mse+cd+def);	
+			mseFate += mse/26.0;
+			cdFate += cd/26.0;
+			germFate += germ/26.0;
+			defFate += def/26.0;			
+		}		
+		assertTrue(mseFate+cdFate+germFate+defFate > iterations-2 && mseFate+cdFate+germFate+defFate < iterations+2);
+		//System.out.println("MS/E: " + mseFate/iterations);
+		//System.out.println("C/D: " + cdFate/iterations);
+		//System.out.println("germline: " + germFate/iterations);
+		//System.out.println("default: " + defFate/iterations);
+		
+		for(Integer i: mseValues.keySet()){
+			System.out.println(mseValues.get(i) + " shells have " + i + " cells with MS/E cell fate");
+		}
+		for(Integer i: cdValues.keySet()){
+			System.out.println(cdValues.get(i) + " shells have " + i + " cells with C/D cell fate");
+		}
+		for(Integer i: germValues.keySet()){
+			System.out.println(germValues.get(i) + " shells have " + i + " cells with germline cell fate");
+		}
+		for(Integer i: defValues.keySet()){
+			System.out.println(defValues.get(i) + " shells have " + i + " cells with default cell fate");
+		}
+	}
 }
