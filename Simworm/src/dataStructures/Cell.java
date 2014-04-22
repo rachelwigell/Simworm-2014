@@ -61,9 +61,11 @@ public class Cell {
 		}
 		this.genes = genesmap;
 		this.color = new RGB(toDup.color);
-		this.divide = new DivisionData(toDup.divide);
+		if(toDup.divide != null){
+			this.divide = new DivisionData(toDup.divide);
+		}
 		this.generation = toDup.generation;
-		this.selected = toDup.selected;
+		this.selected = true;
 		HashMap<String, Gene> changesmap = new HashMap<String, Gene>();
 		for(String s: toDup.recentlyChanged.keySet()){
 			changesmap.put(s, new Gene(toDup.recentlyChanged.get(s)));

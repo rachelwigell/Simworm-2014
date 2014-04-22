@@ -14,7 +14,7 @@ public class BasicVisual extends PApplet{
 	private static final long serialVersionUID = 1L;
 	Shell displayShell;
 	Shell farthestShell;
-	String userText = "Type a cell name to see its contents,\nor press spacebar to progress 1 timestep.";
+	String userText = "Type a cell name to see its contents,\nor press right arrow to progress 1 timestep\nor left arrow to move backwards 1 timestep.";
 	PeasyCam camera;
 	PMatrix matScene;
 	ControlP5 info;
@@ -31,6 +31,8 @@ public class BasicVisual extends PApplet{
 	CheckBox chooseMutants;
 	Button createShell;
 	RadioButton chooseColorMode;
+	RadioButton chooseTimeflowMode;
+	boolean autoTime = false;
 	boolean lineageState = true;
 	boolean fateState = false;
 	boolean parsState = false;
@@ -54,10 +56,11 @@ public class BasicVisual extends PApplet{
 	int currentTime;
 	int farthestSeen;
 	HashMap<Integer, Shell> shellsOverTime = new HashMap<Integer, Shell>();
-	
+	int timeCount = 0;	
 	Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 	float width = screenSize.width;
 	float height = screenSize.height;
+	Slider progressBar;
 	
 	//called on start. opens the screen where the user chooses mutant genes
 	@SuppressWarnings("deprecation")
@@ -117,75 +120,112 @@ public class BasicVisual extends PApplet{
 		setFont(createFont("arial", (width/114)));
 		cellNamesArea = new Textarea(info, "namesText"); //textarea where the names of the currently present cells are displayed
 		cellNamesArea.setPosition((float) (width/1.25), (float) (3*height/10))
-		.setSize((int) (width/5), (int) (height/4)).
+		.setSize((int) (width/5), (int) (height/5)).
 		setFont(createFont("arial", (width/114)));
 		
+		new Button(info, "cell color key") //just a label, not interactive
+		.setPosition((float) (width/1.26), (float) (height - 13*height/30))
+		.setColorBackground(color(0, 0, 0))
+		.setColorActive(color(0, 0, 0))
+		.setColorForeground(color(0, 0, 0))
+		.captionLabel().setControlFont(new ControlFont(createFont("arial", (float) (width/90))));
+		
 		//initialize buttons that control camera to choose orthogonal views
-		frontB = new Button(info, "front").setPosition((float) (width/1.25), (float) (height - height/10)).setColorBackground(color(49, 130, 189))
+		frontB = new Button(info, "front").setPosition((float) (width/1.25), (float) (height - 5*height/60)).setColorBackground(color(49, 130, 189))
 				.setColorForeground(color(107, 174, 214))
-				.setColorActive(color(189, 215, 231));;
+				.setColorActive(color(189, 215, 231)).setSize((int) (width/20), (int) (height/40));
 		frontB.captionLabel().setControlFont(new ControlFont(createFont("arial", (float) (width/133))));
-		backB = new Button(info, "back").setPosition((float) (width/1.25), (float) (height - height/20)).setColorBackground(color(49, 130, 189))
+		backB = new Button(info, "back").setPosition((float) (width/1.25), (float) (height - 3*height/60)).setColorBackground(color(49, 130, 189))
 				.setColorForeground(color(107, 174, 214))
-				.setColorActive(color(189, 215, 231));
+				.setColorActive(color(189, 215, 231)).setSize((int) (width/20), (int) (height/40));
 		backB.captionLabel().setControlFont(new ControlFont(createFont("arial", (float) (width/133))));
-		topB = new Button(info, "top").setPosition((float) (width - 2*width/15), (float) (height - height/10)).setColorBackground(color(49, 130, 189))
+		topB = new Button(info, "top").setPosition((float) (width - 2*width/15), (float) (height - 5*height/60)).setColorBackground(color(49, 130, 189))
 				.setColorForeground(color(107, 174, 214))
-				.setColorActive(color(189, 215, 231));
+				.setColorActive(color(189, 215, 231)).setSize((int) (width/20), (int) (height/40));
 		topB.captionLabel().setControlFont(new ControlFont(createFont("arial", (float) (width/133))));
-		bottomB = new Button(info, "bottom").setPosition((float) (width - 2*width/15), (float) (height - height/20)).setColorBackground(color(49, 130, 189))
+		bottomB = new Button(info, "bottom").setPosition((float) (width - 2*width/15), (float) (height - 3*height/60)).setColorBackground(color(49, 130, 189))
 				.setColorForeground(color(107, 174, 214))
-				.setColorActive(color(189, 215, 231));
+				.setColorActive(color(189, 215, 231)).setSize((int) (width/20), (int) (height/40));
 		bottomB.captionLabel().setControlFont(new ControlFont(createFont("arial", (float) (width/133))));
-		leftB = new Button(info, "left").setPosition((float) (width - width/15), (float) (height - height/10)).setColorBackground(color(49, 130, 189))
+		leftB = new Button(info, "left").setPosition((float) (width - width/15), (float) (height - 5*height/60)).setColorBackground(color(49, 130, 189))
 				.setColorForeground(color(107, 174, 214))
-				.setColorActive(color(189, 215, 231));
+				.setColorActive(color(189, 215, 231)).setSize((int) (width/20), (int) (height/40));
 		leftB.captionLabel().setControlFont(new ControlFont(createFont("arial", (float) (width/133))));
-		rightB = new Button(info, "right").setPosition((float) (width - width/15), (float) (height - height/20)).setColorBackground(color(49, 130, 189))
+		rightB = new Button(info, "right").setPosition((float) (width - width/15), (float) (height - 3*height/60)).setColorBackground(color(49, 130, 189))
 				.setColorForeground(color(107, 174, 214))
-				.setColorActive(color(189, 215, 231));
+				.setColorActive(color(189, 215, 231)).setSize((int) (width/20), (int) (height/40));
 		rightB.captionLabel().setControlFont(new ControlFont(createFont("arial", (float) (width/133))));
+		new Button(info, "Camera views") //just a label, not interactive
+		.setPosition((float) (width/1.26), (float) (height - 7*height/60))
+		.setColorBackground(color(0, 0, 0))
+		.setColorActive(color(0, 0, 0))
+		.setColorForeground(color(0, 0, 0))
+		.captionLabel().setControlFont(new ControlFont(createFont("arial", (float) (width/90))));
+		
 		
 		//initialize the color keys; these are not interactive
-		fateKey0 = new Button(info, "germline").setPosition((float) (width/1.25), (float) (height - 7*height/20)).setColorBackground(color(102, 194, 165)).setColorActive(color(102, 194, 165)).setColorForeground(color(102, 194, 165)).setVisible(false);
+		fateKey0 = new Button(info, "germline").setPosition((float) (width/1.25), (float) (height - 12*height/30)).setColorBackground(color(102, 194, 165)).setColorActive(color(102, 194, 165)).setColorForeground(color(102, 194, 165)).setVisible(false).setSize((int) (width/20), (int) (height/40));
 		fateKey0.captionLabel().setControlFont(new ControlFont(createFont("arial", (float) (width/133))));
-		fateKey1 = new Button(info, "MS/E").setPosition((float) (width - 2*width/15), (float) (height - 7*height/20)).setColorBackground(color(252, 141, 98)).setColorActive(color(252, 141, 98)).setColorForeground(color(252, 141, 98)).setVisible(false);
+		fateKey1 = new Button(info, "MS/E").setPosition((float) (width - 2*width/15), (float) (height - 12*height/30)).setColorBackground(color(252, 141, 98)).setColorActive(color(252, 141, 98)).setColorForeground(color(252, 141, 98)).setVisible(false).setSize((int) (width/20), (int) (height/40));
 		fateKey1.captionLabel().setControlFont(new ControlFont(createFont("arial", (float) (width/133))));
-		fateKey2 = new Button(info, "C/D").setPosition((float) (width - width/15), (float) (height - 7*height/20)).setColorBackground(color(141, 160, 203)).setColorActive(color(141, 160, 203)).setColorForeground(color(141, 160, 203)).setVisible(false);
+		fateKey2 = new Button(info, "C/D").setPosition((float) (width - width/15), (float) (height - 12*height/30)).setColorBackground(color(141, 160, 203)).setColorActive(color(141, 160, 203)).setColorForeground(color(141, 160, 203)).setVisible(false).setSize((int) (width/20), (int) (height/40));
 		fateKey2.captionLabel().setControlFont(new ControlFont(createFont("arial", (float) (width/133))));
-		fateKey3 = new Button(info, "Default").setPosition((float) (width/1.25), (float) (height - 3*height/10)).setColorBackground(color(231, 138, 195)).setColorActive(color(231, 138, 195)).setColorForeground(color(231, 138, 195)).setVisible(false);
+		fateKey3 = new Button(info, "Default").setPosition((float) (width/1.25), (float) (height - 11*height/30)).setColorBackground(color(231, 138, 195)).setColorActive(color(231, 138, 195)).setColorForeground(color(231, 138, 195)).setVisible(false).setSize((int) (width/20), (int) (height/40));
 		fateKey3.captionLabel().setControlFont(new ControlFont(createFont("arial", (float) (width/133))));
 		
-		parsKey0 = new Button(info, "par-1").setPosition((float) (width/1.25), (float) (height - 7*height/20)).setColorBackground(color(255, 0, 255)).setColorActive(color(255, 0, 255)).setColorForeground(color(255, 0, 255)).setVisible(false);
+		parsKey0 = new Button(info, "par-1").setPosition((float) (width/1.25), (float) (height - 12*height/30)).setColorBackground(color(255, 0, 255)).setColorActive(color(255, 0, 255)).setColorForeground(color(255, 0, 255)).setVisible(false).setSize((int) (width/20), (int) (height/40));
 		parsKey0.captionLabel().setControlFont(new ControlFont(createFont("arial", (float) (width/133))));
-		parsKey1 = new Button(info, "par-2").setPosition((float) (width/1.25), (float) (height - 3*height/10)).setColorBackground(color(255, 0, 0)).setColorActive(color(255, 0, 0)).setColorForeground(color(255, 0, 0)).setVisible(false);
+		parsKey1 = new Button(info, "par-2").setPosition((float) (width/1.25), (float) (height - 11*height/30)).setColorBackground(color(255, 0, 0)).setColorActive(color(255, 0, 0)).setColorForeground(color(255, 0, 0)).setVisible(false).setSize((int) (width/20), (int) (height/40));
 		parsKey1.captionLabel().setControlFont(new ControlFont(createFont("arial", (float) (width/133))));
-		parsKey2 = new Button(info, "par-3").setPosition((float) (width - 2*width/15), (float) (height - 7*height/20)).setColorBackground(color(0, 255, 255)).setColorActive(color(0, 255, 255)).setColorForeground(color(0, 255, 255)).setVisible(false);
+		parsKey2 = new Button(info, "par-3").setPosition((float) (width - 2*width/15), (float) (height - 12*height/30)).setColorBackground(color(0, 255, 255)).setColorActive(color(0, 255, 255)).setColorForeground(color(0, 255, 255)).setVisible(false).setSize((int) (width/20), (int) (height/40));
 		parsKey2.captionLabel().setControlFont(new ControlFont(createFont("arial", (float) (width/133))));
-		parsKey3 = new Button(info, "par-4").setPosition((float) (width - 2*width/15), (float) (height - 3*height/10)).setColorBackground(color(0, 0, 255)).setColorActive(color(0, 0, 255)).setColorForeground(color(0, 0, 255)).setVisible(false);
+		parsKey3 = new Button(info, "par-4").setPosition((float) (width - 2*width/15), (float) (height - 11*height/30)).setColorBackground(color(0, 0, 255)).setColorActive(color(0, 0, 255)).setColorForeground(color(0, 0, 255)).setVisible(false).setSize((int) (width/20), (int) (height/40));
 		parsKey3.captionLabel().setControlFont(new ControlFont(createFont("arial", (float) (width/133))));
-		parsKey4 = new Button(info, "par-5").setPosition((float) (width - width/15), (float) (height - 7*height/20)).setColorBackground(color(255, 255, 0)).setColorActive(color(255, 255, 0)).setColorForeground(color(255, 255, 0)).setVisible(false);
+		parsKey4 = new Button(info, "par-5").setPosition((float) (width - width/15), (float) (height - 12*height/30)).setColorBackground(color(255, 255, 0)).setColorActive(color(255, 255, 0)).setColorForeground(color(255, 255, 0)).setVisible(false).setSize((int) (width/20), (int) (height/40));
 		parsKey4.captionLabel().setControlFont(new ControlFont(createFont("arial", (float) (width/133))));
-		parsKey5 = new Button(info, "par-6").setPosition((float) (width - width/15), (float) (height - 3*height/10)).setColorBackground(color(0, 255, 0)).setColorActive(color(0, 255, 0)).setColorForeground(color(0, 255, 0)).setVisible(false);
+		parsKey5 = new Button(info, "par-6").setPosition((float) (width - width/15), (float) (height - 11*height/30)).setColorBackground(color(0, 255, 0)).setColorActive(color(0, 255, 0)).setColorForeground(color(0, 255, 0)).setVisible(false).setSize((int) (width/20), (int) (height/40));
 		parsKey5.captionLabel().setControlFont(new ControlFont(createFont("arial", (float) (width/133))));
 		
-		lineageKey0 = new Button(info, "ab-a").setPosition((float) (width/1.25), (float) (height - 7*height/20)).setColorBackground(color(255, 0, 0)).setColorActive(color(255, 0, 0)).setColorForeground(color(255, 0, 0)).setVisible(true);
+		lineageKey0 = new Button(info, "ab-a").setPosition((float) (width/1.25), (float) (height - 12*height/30)).setColorBackground(color(255, 0, 0)).setColorActive(color(255, 0, 0)).setColorForeground(color(255, 0, 0)).setVisible(true).setSize((int) (width/20), (int) (height/40));
 		lineageKey0.captionLabel().setControlFont(new ControlFont(createFont("arial", (float) (width/133))));
-		lineageKey1 = new Button(info, "ab-p").setPosition((float) (width/1.25), (float) (height - 3*height/10)).setColorBackground(color(0, 0, 255)).setColorActive(color(0, 0, 255)).setColorForeground(color(0, 0, 255)).setVisible(true);
+		lineageKey1 = new Button(info, "ab-p").setPosition((float) (width/1.25), (float) (height - 11*height/30)).setColorBackground(color(0, 0, 255)).setColorActive(color(0, 0, 255)).setColorForeground(color(0, 0, 255)).setVisible(true).setSize((int) (width/20), (int) (height/40));
 		lineageKey1.captionLabel().setControlFont(new ControlFont(createFont("arial", (float) (width/133))));
-		lineageKey2 = new Button(info, "e, ab").setPosition((float) (width - 2*width/15), (float) (height - 7*height/20)).setColorBackground(color(0, 255, 0)).setColorActive(color(0, 255, 0)).setColorForeground(color(0, 255, 0)).setVisible(true);
+		lineageKey2 = new Button(info, "e, ab").setPosition((float) (width - 2*width/15), (float) (height - 12*height/30)).setColorBackground(color(0, 255, 0)).setColorActive(color(0, 255, 0)).setColorForeground(color(0, 255, 0)).setVisible(true).setSize((int) (width/20), (int) (height/40));
 		lineageKey2.captionLabel().setControlFont(new ControlFont(createFont("arial", (float) (width/133))));
-		lineageKey3 = new Button(info, "ms").setPosition((float) (width - 2*width/15), (float) (height - 3*height/10)).setColorBackground(color(0, 255, 255)).setColorActive(color(0, 255, 255)).setColorForeground(color(0, 255, 255)).setVisible(true);
+		lineageKey3 = new Button(info, "ms").setPosition((float) (width - 2*width/15), (float) (height - 11*height/30)).setColorBackground(color(0, 255, 255)).setColorActive(color(0, 255, 255)).setColorForeground(color(0, 255, 255)).setVisible(true).setSize((int) (width/20), (int) (height/40));
 		lineageKey3.captionLabel().setControlFont(new ControlFont(createFont("arial", (float) (width/133))));
-		lineageKey4 = new Button(info, "c").setPosition((float) (width - width/15), (float) (height - 7*height/20)).setColorBackground(color(255, 0, 255)).setColorActive(color(255, 0, 255)).setColorForeground(color(255, 0, 255)).setVisible(true);
+		lineageKey4 = new Button(info, "c").setPosition((float) (width - width/15), (float) (height - 12*height/30)).setColorBackground(color(255, 0, 255)).setColorActive(color(255, 0, 255)).setColorForeground(color(255, 0, 255)).setVisible(true).setSize((int) (width/20), (int) (height/40));
 		lineageKey4.captionLabel().setControlFont(new ControlFont(createFont("arial", (float) (width/133))));
-		lineageKey5 = new Button(info, "d").setPosition((float) (width - width/15), (float) (height - 3*height/10)).setColorBackground(color(200, 70, 150)).setColorActive(color(200, 70, 150)).setColorForeground(color(200, 70, 150)).setVisible(true);
+		lineageKey5 = new Button(info, "d").setPosition((float) (width - width/15), (float) (height - 11*height/30)).setColorBackground(color(200, 70, 150)).setColorActive(color(200, 70, 150)).setColorForeground(color(200, 70, 150)).setVisible(true).setSize((int) (width/20), (int) (height/40));
 		lineageKey5.captionLabel().setControlFont(new ControlFont(createFont("arial", (float) (width/133))));
-		lineageKey6 = new Button(info, "p").setPosition((float) (width/1.25), (float) (height - height/4)).setColorBackground(color(255, 255, 0)).setColorActive(color(255, 255, 0)).setColorForeground(color(255, 255, 0)).setVisible(true);		
+		lineageKey6 = new Button(info, "p").setPosition((float) (width/1.25), (float) (height - 10*height/30)).setColorBackground(color(255, 255, 0)).setColorActive(color(255, 255, 0)).setColorForeground(color(255, 255, 0)).setVisible(true).setSize((int) (width/20), (int) (height/40));		
 		lineageKey6.captionLabel().setControlFont(new ControlFont(createFont("arial", (float) (width/133))));
 		
+		new Button(info, "set time flow mode") //just a label for the radio buttons, not interactive
+		.setPosition((float) (width/1.26), (float) (height - 6*height/30))
+		.setColorBackground(color(0, 0, 0))
+		.setColorActive(color(0, 0, 0))
+		.setColorForeground(color(0, 0, 0))
+		.captionLabel().setControlFont(new ControlFont(createFont("arial", (float) (width/90))));
+		chooseTimeflowMode = new RadioButton(info, "timeflow"); //radio buttons for choosing the color mode
+		chooseTimeflowMode.setItemsPerRow(3) //lots of aesthetic settings
+		.setSpacingColumn((int) (width/18))
+		.setPosition((float) (width/1.25), (float) (height - 5*height/30))
+		.addItem("Manual", 0)
+		.addItem("Automatic", 1)
+		.activate(0)
+		.setNoneSelectedAllowed(false)
+		.setSize((int) (width/75), (int) (height/40))
+		.setColorBackground(color(49, 130, 189))
+		.setColorForeground(color(107, 174, 214))
+		.setColorActive(color(189, 215, 231));
+		for(Toggle t: chooseTimeflowMode.getItems()){
+			t.captionLabel().setControlFont(new ControlFont(createFont("arial", (float) (width/100))));
+		}
+		
+		
 		new Button(info, "choose color mode") //just a label for the radio buttons, not interactive
-		.setPosition((float) (width/1.26), (float) (height - height/5.15))
+		.setPosition((float) (width/1.26), (float) (height - 17*height/60))
 		.setColorBackground(color(0, 0, 0))
 		.setColorActive(color(0, 0, 0))
 		.setColorForeground(color(0, 0, 0))
@@ -193,7 +233,7 @@ public class BasicVisual extends PApplet{
 		chooseColorMode = new RadioButton(info, "radios"); //radio buttons for choosing the color mode
 		chooseColorMode.setItemsPerRow(3) //lots of aesthetic settings
 		.setSpacingColumn((int) (width/18))
-		.setPosition((float) (width/1.25), (float) (height - height/6.25))
+		.setPosition((float) (width/1.25), (float) (height - 15*height/60))
 		.addItem("Lineage", 0)
 		.addItem("Fate", 1)
 		.addItem("Pars", 2)
@@ -208,6 +248,15 @@ public class BasicVisual extends PApplet{
 		}
 		
 		drawKey(displayShell.colorMode); //draw the appropriate key (set to lineage by default)
+
+		//set up the slider bar
+		progressBar = new Slider(info, "Elapsed time")
+		.setPosition(width/40, height - height/20)
+		.setSize((int) (width-width/3), (int) (height/40))
+		.setValue(currentTime)
+		.setLock(true)
+		.setMax(96);
+		progressBar.captionLabel().setControlFont(new ControlFont(createFont("arial", (float) (width/100))));
 	}
 
 	//implicitly called in a loop
@@ -229,6 +278,16 @@ public class BasicVisual extends PApplet{
 			//they hold the current state of the color mode (that is, false for those that aren't currently set and true for the one that is)
 			//we only set colors when the colormode doesn't match these, which indicates that the colormode has been recently changed
 			if(chooseColorMode.getState(0) != lineageState || chooseColorMode.getState(1) != fateState || chooseColorMode.getState(2) != parsState) updateColorMode();
+			if(chooseTimeflowMode.getState(1) != autoTime) autoTime = !autoTime;
+			if(autoTime){
+				if(timeCount >= 10){
+					progressForward();
+					timeCount = 0;
+				}
+				else{
+					timeCount++;
+				}
+			}
 		}
 
 		//this prevents clicks on the infoView (right hand side) from affecting the camera
@@ -259,7 +318,7 @@ public class BasicVisual extends PApplet{
 	
 	void back(float theValue){
 		camera.reset(0);
-		camera.rotateY(180);
+		camera.rotateY(160);
 	}
 	
 	void top(float theValue){
@@ -310,34 +369,52 @@ public class BasicVisual extends PApplet{
 		displayShell.updateColorMode(); //calls the method that will change the colors of the existing cells
 	}
 	
+	public void progressForward(){
+		if(currentTime <= 95){
+			userText = "Type a cell name to see its contents,\nor press right arrow to progress 1 timestep\nor left arrow to move backwards 1 timestep.";
+			for(String s: displayShell.getCells().keySet()){
+				displayShell.getCells().get(s).setSelected(true);
+			}
+			if(currentTime == farthestSeen){
+				farthestShell.timeStep();
+				displayShell = farthestShell;
+				currentTime++;
+				farthestSeen++;
+				shellsOverTime.put(currentTime, new Shell(farthestShell));
+				updateColorMode();
+				progressBar.setValue(currentTime);
+			}
+			else{
+				currentTime++;
+				displayShell = shellsOverTime.get(currentTime);
+				updateColorMode();
+				progressBar.setValue(currentTime);
+			}
+		}
+	}
+	
 	//when the user is typing, different things should happen
 	public void keyReleased(){
 		if(keyCode == ESC) exit();
 		
 		if(mutantsChosen){ //only run if mutantsChosen is set, because userText doesn't exist yet if not
-			if(key == ' '){ //spacebar triggers a timestep
-				displayShell.timeStep();
-				userText = "Type a cell name to see its contents,\nor press spacebar to progress 1 timestep.";
-			}
-			else if(keyCode == RIGHT){
-				if(currentTime == farthestSeen){
-					farthestShell.timeStep();
-					displayShell = farthestShell;
-					currentTime++;
-					farthestSeen++;
-					shellsOverTime.put(currentTime, new Shell(farthestShell));
-				}
-				else{
-					currentTime++;
-					displayShell = shellsOverTime.get(currentTime);
-					updateColorMode();
-				}
+			//if(key == ' '){ //spacebar triggers a timestep
+				//displayShell.timeStep();
+				//userText = "Type a cell name to see its contents,\nor press right arrow to progress 1 timestep\nor left arrow to move backwards 1 timestep.";
+			//}
+			if(keyCode == RIGHT){
+				progressForward();
 			}
 			else if(keyCode == LEFT){
 				if(currentTime > 1){
+					for(String s: displayShell.getCells().keySet()){
+						displayShell.getCells().get(s).setSelected(true);
+					}
+					userText = "Type a cell name to see its contents,\nor press right arrow to progress 1 timestep\nor left arrow to move backwards 1 timestep.";
 					currentTime--;
 					displayShell = shellsOverTime.get(currentTime);
 					updateColorMode();
+					progressBar.setValue(currentTime);
 				}
 				
 			}
