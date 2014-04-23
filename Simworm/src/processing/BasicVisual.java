@@ -14,9 +14,8 @@ public class BasicVisual extends PApplet{
 	private static final long serialVersionUID = 1L;
 	Shell displayShell;
 	Shell farthestShell;
-	String userText = "Type a cell name to see its contents,\nor press right arrow to progress 1 timestep\nor left arrow to move backwards 1 timestep.";
+	String userText;
 	PeasyCam camera;
-	PMatrix matScene;
 	ControlP5 info;
 	Textarea userTextArea;
 	Textarea cellNamesArea;
@@ -26,16 +25,16 @@ public class BasicVisual extends PApplet{
 	Button bottomB;
 	Button leftB;
 	Button rightB;
-	boolean mutantsChosen = false;
-	HashMap<String, Boolean> mutants = new HashMap<String, Boolean>();
+	boolean mutantsChosen;
+	HashMap<String, Boolean> mutants;
 	CheckBox chooseMutants;
 	Button createShell;
 	RadioButton chooseColorMode;
 	RadioButton chooseTimeflowMode;
-	boolean autoTime = false;
-	boolean lineageState = true;
-	boolean fateState = false;
-	boolean parsState = false;
+	boolean autoTime;
+	boolean lineageState;
+	boolean fateState;
+	boolean parsState;
 	Button fateKey0;
 	Button fateKey1;
 	Button fateKey2;
@@ -55,17 +54,25 @@ public class BasicVisual extends PApplet{
 	Button lineageKey6;
 	int currentTime;
 	int farthestSeen;
-	HashMap<Integer, Shell> shellsOverTime = new HashMap<Integer, Shell>();
-	int timeCount = 0;	
+	HashMap<Integer, Shell> shellsOverTime;
+	int timeCount;	
 	Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 	float width = screenSize.width;
 	float height = screenSize.height;
 	Slider progressBar;
+	Button startOver;
+	boolean firstTime = true;
 	
 	//called on start. opens the screen where the user chooses mutant genes
 	@SuppressWarnings("deprecation")
 	public void setup(){
-		size((int) width, (int) height, P3D);
+		mutantsChosen = false;
+		mutants = new HashMap<String, Boolean>();
+		if(firstTime){
+			size((int) width, (int) height, P3D);
+			camera = new PeasyCam(this, 500, height/2, 0, width/2.65); //initialize the peasycam
+		}
+		firstTime = false;
 		info = new ControlP5(this);
 		info.setAutoDraw(false);
 		
@@ -96,8 +103,6 @@ public class BasicVisual extends PApplet{
 		createShell = new Button(info, "createShell").setPosition(width/3, (float) (height/1.65)).setLabel("create shell").setSize((int) (width/3), (int) (height/20)); //button to confirm checkbox settings
 		createShell.captionLabel().setControlFont(new ControlFont(createFont("arial", (float) (width/80))));
 		
-		camera = new PeasyCam(this, 500, height/2, 0, 600); //initialize the peasycam
-		
 		currentTime = 1;
 		farthestSeen = 1;
 	}
@@ -111,8 +116,14 @@ public class BasicVisual extends PApplet{
 		mutantsChosen = true; //value used to choose what items are drawn in draw()
 		farthestShell = new Shell(this, mutants); //create the shell!
 		displayShell = farthestShell; //at the start, should display farthestShell.
+		shellsOverTime = new HashMap<Integer, Shell>();
 		shellsOverTime.put(1, new Shell(farthestShell)); //populate the first member of the hashmap
-		
+		timeCount = 0;
+		userText = "Type a cell name to see its contents,\nor press right arrow to progress 1 timestep\nor left arrow to move backwards 1 timestep.";
+		autoTime = false;
+		lineageState = true;
+		fateState = false;
+		parsState = false;
 		
 		userTextArea = new Textarea(info, "infoText"); //textarea where the user can input commands and receive information
 		userTextArea.setPosition((float) (width/1.25), height/40)
@@ -247,6 +258,12 @@ public class BasicVisual extends PApplet{
 			t.captionLabel().setControlFont(new ControlFont(createFont("arial", (float) (width/100))));
 		}
 		
+		startOver = new Button(info, "startOver")
+		.setLabel("  generate new embryo")
+		.setPosition((float) (width/60), (float) (height/40))
+		.setSize((int) (width/6), (int) (height/20));
+		startOver.captionLabel().setControlFont(new ControlFont(createFont("arial", (float) (width/90))));
+		
 		drawKey(displayShell.colorMode); //draw the appropriate key (set to lineage by default)
 
 		//set up the slider bar
@@ -339,6 +356,11 @@ public class BasicVisual extends PApplet{
 	void right(float theValue){
 		camera.reset(0);
 		camera.rotateY(90);
+	}
+	
+	void startOver(float theValue){
+		camera.reset(0);
+		setup();
 	}
 	
 	//detects changes in the selected value of the colormode radio buttons
