@@ -1,9 +1,14 @@
 package dataStructures;
 
+import picking.BoundingBox3D;
+import picking.VersionException;
+
 import java.util.HashMap;
+import java.util.LinkedList;
 
 import dataStructures.Coordinates;
 import processing.BasicVisual;
+import picking.Line;
 
 public class Cell {
 	BasicVisual window;
@@ -17,6 +22,7 @@ public class Cell {
 	private DivisionData divide;
 	private int generation;
 	private boolean selected;
+	LinkedList<Coordinates> boundingBox;
 	
 	Coordinates sphereLocation;
 	
@@ -108,6 +114,10 @@ public class Cell {
 
 	public int getGeneration() {
 		return generation;
+	}
+	
+	public LinkedList<Coordinates> getBoundingBox() {
+		return boundingBox;
 	}
 
 	public void setColor(RGB color) {
@@ -269,5 +279,67 @@ public class Cell {
 			window.fill(255, 255, 255);
 		}
 		return parsInfo+otherInfo;
-	}	
+	}
+	
+	public BoundingBox3D genBox(){
+		Coordinates rightTopFront = new Coordinates((float) (this.center.getX() + this.lengths.getX()/2.0), (float) (this.center.getY() + this.lengths.getY()/2.0), (float) (this.center.getZ() + this.lengths.getZ()/2.0));
+		Coordinates rightTopBack = new Coordinates((float) (this.center.getX() + this.lengths.getX()/2.0), (float) (this.center.getY() + this.lengths.getY()/2.0), (float) (this.center.getZ() - this.lengths.getZ()/2.0));
+		Coordinates rightBottomFront = new Coordinates((float) (this.center.getX() + this.lengths.getX()/2.0), (float) (this.center.getY() - this.lengths.getY()/2.0), (float) (this.center.getZ() + this.lengths.getZ()/2.0));
+		Coordinates rightBottomBack = new Coordinates((float) (this.center.getX() + this.lengths.getX()/2.0), (float) (this.center.getY() - this.lengths.getY()/2.0), (float) (this.center.getZ() - this.lengths.getZ()/2.0));
+		Coordinates leftTopFront = new Coordinates((float) (this.center.getX() - this.lengths.getX()/2.0), (float) (this.center.getY() + this.lengths.getY()/2.0), (float) (this.center.getZ() + this.lengths.getZ()/2.0));
+		Coordinates leftTopBack = new Coordinates((float) (this.center.getX() - this.lengths.getX()/2.0), (float) (this.center.getY() + this.lengths.getY()/2.0), (float) (this.center.getZ() - this.lengths.getZ()/2.0));
+		Coordinates leftBottomFront = new Coordinates((float) (this.center.getX() - this.lengths.getX()/2.0), (float) (this.center.getY() - this.lengths.getY()/2.0), (float) (this.center.getZ() + this.lengths.getZ()/2.0));
+		Coordinates leftBottomBack = new Coordinates((float) (this.center.getX() - this.lengths.getX()/2.0), (float) (this.center.getY() - this.lengths.getY()/2.0), (float) (this.center.getZ() - this.lengths.getZ()/2.0));
+		return new BoundingBox3D(rightTopFront, leftBottomFront, rightBottomBack, rightBottomFront, leftTopFront, rightTopBack, leftBottomBack, leftTopBack); 
+	}
+	
+	LinkedList<Coordinates> orderPoints(LinkedList<Coordinates> points){
+		LinkedList<Coordinates> pointsDup1 = new LinkedList<Coordinates>();
+		LinkedList<Coordinates> pointsDup2 = new LinkedList<Coordinates>();
+		
+		for(Coordinates t: points){
+			pointsDup1.add(t);
+			pointsDup2.add(t);
+		}
+		
+		LinkedList<Coordinates> ordered = new LinkedList<Coordinates>();		
+		ordered.add(points.getFirst());
+		points.removeFirst();
+		
+		try{
+			if(points.size() == 3){
+				ordered = ordered.getFirst().determinePathFour(new LinkedList<Integer>(), points, ordered);
+			}
+			else if(points.size() == 5){
+				ordered = ordered.getFirst().determinePathSix(0, 0, new LinkedList<Integer>(), points, ordered);
+			}
+		}
+		catch(VersionException e){
+			try{
+				ordered = new LinkedList<Coordinates>();		
+				ordered.add(pointsDup1.getFirst());
+				pointsDup1.removeFirst();
+				ordered = ordered.getFirst().determinePathSix(1, 0, new LinkedList<Integer>(), pointsDup1, ordered);
+			}
+			catch(VersionException f){
+				try{
+					ordered = new LinkedList<Coordinates>();		
+					ordered.add(pointsDup2.getFirst());
+					pointsDup2.removeFirst();
+					ordered = ordered.getFirst().determinePathSix(2, 0, new LinkedList<Integer>(), pointsDup2, ordered);
+				}
+				catch(VersionException g){}
+			}
+		}
+		
+		this.boundingBox = ordered;
+		return ordered;
+	}
+	
+	public Cell boundSphere(){
+		BoundingBox3D theBox = this.genBox();
+		LinkedList<Coordinates> maxes = this.window.selectMaxPoints(theBox);
+		this.orderPoints(maxes);
+		return this;
+	}
 }

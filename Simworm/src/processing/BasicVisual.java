@@ -1,8 +1,14 @@
 package processing;
 
+import dataStructures.Coordinates;
+import dataStructures.Cell;
+import picking.BoundingBox3D;
+
 import java.awt.Dimension;
 import java.awt.Toolkit;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
 
 import controlP5.*;
 import dataStructures.ColorMode;
@@ -62,6 +68,7 @@ public class BasicVisual extends PApplet{
 	Slider progressBar;
 	Button startOver;
 	boolean firstTime = true;
+	boolean firstClick = false;
 	
 	//called on start. opens the screen where the user chooses mutant genes
 	@SuppressWarnings("deprecation")
@@ -113,7 +120,6 @@ public class BasicVisual extends PApplet{
 		info.remove("Choose mutants"); //remove the elements that were used in the mutants choosing screen
 		info.remove("boxes");
 		info.remove("createShell");
-		mutantsChosen = true; //value used to choose what items are drawn in draw()
 		farthestShell = new Shell(this, mutants); //create the shell!
 		displayShell = farthestShell; //at the start, should display farthestShell.
 		shellsOverTime = new HashMap<Integer, Shell>();
@@ -274,6 +280,7 @@ public class BasicVisual extends PApplet{
 		.setLock(true)
 		.setMax(96);
 		progressBar.captionLabel().setControlFont(new ControlFont(createFont("arial", (float) (width/100))));
+		mutantsChosen = true; //value used to choose what items are drawn in draw()
 	}
 
 	//implicitly called in a loop
@@ -308,7 +315,7 @@ public class BasicVisual extends PApplet{
 		}
 
 		//this prevents clicks on the infoView (right hand side) from affecting the camera
-		if(mouseX > 1100) camera.setActive(false);
+		if(mouseX > 4 * (width/5)) camera.setActive(false);
 		else camera.setActive(true);
 		
 		gui();
@@ -464,6 +471,45 @@ public class BasicVisual extends PApplet{
 		}
 	}
 	
+	public void mouseClicked(){
+		if(mutantsChosen){
+			if(!firstClick){
+				firstClick = true;
+			}
+			else{
+				if(mouseX < 4*(width/5)){
+					loadPixels();
+					if(pixels[(int) (mouseY*width+mouseX)] != -16777216){
+						System.out.println(pixels[(int) (mouseY*width+mouseX)]);
+						LinkedList<Cell> qualifyingCells = new LinkedList<Cell>();
+						for(String s: displayShell.getCells().keySet()){
+							Cell c = displayShell.getCells().get(s);
+							if(pointInBounds(mouseX, mouseY, c)){
+								qualifyingCells.add(c);
+							}
+							c.setSelected(false);
+						}
+						if(qualifyingCells.size() > 0){
+							Cell chosen = qualifyingCells.getFirst();
+							if(qualifyingCells.size() > 1){
+								float distance = screenZ(chosen.getCenter().getX(), chosen.getCenter().getY(), chosen.getCenter().getZ());
+								for(Cell c: qualifyingCells){
+									float dist = screenZ(c.getCenter().getX(), c.getCenter().getY(), c.getCenter().getZ());
+									if(dist < distance){
+										chosen = c;
+										distance = dist;
+									}
+								}
+							}
+							chosen.setSelected(true);
+							userText = chosen.getInfo();
+						}
+					}
+				}
+			}
+		}
+	}
+	
 	//display the correct color key for the currently selected colormode
 	public void drawKey(ColorMode colorMode){
 		switch(colorMode){		
@@ -552,6 +598,63 @@ public class BasicVisual extends PApplet{
 		//set up to draw cells
 		noStroke();
 		fill(180, 255, 255);
+	}
+
+	public float areaTriangle(Coordinates point1, Coordinates point2, Coordinates point3){
+		return abs((float) ((point1.getX()*(point2.getY()-point3.getY()) + point2.getX()*(point3.getY()-point1.getY()) + point3.getX()*(point1.getY()-point2.getY()))/2.0));
+	}
+	
+	public boolean pointInBounds(int x, int y, Cell s){
+		s.boundSphere();
+		LinkedList<Coordinates> screenCoor = new LinkedList<Coordinates>();
+		for(Coordinates t: s.getBoundingBox()){
+			screenCoor.add(new Coordinates(screenX(t.getX(), t.getY(), t.getZ()), screenY(t.getX(), t.getY(), t.getZ()), 0));
+		}
+		
+		float areaPoly = 0;
+		float areaPoint = 0;
+		
+		for(int i = 1; i < (screenCoor.size()-1); i++){
+			areaPoly += areaTriangle(screenCoor.getFirst(), screenCoor.get(i), screenCoor.get(i+1));
+		}
+		
+		
+		Coordinates mouse = new Coordinates(x, y, 0);
+		for(int i = 0; i < (screenCoor.size()-1); i++){
+			areaPoint += areaTriangle(mouse, screenCoor.get(i), screenCoor.get(i+1));
+		}
+		areaPoint += areaTriangle(mouse, screenCoor.getLast(), screenCoor.getFirst());
+		
+		if(areaPoint > areaPoly+.2) return false;
+		else return true;
+	}
+	
+	public Coordinates convertToScreen(Coordinates model){
+		return new Coordinates(screenX(model.getX(), model.getY(), model.getZ()), screenY(model.getX(), model.getY(), model.getZ()), 0);
+	}
+	
+	public LinkedList<Coordinates> selectMaxPoints(BoundingBox3D boundingBox){
+		LinkedList<Coordinates> maxes = new LinkedList<Coordinates>();
+		
+		Coordinates lbb = convertToScreen(boundingBox.leftbottomback);
+		Coordinates lbf = convertToScreen(boundingBox.leftbottomfront);
+		Coordinates ltb = convertToScreen(boundingBox.lefttopback);
+		Coordinates ltf = convertToScreen(boundingBox.lefttopfront);
+		Coordinates rbb = convertToScreen(boundingBox.rightbottomback);
+		Coordinates rbf = convertToScreen(boundingBox.rightbottomfront);
+		Coordinates rtb = convertToScreen(boundingBox.righttopback);
+		Coordinates rtf = convertToScreen(boundingBox.righttopfront);
+		
+		if(!lbb.sum360(rbb, ltb, lbf)) maxes.add(boundingBox.leftbottomback);
+		if(!lbf.sum360(rbf, ltf, lbb)) maxes.add(boundingBox.leftbottomfront);
+		if(!ltb.sum360(rtb, lbb, ltf)) maxes.add(boundingBox.lefttopback);
+		if(!ltf.sum360(rtf, lbf, ltb)) maxes.add(boundingBox.lefttopfront);
+		if(!rbb.sum360(lbb, rtb, rbf)) maxes.add(boundingBox.rightbottomback);
+		if(!rbf.sum360(lbf, rtf, rbb)) maxes.add(boundingBox.rightbottomfront);
+		if(!rtb.sum360(ltb, rbb, rtf)) maxes.add(boundingBox.righttopback);
+		if(!rtf.sum360(ltf, rbf, rtb)) maxes.add(boundingBox.righttopfront);
+		
+		return maxes;
 	}
 	
 	public void gui(){
