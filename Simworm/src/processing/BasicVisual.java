@@ -477,32 +477,32 @@ public class BasicVisual extends PApplet{
 				firstClick = true;
 			}
 			else{
-				if(mouseX < 4*(width/5)){
+				if(mouseX < 4*(width/5)){ //only do object picking in the 3d side of the screen
 					loadPixels();
-					if(pixels[(int) (mouseY*width+mouseX)] != -16777216){
+					if(pixels[(int) (mouseY*width+mouseX)] != -16777216){ //only do object picking if the selected pixel isn't black
 						System.out.println(pixels[(int) (mouseY*width+mouseX)]);
 						LinkedList<Cell> qualifyingCells = new LinkedList<Cell>();
 						for(String s: displayShell.getCells().keySet()){
 							Cell c = displayShell.getCells().get(s);
-							if(pointInBounds(mouseX, mouseY, c)){
+							if(pointInBounds(mouseX, mouseY, c)){ //if the clicked pixel is within a cell's bounding box, it qualifies
 								qualifyingCells.add(c);
 							}
-							c.setSelected(false);
+							c.setSelected(false); //set all non qualifying cells to be unselected
 						}
-						if(qualifyingCells.size() > 0){
-							Cell chosen = qualifyingCells.getFirst();
-							if(qualifyingCells.size() > 1){
-								float distance = screenZ(chosen.getCenter().getX(), chosen.getCenter().getY(), chosen.getCenter().getZ());
-								for(Cell c: qualifyingCells){
-									float dist = screenZ(c.getCenter().getX(), c.getCenter().getY(), c.getCenter().getZ());
-									if(dist < distance){
+						if(qualifyingCells.size() > 0){ //if there are any qualifying cells...
+							Cell chosen = qualifyingCells.getFirst(); //initially choose the first cell
+							if(qualifyingCells.size() > 1){ //but if there's more than two, we want the one with the smallest z coordinate in screen space
+								float distance = screenZ(chosen.getCenter().getX(), chosen.getCenter().getY(), chosen.getCenter().getZ()); //current best
+								for(Cell c: qualifyingCells){ //check the other qualifiers
+									float dist = screenZ(c.getCenter().getX(), c.getCenter().getY(), c.getCenter().getZ()); //get their z coordinates
+									if(dist < distance){ //if this one is closest, overwrite current best with this
 										chosen = c;
 										distance = dist;
 									}
 								}
 							}
-							chosen.setSelected(true);
-							userText = chosen.getInfo();
+							chosen.setSelected(true); //select the chosen cell
+							userText = chosen.getInfo(); //print its info
 						}
 					}
 				}
@@ -600,39 +600,69 @@ public class BasicVisual extends PApplet{
 		fill(180, 255, 255);
 	}
 
+	/**
+	 * Computes the area of a triangle; used repeatedly to find areas of irregular shapes during object picking; called on points in screen space
+	 * @param point1 coordinates of one point
+	 * @param point2 coordinates of another point
+	 * @param point3 coordinates of the last point
+	 * @return the area of the triangle
+	 */
 	public float areaTriangle(Coordinates point1, Coordinates point2, Coordinates point3){
 		return abs((float) ((point1.getX()*(point2.getY()-point3.getY()) + point2.getX()*(point3.getY()-point1.getY()) + point3.getX()*(point1.getY()-point2.getY()))/2.0));
 	}
 	
+	/**
+	 * determines whether a point is within a cell's bounding box
+	 * @param x the x coordinate of the point in question
+	 * @param y the y coordinate of the point in question
+	 * @param s the cell in question
+	 * @return boolean indicating whether or not the point is within the box
+	 */
 	public boolean pointInBounds(int x, int y, Cell s){
-		s.boundSphere();
+		s.boundSphere(); //generate the cell's bounding box, find the outside points, order them. this creates the 2D polygon that we are measuring if we're within or without
 		LinkedList<Coordinates> screenCoor = new LinkedList<Coordinates>();
 		for(Coordinates t: s.getBoundingBox()){
-			screenCoor.add(new Coordinates(screenX(t.getX(), t.getY(), t.getZ()), screenY(t.getX(), t.getY(), t.getZ()), 0));
+			screenCoor.add(new Coordinates(screenX(t.getX(), t.getY(), t.getZ()), screenY(t.getX(), t.getY(), t.getZ()), 0)); // convert the coordinates of the polygon to screen space, in order
 		}
 		
-		float areaPoly = 0;
-		float areaPoint = 0;
+		float areaPoly = 0; //the area of the polygon
+		float areaPoint = 0; //the area of the various triangles formed between the point in question and the vertices of the polygon
 		
 		for(int i = 1; i < (screenCoor.size()-1); i++){
-			areaPoly += areaTriangle(screenCoor.getFirst(), screenCoor.get(i), screenCoor.get(i+1));
+			areaPoly += areaTriangle(screenCoor.getFirst(), screenCoor.get(i), screenCoor.get(i+1)); //progress through the polygon in order and measure the area of the triangles formed by adjacent points; the sum of these is the total area of the polygon
 		}
 		
 		
-		Coordinates mouse = new Coordinates(x, y, 0);
+		Coordinates mouse = new Coordinates(x, y, 0); //create a coordinates object with the x and y coordinates of the point in question. z is irrelevant now, we're working in 2D
 		for(int i = 0; i < (screenCoor.size()-1); i++){
-			areaPoint += areaTriangle(mouse, screenCoor.get(i), screenCoor.get(i+1));
+			areaPoint += areaTriangle(mouse, screenCoor.get(i), screenCoor.get(i+1)); //areas of the triangles between the subsequent vertices in the polygon and the point in question
 		}
-		areaPoint += areaTriangle(mouse, screenCoor.getLast(), screenCoor.getFirst());
+		areaPoint += areaTriangle(mouse, screenCoor.getLast(), screenCoor.getFirst()); //get the last one
 		
-		if(areaPoint > areaPoly+.2) return false;
+		//areaPoint will now either be equal to or greater than areaPoly. if it's equal, the point is within the polygon, else it's not.
+		//google search for "determining if a point is within a polygon" if you're confused. this is just an algorithmic implementation of a well known mathematical theorem.
+		
+		if(areaPoint > areaPoly+.2) return false; //add .2 to give a little leeway for floating point rounding errors
 		else return true;
 	}
 	
+	/**
+	 * converts a set of coordinates in model space into screen space
+	 * @param model the coordinates in model space
+	 * @return the coordinates in screen space
+	 */
 	public Coordinates convertToScreen(Coordinates model){
 		return new Coordinates(screenX(model.getX(), model.getY(), model.getZ()), screenY(model.getX(), model.getY(), model.getZ()), 0);
 	}
 	
+	/**
+	 * finds the 4 or 6 points that form the "outside" of a cube in screen space
+	 * this works by summing the angles between the lines radiating from each point.
+	 * these angles will sum to 360 IFF the point is NOT on the outside of the cube
+	 * draw a picture if you're confused
+	 * @param boundingBox the cube
+	 * @return a list of the points along the cube's outside; these coordinates are in model space and are not ordered
+	 */
 	public LinkedList<Coordinates> selectMaxPoints(BoundingBox3D boundingBox){
 		LinkedList<Coordinates> maxes = new LinkedList<Coordinates>();
 		
