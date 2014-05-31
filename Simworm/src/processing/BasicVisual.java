@@ -3,6 +3,7 @@ package processing;
 import dataStructures.Coordinates;
 import dataStructures.Cell;
 import picking.BoundingBox3D;
+import dataStructures.RGB;
 
 import java.awt.Dimension;
 import java.awt.Toolkit;
@@ -479,15 +480,15 @@ public class BasicVisual extends PApplet{
 			else{
 				if(mouseX < 4*(width/5)){ //only do object picking in the 3d side of the screen
 					loadPixels();
-					if(pixels[(int) (mouseY*width+mouseX)] != -16777216){ //only do object picking if the selected pixel isn't black
-						System.out.println(pixels[(int) (mouseY*width+mouseX)]);
+					int pixelColor = pixels[(int) (mouseY*width+mouseX)];
+					if(pixelColor != -16777216){ //only do object picking if the selected pixel isn't black
+						RGB pixelRGB = new RGB(pixelColor);						
 						LinkedList<Cell> qualifyingCells = new LinkedList<Cell>();
 						for(String s: displayShell.getCells().keySet()){
 							Cell c = displayShell.getCells().get(s);
-							if(pointInBounds(mouseX, mouseY, c)){ //if the clicked pixel is within a cell's bounding box, it qualifies
+							if(pointInBounds(mouseX, mouseY, c) && pixelRGB.colorIsClose(c.getColor(), c.isSelected())){ //if the clicked pixel is within a cell's bounding box, and the color of the clicked pixel is close to the color of the cell, the cell qualifies
 								qualifyingCells.add(c);
 							}
-							c.setSelected(false); //set all non qualifying cells to be unselected
 						}
 						if(qualifyingCells.size() > 0){ //if there are any qualifying cells...
 							Cell chosen = qualifyingCells.getFirst(); //initially choose the first cell
@@ -500,6 +501,9 @@ public class BasicVisual extends PApplet{
 										distance = dist;
 									}
 								}
+							}
+							for(String s: displayShell.getCells().keySet()){
+								displayShell.getCells().get(s).setSelected(false); //set all non qualifying cells to be unselected
 							}
 							chosen.setSelected(true); //select the chosen cell
 							userText = chosen.getInfo(); //print its info

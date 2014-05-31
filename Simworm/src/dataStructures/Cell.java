@@ -120,6 +120,10 @@ public class Cell {
 		return boundingBox;
 	}
 
+	public RGB getColor() {
+		return color;
+	}
+
 	public void setColor(RGB color) {
 		this.color = color;
 	}

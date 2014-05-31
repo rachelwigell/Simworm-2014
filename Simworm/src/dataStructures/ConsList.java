@@ -80,5 +80,3 @@ public class ConsList { //holds data about antecedents and consequences
 		}
 	}
 }
-
-
