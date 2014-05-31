@@ -52,21 +52,21 @@ public class RGB {
 	/**
 	 * checks whether two colors are similar; this is used to make object picking more accurate (fewer false positives).
 	 * a cell should only be picked if the pixel clicked is a similar color to the cell color.
-	 * "this" must be the pixel color, and "to" must be the color of the cell.
 	 * @param to the color being compared to "this" color
-	 * @param selected whether or not the cell is selected; unselected cells are drawn a darker color
 	 * @return boolean indicating whether the colors are similar.
 	 */
-	public boolean colorIsClose(RGB to, boolean selected){
-		if(!selected){ //if the cell is not selected, double "to" to compensate for the darkened shade of the cell
-			to = new RGB(to.red/2, to.green/2, to.blue/2);
-		}
-		if(this.red > to.red + 75) return false;
-		if(this.red < to.red - 75) return false;
-		if(this.green > to.green + 75) return false;
-		if(this.green < to.green - 75) return false;
-		if(this.blue > to.blue + 75) return false;
-		if(this.blue < to.blue - 75) return false;
+	public boolean colorIsClose(RGB to){		
+		//regardless of how much light/shadow is on the pixel, each pixel on the sphere should have the same RATIO of R/G/B values as the assigned color
+		int redProp = this.red/(to.red+1); //adding 1 to denominator barely changes ratio but avoids possibility of division by zero
+		int greenProp = this.green/(to.green+1);
+		int blueProp = this.blue/(to.blue+1);
+
+		//theoretically the differences in all these ratios should be 0, but we check that it's >.1 to allow for floating point or rounding errors
+		//and also because we added 1 to the denominator. no two colors should be similar enough for this to matter
+		if(Math.abs(redProp-greenProp) > .1) return false;
+		if(Math.abs(greenProp-blueProp) > .1) return false;
+		if(Math.abs(blueProp-redProp) > .1) return false;
+		
 		return true;
 	}
 }

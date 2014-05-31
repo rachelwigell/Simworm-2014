@@ -7,7 +7,6 @@ import dataStructures.RGB;
 
 import java.awt.Dimension;
 import java.awt.Toolkit;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 
@@ -289,7 +288,7 @@ public class BasicVisual extends PApplet{
 		background(0);
 		translate(250, 250, -150);
 		lights();
-		spotLight(255, 255, 255, 250, 0, 400, 0, 0, -1, PI/4, 2);
+		//spotLight(255, 255, 255, 250, 0, 400, 0, 0, -1, PI/4, 2);
 		noStroke();
 		//some of these settings should only be called if we're past the mutants screen
 		//else these elements won't exist yet and you'll get null point exceptions
@@ -482,11 +481,14 @@ public class BasicVisual extends PApplet{
 					loadPixels();
 					int pixelColor = pixels[(int) (mouseY*width+mouseX)];
 					if(pixelColor != -16777216){ //only do object picking if the selected pixel isn't black
-						RGB pixelRGB = new RGB(pixelColor);						
+						RGB pixelRGB = new RGB(pixelColor);
+						
+						System.out.println("R" + pixelRGB.getRed() + " G" + pixelRGB.getGreen() + " B" + pixelRGB.getBlue());
+						
 						LinkedList<Cell> qualifyingCells = new LinkedList<Cell>();
 						for(String s: displayShell.getCells().keySet()){
 							Cell c = displayShell.getCells().get(s);
-							if(pointInBounds(mouseX, mouseY, c) && pixelRGB.colorIsClose(c.getColor(), c.isSelected())){ //if the clicked pixel is within a cell's bounding box, and the color of the clicked pixel is close to the color of the cell, the cell qualifies
+							if(pointInBounds(mouseX, mouseY, c) && pixelRGB.colorIsClose(c.getColor())){ //if the clicked pixel is within a cell's bounding box, and the color of the clicked pixel is close to the color of the cell, the cell qualifies
 								qualifyingCells.add(c);
 							}
 						}

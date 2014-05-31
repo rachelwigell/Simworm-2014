@@ -8,7 +8,6 @@ import java.util.LinkedList;
 
 import dataStructures.Coordinates;
 import processing.BasicVisual;
-import picking.Line;
 
 public class Cell {
 	BasicVisual window;
