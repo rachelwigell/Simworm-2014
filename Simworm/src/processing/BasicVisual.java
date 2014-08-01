@@ -483,8 +483,6 @@ public class BasicVisual extends PApplet{
 					if(pixelColor != -16777216){ //only do object picking if the selected pixel isn't black
 						RGB pixelRGB = new RGB(pixelColor);
 						
-						System.out.println("R" + pixelRGB.getRed() + " G" + pixelRGB.getGreen() + " B" + pixelRGB.getBlue());
-						
 						LinkedList<Cell> qualifyingCells = new LinkedList<Cell>();
 						for(String s: displayShell.getCells().keySet()){
 							Cell c = displayShell.getCells().get(s);

@@ -78,6 +78,7 @@ public class Gene /*implements Comparable<Gene>*/{
 	 */
 	public Gene updateCons(int time, boolean recentGrowth){
 		int i = 0;
+		//TODO this is inefficient - reparsing the spreadsheet every time
 		ConsList allCons = new ConsList();
 		ArrayList<Integer> toRemove = new ArrayList<Integer>();
 		for(Consequence c: this.relevantCons){

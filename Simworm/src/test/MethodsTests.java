@@ -95,7 +95,7 @@ public class MethodsTests {
 	
 	@Test
 	public void testTimeLapse(){
-		System.out.println("Begin time lapse tests");
+//		System.out.println("Begin time lapse tests");
 		for(int i = 0; i<45; i++){
 			testShell.timeStep();
 		}
@@ -711,6 +711,19 @@ public class MethodsTests {
 		}
 		for(Integer i: defValues.keySet()){
 			System.out.println(defValues.get(i) + " shells have " + i + " cells with default cell fate");
+		}
+	}
+	
+	//alter the sandbox file however you please to ensure that error checking is working properly
+	@Test
+	public void parsingSandbox(){
+		try{
+			ConsList AC = new ConsList();
+			AC.readAandCInfo("src/components/parsingSandbox.csv");
+//			testShell.readEventsQueue("src/components/parsingSandbox.csv");
+//			testShell.getCells().get("p-0").readGeneInfo("src/components/parsingSandbox.csv", testShell);
+		}
+		catch(Exception e){
 		}
 	}
 }

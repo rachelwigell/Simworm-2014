@@ -3,6 +3,10 @@ package dataStructures;
 import picking.BoundingBox3D;
 import picking.VersionException;
 
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedList;
 
@@ -49,9 +53,7 @@ public class Cell {
 		this.generation = generation;
 		this.selected = true;
 		
-		for(String s: genes.keySet()){
-			recentlyChanged.put(s, genes.get(s));
-		}
+		allRecentlyChanged();
 	}
 	
 	public Cell(Cell toDup){
@@ -76,6 +78,12 @@ public class Cell {
 			changesmap.put(s, new Gene(toDup.recentlyChanged.get(s)));
 		}
 		this.recentlyChanged = changesmap;
+	}
+	
+	public void allRecentlyChanged(){
+		for(String s: genes.keySet()){
+			recentlyChanged.put(s, genes.get(s));
+		}
 	}
 	
 	//getters	
@@ -282,6 +290,132 @@ public class Cell {
 			window.fill(255, 255, 255);
 		}
 		return parsInfo+otherInfo;
+	}
+	
+	/**
+	 * Populates the initial gene list from a CSV
+	 * @param file the name of the CSV as a string
+	 * @return The genes list as populated
+	 */
+	public HashMap<String, Gene> readGeneInfo(String file, Shell shell) throws FileReadErrorException, InvalidFormatException{
+		String name = null;
+		GeneState state = null;
+		Coordinates location = null;
+		HashMap<String, Gene> genes = new HashMap<String, Gene>();
+		try{
+			BufferedReader reader = new BufferedReader(new FileReader(file)); //open the file
+			String line = "";
+			int row = 1;
+			while((line = reader.readLine()) != null){ //read one line
+				String[] geneInfo = line.split(","); //split line into an array using commas as separators
+				name = geneInfo[0]; //name of the gene is in the first cell in the row
+				for(int i=0; i<name.length(); i++){ //check that gene name only contains particular characters
+					int c = (int) name.charAt(i);
+					if((c != 45) && (c < 97 || c > 122) && (c < 48 || c > 57)){ //lower case, numbers, hyphen accepted
+						reader.close();
+						throw new InvalidFormatException(FormatProblem.INVALIDNAME, row, 0);
+					}
+				}				
+				//second cell is gene state. should only be A, I, U, or a number
+				if(geneInfo[1].equals("A")) state = new GeneState(true); //if A, gene set to active
+				else if(geneInfo[1].equals("I")) state = new GeneState(false); //I is inactive
+				else if(geneInfo[1].equals("U")) state = new GeneState(); //U is unknown indefinitely
+				else try{
+					state = new GeneState(Integer.parseInt(geneInfo[1])); //if a number, gene set to unknown but will become known at the given time
+				}
+				catch(NumberFormatException e){ //if it's not A/I/U or a number, it's invalid input
+					reader.close();
+					throw new InvalidFormatException(FormatProblem.INVALIDSTATE, row, 1);
+				}
+				//next three cells contain compartment of the gene
+				Compartment x = Compartment.XCENTER;
+				Compartment y = Compartment.YCENTER;
+				Compartment z = Compartment.ZCENTER;
+				if(geneInfo[2].equals("anterior")) x = Compartment.ANTERIOR;
+				else if(geneInfo[2].equals("posterior")) x = Compartment.POSTERIOR;
+				else if(!geneInfo[2].equals("center")){ //if it's anything else, it's invalid input
+					reader.close();
+					throw new InvalidFormatException(FormatProblem.INVALIDCOMPARTMENT, row, 2);
+				}
+				if(geneInfo[3].equals("dorsal")) y = Compartment.DORSAL;
+				else if(geneInfo[3].equals("ventral")) y = Compartment.VENTRAL;
+				else if(!geneInfo[3].equals("center")){
+					reader.close();
+					throw new InvalidFormatException(FormatProblem.INVALIDCOMPARTMENT, row, 3);
+				}
+				if(geneInfo[4].equals("left")) z = Compartment.LEFT;
+				else if(geneInfo[4].equals("right")) z = Compartment.RIGHT;
+				else if(!geneInfo[4].equals("center")){
+					reader.close();
+					throw new InvalidFormatException(FormatProblem.INVALIDCOMPARTMENT, row, 4);
+				}
+				location = new Coordinates(x, y, z);
+				int i = 0;
+				HashMap <String, Coordinates> changes = new HashMap<String, Coordinates>();
+				Compartment newX = Compartment.XCENTER;
+				Compartment newY = Compartment.YCENTER;
+				Compartment newZ = Compartment.ZCENTER;
+				String changeTime = "";
+				for(String s: geneInfo){ //row might be over now, but if not, the remaining cells hold data for genes that switch compartments during the sim
+					//first three are the compartment it switches into
+					if(i > 4){ //get past the first few cells not pertaining to switches
+						switch(i % 4){
+						case 0:
+							if(s.equals("left")) newZ = Compartment.LEFT;
+							else if(s.equals("right")) newZ = Compartment.RIGHT;
+							else if(!s.equals("center")){ //if it's anything else, it's invalid input
+								reader.close();
+								throw new InvalidFormatException(FormatProblem.INVALIDCOMPARTMENT, row, i);
+							}
+							changes.put(changeTime, new Coordinates(newX, newY, newZ));
+							break;
+						case 1:
+							changeTime = s; //the division in which the change takes place
+							error:
+							if(!shell.getDivisions().keySet().contains(s)){ //the cell name must exist in the events queue or...
+								for(String cellName: shell.getDivisions().keySet()){ //if it's one of the "end state" cells (ie one that is created but never divides), it won't be in the queue
+									DivisionData data = shell.getDivisions().get(cellName);
+									if(s.equals(shell.nameCalc(cellName, data.getAxis(), true)) || s.equals(shell.nameCalc(cellName, data.getAxis(), false))){ //so check that it's a valid child of a cell that is in the queue
+										break error; //if so, no error is occurring
+									}
+								}
+								reader.close();
+								throw new InvalidFormatException(FormatProblem.INVALIDCELL, row, i);
+							}
+							break;							
+						case 2:
+							if(s.equals("anterior")) newX = Compartment.ANTERIOR;
+							else if(s.equals("posterior")) newX = Compartment.POSTERIOR;
+							else if(!s.equals("center")){
+								reader.close();
+								throw new InvalidFormatException(FormatProblem.INVALIDCOMPARTMENT, row, i);
+							}
+							break;
+						case 3:
+							if(s.equals("dorsal")) newY = Compartment.DORSAL;
+							else if(s.equals("ventral")) newY = Compartment.VENTRAL;
+							else if(!s.equals("center")){
+								reader.close();
+								throw new InvalidFormatException(FormatProblem.INVALIDCOMPARTMENT, row, i);
+							}
+							break;
+						}
+					}
+					i++;
+				}
+				genes.put(name, new Gene(name, state, location, changes).populateCons()); //make a gene with all the info	
+				row++;
+			}
+			reader.close();
+		}
+		catch (FileNotFoundException e){
+			throw new FileReadErrorException(file);
+		}
+		catch (IOException e){
+			throw new FileReadErrorException(file);
+		}
+		this.genes = genes;
+		return genes;
 	}
 	
 	/**

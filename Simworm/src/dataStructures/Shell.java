@@ -46,24 +46,35 @@ public class Shell{
 		
 		//populate the cell's genes from csv file
 		
-		//works for java application or junit
-		HashMap<String, Gene> startGenes = new HashMap<String, Gene>();
-		startGenes = readGeneInfo("src/components/genes.csv");
-		if(startGenes == null){
-			//works for java applet or executable
-			startGenes = readGeneInfo("genes.csv");
-		}
-		
 		//populate events queue data from csv file
 		//for java application or junit test
-		divisions = readEventsQueue("src/components/eventsQueue.csv");
-		if(divisions == null){
+		try{
+			divisions = readEventsQueue("src/components/eventsQueue.csv");
+		}
+		catch(Exception e){
 			//for java applet or executable
-			divisions = readEventsQueue("eventsQueue.csv");
+			try{
+				divisions = readEventsQueue("eventsQueue.csv");
+			}
+			catch(Exception f){}
 		}
 		
+		
+		
 		//create p-0 with all the info calculated
-		Cell start = new Cell(this.window, "p-0", startCenter, startLengths, null, startGenes, new RGB(255, 255, 0), divisions.get("p-0"), 0);
+		Cell start = new Cell(this.window, "p-0", startCenter, startLengths, null, new HashMap<String, Gene>(), new RGB(255, 255, 0), divisions.get("p-0"), 0);
+		//works for java application or junit
+		try{
+			start.readGeneInfo("src/components/genes.csv", this);
+		}
+		catch(Exception e){
+			//works for java applet or executable
+			try{
+				start.readGeneInfo("genes.csv", this);
+			}
+			catch(Exception f){}
+		}
+		start.allRecentlyChanged();
 		
 		//calculate mutations
 		perShellMutations();
@@ -819,111 +830,67 @@ public class Shell{
 	}
 	
 	/**
-	 * Populates the initial gene list from a CSV
-	 * @param file the name of the CSV as a string
-	 * @return The genes list as populated
-	 */
-	public HashMap<String, Gene> readGeneInfo(String file){
-		String name = null;
-		GeneState state = null;
-		Coordinates location = null;
-		HashMap<String, Gene> genes = new HashMap<String, Gene>();
-		try{
-			BufferedReader reader = new BufferedReader(new FileReader(file)); //open the file
-			String line = "";
-			while((line = reader.readLine()) != null){ //read one line
-				String[] geneInfo = line.split(","); //split line into an array using commas as separators
-				name = geneInfo[0]; //name of the gene is in the first cell in the row
-				//second cell is gene state. should only be A, I, U, or a number
-				if(geneInfo[1].equals("A")) state = new GeneState(true); //if A, gene set to active
-				else if(geneInfo[1].equals("I")) state = new GeneState(false); //I is inactive
-				else if(geneInfo[1].equals("U")) state = new GeneState(); //U is unknown indefinitely
-				else state = new GeneState(Integer.parseInt(geneInfo[1])); //if a number, gene set to unknown but will become known at the given time
-				//next three cells contain compartment of the gene
-				Compartment x = Compartment.XCENTER;
-				Compartment y = Compartment.YCENTER;
-				Compartment z = Compartment.ZCENTER;
-				if(geneInfo[2].equals("anterior")) x = Compartment.ANTERIOR;
-				else if(geneInfo[2].equals("posterior")) x = Compartment.POSTERIOR;
-				if(geneInfo[3].equals("dorsal")) y = Compartment.DORSAL;
-				else if(geneInfo[3].equals("ventral")) y = Compartment.VENTRAL;
-				if(geneInfo[4].equals("left")) z = Compartment.LEFT;
-				else if(geneInfo[4].equals("right")) z = Compartment.RIGHT;
-				location = new Coordinates(x, y, z);
-				int i = 0;
-				HashMap <String, Coordinates> changes = new HashMap<String, Coordinates>();
-				Compartment newX = Compartment.XCENTER;
-				Compartment newY = Compartment.YCENTER;
-				Compartment newZ = Compartment.ZCENTER;
-				String changeTime = "";
-				for(String s: geneInfo){ //row might be over now, but if not, the remaining cells hold data for genes that switch compartments during the sim
-					//first three are the compartment it switches into
-					if(i > 4){ //get past the first few cells not pertaining to switches
-						switch(i % 4){
-						case 0:
-							if(s.equals("left")) newZ = Compartment.LEFT;
-							else if(s.equals("right")) newZ = Compartment.RIGHT;
-							changes.put(changeTime, new Coordinates(newX, newY, newZ));
-							break;
-						case 1:
-							changeTime = s; //the division in which the change takes place
-							break;							
-						case 2:
-							if(s.equals("anterior")) newX = Compartment.ANTERIOR;
-							else if(s.equals("posterior")) newX = Compartment.POSTERIOR;
-							break;
-						case 3:
-							if(s.equals("dorsal")) newY = Compartment.DORSAL;
-							else if(s.equals("ventral")) newY = Compartment.VENTRAL;
-							break;
-						}
-					}
-					i++;
-				}
-				genes.put(name, new Gene(name, state, location, changes).populateCons()); //make a gene with all the info	
-			}
-			reader.close();
-		}
-		catch (FileNotFoundException e){
-			//e.printStackTrace();
-			return null;
-		}
-		catch (IOException e){
-			e.printStackTrace();
-		}
-		return genes;
-	}
-	
-	
-	/**
 	 * Reads info about the events queue from CSV
 	 * @param file the name of the CSV as a string
 	 * @return The events queue as populated
 	 */
-	public HashMap<String, DivisionData> readEventsQueue(String file){
+	public HashMap<String, DivisionData> readEventsQueue(String file) throws FileNotFoundException, InvalidFormatException{
 		HashMap<String, DivisionData> queue = new HashMap<String, DivisionData>();
 		try{
 			BufferedReader reader = new BufferedReader(new FileReader(file)); //open the file
 			String line = "";
+			int row = 1;
 			while((line = reader.readLine()) != null){ //read one row
 				String[] queueInfo = line.split(","); //split into an array using commas as separators
 				String parent = queueInfo[0]; //name of the splitting cell is in first cell of the row
-				double d1Percentage = Integer.parseInt(queueInfo[1])/100.0; //percentage of the volume that goes to daughter1 in second cell of the row (convert to double)
+				for(int i=0; i<parent.length(); i++){ //check that cell name only contains particular characters
+					int c = (int) parent.charAt(i);
+					if((c != 45) && (c < 97 || c > 122) && (c < 48 || c > 57)){ //lower case, numbers, hyphen accepted
+						reader.close();
+						throw new InvalidFormatException(FormatProblem.INVALIDNAME, row, 0);
+					}
+				}	
+				double d1Percentage;
+				try{
+					d1Percentage = Integer.parseInt(queueInfo[1])/100.0; //percentage of the volume that goes to daughter1 in second cell of the row (convert to double)
+				}
+				catch(NumberFormatException e){
+					reader.close();
+					throw new InvalidFormatException(FormatProblem.EXPECTEDNUMBER, row, 1);
+				}
 				Axes axis = Axes.X; //axis of split in the third cell
 				if(queueInfo[2].equals("Y")) axis = Axes.Y;
-				if(queueInfo[2].equals("Z")) axis = Axes.Z;
-				int time = Integer.parseInt(queueInfo[3]); //time of split in fourth cell
-				int generation = Integer.parseInt(queueInfo[4]); //generation of the splitting cell in fifth row
+				else if(queueInfo[2].equals("Z")) axis = Axes.Z;
+				else if(!queueInfo[2].equals("X")){
+					reader.close();
+					throw new InvalidFormatException(FormatProblem.INVALIDAXIS, row, 2);
+				}
+				int time;
+				try{
+					time = Integer.parseInt(queueInfo[3]); //time of split in fourth cell
+				}
+				catch(NumberFormatException e){
+					reader.close();
+					throw new InvalidFormatException(FormatProblem.EXPECTEDNUMBER, row, 3);
+				}
+				int generation;
+				try{
+					generation = Integer.parseInt(queueInfo[4]); //generation of the splitting cell in fifth row
+				}
+				catch(NumberFormatException e){
+					reader.close();
+					throw new InvalidFormatException(FormatProblem.EXPECTEDNUMBER, row, 4);
+				}
 				queue.put(parent, new DivisionData(parent, d1Percentage, axis, time, generation)); //put data into queue
+				row++;
 			}
 			reader.close();
 		}
 		catch (FileNotFoundException e){
-			//e.printStackTrace();
-			return null;
+			throw new FileNotFoundException();
 		}
 		catch (IOException e){
-			e.printStackTrace();
+			throw new FileNotFoundException();
 		}
 		return queue;
 	}
