@@ -169,7 +169,7 @@ public class Shell{
 				//since daughter1 is always on the anterior side, gene should not go in if we're calculating for daughter1 and it's located in the posterior compartment
 				//equivalent with daughter2/anterior
 				if((comp != Compartment.POSTERIOR && daughter1) || (comp != Compartment.ANTERIOR && !daughter1)){ //so if neither situation is occurring...
-					childGenes.put(g.getName(), new Gene(g.getName(), g.getState(), g.getLocation(), g.getChanges()).populateCons()); //add a new instance of the gene to childGenes, and populate its relevantCons list
+					childGenes.put(g.getName(), new Gene(g.getName(), g.getState(), g.getLocation(), g.getChanges(), window).populateCons()); //add a new instance of the gene to childGenes, and populate its relevantCons list
 				}
 			}
 			break;
@@ -178,7 +178,7 @@ public class Shell{
 				Gene g = parentGenes.get(s);
 				Compartment comp = g.getLocation().getDV();
 				if((comp != Compartment.VENTRAL && daughter1) || (comp != Compartment.DORSAL && !daughter1)){
-					childGenes.put(g.getName(), new Gene(g.getName(), g.getState(), g.getLocation(), g.getChanges()).populateCons());
+					childGenes.put(g.getName(), new Gene(g.getName(), g.getState(), g.getLocation(), g.getChanges(), window).populateCons());
 				}
 			}
 			break;
@@ -187,7 +187,7 @@ public class Shell{
 				Gene g = parentGenes.get(s);
 				Compartment comp = g.getLocation().getLR();
 				if((comp != Compartment.LEFT && daughter1) || (comp != Compartment.RIGHT && !daughter1)){
-					childGenes.put(g.getName(), new Gene(g.getName(), g.getState(), g.getLocation(), g.getChanges()).populateCons());
+					childGenes.put(g.getName(), new Gene(g.getName(), g.getState(), g.getLocation(), g.getChanges(), window).populateCons());
 				}
 			}
 			break;

@@ -403,7 +403,7 @@ public class Cell {
 					}
 					i++;
 				}
-				genes.put(name, new Gene(name, state, location, changes).populateCons()); //make a gene with all the info	
+				genes.put(name, new Gene(name, state, location, changes, window).populateCons()); //make a gene with all the info	
 				row++;
 			}
 			reader.close();

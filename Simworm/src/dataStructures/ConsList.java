@@ -5,10 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-
-import processing.BasicVisual;
 
 public class ConsList { //holds data about antecedents and consequences
 	public List<Consequence> AandC = new ArrayList<Consequence>(); //antecedents and consequences that are active at the beginning

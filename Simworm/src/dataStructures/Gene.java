@@ -4,12 +4,15 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import processing.BasicVisual;
+
 public class Gene /*implements Comparable<Gene>*/{
 	private String name;
 	private GeneState state; //active or inactive
 	private List<Consequence> relevantCons; //consequences that involve this gene as an antecedent
 	Coordinates location; //compartment in cell
 	HashMap<String, Coordinates> changes; //optional field for genes that change compartments during the course of the sim
+	BasicVisual window;
 	
 	/**
 	 * Constructor for genes that change compartment during the course of development
@@ -18,11 +21,12 @@ public class Gene /*implements Comparable<Gene>*/{
 	 * @param location  Compartment in which the gene is located
 	 * @param changes Info on compartment that the gene moves to and what time the move occurs
 	 */
-	public Gene(String name, GeneState state, Coordinates location, HashMap<String, Coordinates> changes){
+	public Gene(String name, GeneState state, Coordinates location, HashMap<String, Coordinates> changes, BasicVisual window){
 		this.name = name;
 		this.state = state;		
 		this.location = location;
 		this.changes = changes;
+		this.window = window;
 	}
 	
 	/**
@@ -58,7 +62,7 @@ public class Gene /*implements Comparable<Gene>*/{
 	 */
 	public Gene populateCons(){
 		this.relevantCons = new ArrayList<Consequence>();
-		ConsList allCons = new ConsList(); //cannot be a field in Gene to avoid cyclical data
+		ConsList allCons = window.conslist; //cannot be a field in Gene to avoid cyclical data
 		for(Consequence c: allCons.AandC){
 			for(Gene g: c.getAntecedents()){
 				if (g.name.equals(this.name)){
@@ -78,8 +82,7 @@ public class Gene /*implements Comparable<Gene>*/{
 	 */
 	public Gene updateCons(int time, boolean recentGrowth){
 		int i = 0;
-		//TODO this is inefficient - reparsing the spreadsheet every time
-		ConsList allCons = new ConsList();
+		ConsList allCons = window.conslist;
 		ArrayList<Integer> toRemove = new ArrayList<Integer>();
 		for(Consequence c: this.relevantCons){
 			if(c.getEndStage() < time && c.getEndStage() != 0){ //0 is what we put for end if we never want the rule to end

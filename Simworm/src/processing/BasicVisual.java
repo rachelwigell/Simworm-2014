@@ -1,25 +1,33 @@
 package processing;
 
-import dataStructures.Coordinates;
-import dataStructures.Cell;
-import picking.BoundingBox3D;
-import dataStructures.RGB;
-
 import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.util.HashMap;
 import java.util.LinkedList;
 
-import controlP5.*;
+import peasy.PeasyCam;
+import picking.BoundingBox3D;
+import processing.core.PApplet;
+import controlP5.Button;
+import controlP5.CheckBox;
+import controlP5.ControlFont;
+import controlP5.ControlP5;
+import controlP5.RadioButton;
+import controlP5.Slider;
+import controlP5.Textarea;
+import controlP5.Toggle;
+import dataStructures.Cell;
 import dataStructures.ColorMode;
+import dataStructures.ConsList;
+import dataStructures.Coordinates;
+import dataStructures.RGB;
 import dataStructures.Shell;
-import processing.core.*;
-import peasy.*;
 
 public class BasicVisual extends PApplet{	
 	private static final long serialVersionUID = 1L;
 	Shell displayShell;
 	Shell farthestShell;
+	public ConsList conslist = new ConsList();
 	String userText;
 	PeasyCam camera;
 	ControlP5 info;
