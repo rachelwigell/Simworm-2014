@@ -57,9 +57,9 @@ public class RGB {
 	 */
 	public boolean colorIsClose(RGB to){		
 		//regardless of how much light/shadow is on the pixel, each pixel on the sphere should have the same RATIO of R/G/B values as the assigned color
-		int redProp = this.red/(to.red+1); //adding 1 to denominator barely changes ratio but avoids possibility of division by zero
-		int greenProp = this.green/(to.green+1);
-		int blueProp = this.blue/(to.blue+1);
+		float redProp = (float) this.red/ (float) (to.red+1); //adding 1 to denominator barely changes ratio but avoids possibility of division by zero
+		float greenProp = (float) this.green/ (float) (to.green+1);
+		float blueProp = (float) this.blue/ (float) (to.blue+1);		
 
 		//theoretically the differences in all these ratios should be 0, but we check that it's >.1 to allow for floating point or rounding errors
 		//and also because we added 1 to the denominator. no two colors should be similar enough for this to matter
