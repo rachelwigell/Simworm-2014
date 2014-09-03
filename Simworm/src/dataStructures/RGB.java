@@ -49,24 +49,29 @@ public class RGB {
 		return blue;
 	}
 	
+	
 	/**
-	 * checks whether two colors are similar; this is used to make object picking more accurate (fewer false positives).
-	 * a cell should only be picked if the pixel clicked is a similar color to the cell color.
-	 * @param to the color being compared to "this" color
-	 * @return boolean indicating whether the colors are similar.
+	 * Used to generate unique colors. First increments red until reaches 255, then green, etc.
 	 */
-	public boolean colorIsClose(RGB to){		
-		//regardless of how much light/shadow is on the pixel, each pixel on the sphere should have the same RATIO of R/G/B values as the assigned color
-		float redProp = (float) this.red/ (float) (to.red+1); //adding 1 to denominator barely changes ratio but avoids possibility of division by zero
-		float greenProp = (float) this.green/ (float) (to.green+1);
-		float blueProp = (float) this.blue/ (float) (to.blue+1);		
-
-		//theoretically the differences in all these ratios should be 0, but we check that it's >.1 to allow for floating point or rounding errors
-		//and also because we added 1 to the denominator. no two colors should be similar enough for this to matter
-		if(Math.abs(redProp-greenProp) > .1) return false;
-		if(Math.abs(greenProp-blueProp) > .1) return false;
-		if(Math.abs(blueProp-redProp) > .1) return false;
-		
-		return true;
+	public void incrementColor(){
+		if(this.red >= 255){
+			if(this.green >= 255){
+				if(this.blue >= 255){
+					return; //make it throw an exception later
+				}
+				else{
+					this.blue++;
+					return;
+				}
+			}
+			else{
+				this.green++;
+				return;
+			}
+		}
+		else{
+			this.red++;
+			return;
+		}
 	}
 }

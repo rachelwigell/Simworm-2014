@@ -1,8 +1,5 @@
 package dataStructures;
 
-import picking.BoundingBox3D;
-import picking.VersionException;
-
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -10,7 +7,6 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedList;
 
-import dataStructures.Coordinates;
 import processing.BasicVisual;
 
 public class Cell {
@@ -21,7 +17,8 @@ public class Cell {
 	private String parent;
 	private HashMap<String, Gene> genes;
 	private HashMap<String, Gene> recentlyChanged = new HashMap<String, Gene>();
-	private RGB color;
+	private RGB displayColor;
+	private RGB uniqueColor;
 	private DivisionData divide;
 	private int generation;
 	private boolean selected;
@@ -48,10 +45,12 @@ public class Cell {
 		this.lengths = lengths;
 		this.parent = parent;
 		this.genes = genes;
-		this.color = color;
+		this.displayColor = color;
 		this.divide = divide;
 		this.generation = generation;
 		this.selected = true;
+		this.uniqueColor = new RGB(window.currentColor.getRed(), window.currentColor.getGreen(), window.currentColor.getBlue());
+		window.incrementCurrentColor();
 		
 		allRecentlyChanged();
 	}
@@ -67,7 +66,8 @@ public class Cell {
 			genesmap.put(s, new Gene(toDup.genes.get(s)));
 		}
 		this.genes = genesmap;
-		this.color = new RGB(toDup.color);
+		this.displayColor = new RGB(toDup.displayColor);
+		this.uniqueColor = new RGB(toDup.uniqueColor);
 		if(toDup.divide != null){
 			this.divide = new DivisionData(toDup.divide);
 		}
@@ -128,15 +128,19 @@ public class Cell {
 	}
 
 	public RGB getColor() {
-		return color;
+		return displayColor;
 	}
 
 	public void setColor(RGB color) {
-		this.color = color;
+		this.displayColor = color;
 	}
 
 	public boolean isSelected() {
 		return selected;
+	}
+	
+	public RGB getUniqueColor() {
+		return uniqueColor;
 	}
 
 	public void setSelected(boolean selected) {
@@ -263,8 +267,23 @@ public class Cell {
 		float smallSide = this.lengths.getSmallest();
 		Coordinates scaling = this.lengths.lengthsToScale();
 		window.scale(scaling.getX(), scaling.getY(), scaling.getZ());
-		if(selected) window.fill(this.color.getRed(), this.color.getGreen(), this.color.getBlue());
-		else window.fill((float) (this.color.getRed()/2.0), (float) (this.color.getGreen()/2.0), (float) (this.color.getBlue()/2.0));
+		if(selected) window.fill(this.displayColor.getRed(), this.displayColor.getGreen(), this.displayColor.getBlue());
+		else window.fill((float) (this.displayColor.getRed()/2.0), (float) (this.displayColor.getGreen()/2.0), (float) (this.displayColor.getBlue()/2.0));
+		window.sphere(smallSide);		
+		window.popMatrix();
+	}
+	
+	/**
+	 * Draws the cell to the PApplet with its unique color
+	 */	
+	public void drawCellWithHiddenColor(){
+		window.pushMatrix();
+		window.noStroke();
+		window.translate(this.center.getX(), this.center.getY(), this.center.getZ());
+		float smallSide = this.lengths.getSmallest();
+		Coordinates scaling = this.lengths.lengthsToScale();
+		window.scale(scaling.getX(), scaling.getY(), scaling.getZ());
+		window.fill(this.getUniqueColor().getRed(), this.getUniqueColor().getGreen(), this.getUniqueColor().getBlue());
 		window.sphere(smallSide);		
 		window.popMatrix();
 	}
@@ -416,92 +435,5 @@ public class Cell {
 		}
 		this.genes = genes;
 		return genes;
-	}
-	
-	/**
-	 * generates the 3D cube bounding the cell, used in object picking
-	 * @param shrinkage a number from 0-1 that indicates how much of the actual length we want to use
-	 * since the bounding box is necessarily larger than the cell, using the full box (shrinkage == 1) will produce many "false positives"
-	 * if we shrink a little bit, we get some false negatives, but far fewer false positives.
-	 * I have found that shrinkage == .85 works nicely.
-	 * @return the BoundingBox3D object that represents the cube and all of its edgewise relationships
-	 */
-	public BoundingBox3D genBox(float shrinkage){
-		float xLength = this.lengths.getX() * shrinkage; //the length along the x direction of the cell, multiplied by shrinkage to bring it down
-		float yLength = this.lengths.getY() * shrinkage;
-		float zLength = this.lengths.getZ() * shrinkage;
-		
-		//generate each of the points of the cube from the cell's center point and its x/y/z lengths
-		Coordinates rightTopFront = new Coordinates((float) (this.center.getX() + xLength/2.0), (float) (this.center.getY() + yLength/2.0), (float) (this.center.getZ() + zLength/2.0));
-		Coordinates rightTopBack = new Coordinates((float) (this.center.getX() + xLength/2.0), (float) (this.center.getY() + yLength/2.0), (float) (this.center.getZ() - zLength/2.0));
-		Coordinates rightBottomFront = new Coordinates((float) (this.center.getX() + xLength/2.0), (float) (this.center.getY() - yLength/2.0), (float) (this.center.getZ() + zLength/2.0));
-		Coordinates rightBottomBack = new Coordinates((float) (this.center.getX() + xLength/2.0), (float) (this.center.getY() - yLength/2.0), (float) (this.center.getZ() - zLength/2.0));
-		Coordinates leftTopFront = new Coordinates((float) (this.center.getX() - xLength/2.0), (float) (this.center.getY() + yLength/2.0), (float) (this.center.getZ() + zLength/2.0));
-		Coordinates leftTopBack = new Coordinates((float) (this.center.getX() - xLength/2.0), (float) (this.center.getY() + yLength/2.0), (float) (this.center.getZ() - zLength/2.0));
-		Coordinates leftBottomFront = new Coordinates((float) (this.center.getX() - xLength/2.0), (float) (this.center.getY() - yLength/2.0), (float) (this.center.getZ() + zLength/2.0));
-		Coordinates leftBottomBack = new Coordinates((float) (this.center.getX() - xLength/2.0), (float) (this.center.getY() - yLength/2.0), (float) (this.center.getZ() - zLength/2.0));
-		
-		//call the constructor for BoundingBox3D which handles all the cyclical data
-		return new BoundingBox3D(rightTopFront, leftBottomFront, rightBottomBack, rightBottomFront, leftTopFront, rightTopBack, leftBottomBack, leftTopBack); 
-	}
-	
-	/**
-	 * orders the points around the outside of cube such that lines could be drawn between the points to form 1 closed polygon
-	 * @param points the list of points to be ordered
-	 * @return the list of points in order
-	 */
-	LinkedList<Coordinates> orderPoints(LinkedList<Coordinates> points){
-		LinkedList<Coordinates> pointsDup1 = new LinkedList<Coordinates>(); //first we need to duplicate the points list twice; this is a destructive algorithm and, for reasons that will be explained later, it may need to be called up to three times
-		LinkedList<Coordinates> pointsDup2 = new LinkedList<Coordinates>();
-		
-		for(Coordinates t: points){ //populate the two duplicate points lists
-			pointsDup1.add(t);
-			pointsDup2.add(t);
-		}
-		
-		LinkedList<Coordinates> ordered = new LinkedList<Coordinates>();		
-		ordered.add(points.getFirst()); //start with a random point
-		points.removeFirst(); //remove it from the list of remaining points
-		
-		try{
-			if(points.size() == 3){ //if there were 4 points (originall) in the points list, call determinePathFour
-				ordered = ordered.getFirst().determinePathFour(new LinkedList<Integer>(), points, ordered);
-			}
-			else if(points.size() == 5){//if there were 6, call determinePathSix. Note that only 4 or 6 points are possible (draw a picture)
-				ordered = ordered.getFirst().determinePathSix(0, 0, new LinkedList<Integer>(), points, ordered);
-			}
-		}
-		catch(VersionException e){ //determinepathsix has 3 different versions and sometimes version 0 won't work. in this case, it will throw a version exception
-			try{
-				ordered = new LinkedList<Coordinates>(); //we'll need to start over with one of the duplicate lists.		
-				ordered.add(pointsDup1.getFirst());
-				pointsDup1.removeFirst();
-				ordered = ordered.getFirst().determinePathSix(1, 0, new LinkedList<Integer>(), pointsDup1, ordered);
-			}
-			catch(VersionException f){ //if version 1 doesn't work, use version 2. it will work.
-				try{
-					ordered = new LinkedList<Coordinates>();		
-					ordered.add(pointsDup2.getFirst());
-					pointsDup2.removeFirst();
-					ordered = ordered.getFirst().determinePathSix(2, 0, new LinkedList<Integer>(), pointsDup2, ordered);
-				}
-				catch(VersionException g){}
-			}
-		}
-		
-		this.boundingBox = ordered;
-		return ordered;
-	}
-	
-	/**
-	 * calls all of the functions necessary to generate the bounding polygon for object picking.
-	 * this should be called on a mouse click when picking is about to be run.
-	 * @return the cell with all its new parameters populated.
-	 */
-	public Cell boundSphere(){
-		BoundingBox3D theBox = this.genBox((float) .85);
-		LinkedList<Coordinates> maxes = this.window.selectMaxPoints(theBox);
-		this.orderPoints(maxes);
-		return this;
 	}
 }

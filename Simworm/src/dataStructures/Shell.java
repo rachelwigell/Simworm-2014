@@ -59,7 +59,7 @@ public class Shell{
 			catch(Exception f){}
 		}
 		
-		
+		window.currentColor = new RGB(1, 0, 0);
 		
 		//create p-0 with all the info calculated
 		Cell start = new Cell(this.window, "p-0", startCenter, startLengths, null, new HashMap<String, Gene>(), new RGB(255, 255, 0), divisions.get("p-0"), 0);

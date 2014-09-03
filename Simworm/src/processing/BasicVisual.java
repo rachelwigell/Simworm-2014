@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 
 import peasy.PeasyCam;
-import picking.BoundingBox3D;
 import processing.core.PApplet;
 import controlP5.Button;
 import controlP5.CheckBox;
@@ -71,13 +70,14 @@ public class BasicVisual extends PApplet{
 	HashMap<Integer, Shell> shellsOverTime;
 	int timeCount;	
 	Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-	float width = screenSize.width;
-	float height = screenSize.height;
+	int width = screenSize.width;
+	int height = screenSize.height;
 	Slider progressBar;
 	Button startOver;
 	boolean firstTime = true;
 	boolean firstClick = false;
-	
+	public RGB currentColor;
+
 	//called on start. opens the screen where the user chooses mutant genes
 	@SuppressWarnings("deprecation")
 	public void setup(){
@@ -90,11 +90,11 @@ public class BasicVisual extends PApplet{
 		firstTime = false;
 		info = new ControlP5(this);
 		info.setAutoDraw(false);
-		
+
 		Button choose = new Button(info, "Choose mutants").setPosition(width/3, height/3).setSize((int) (width/3), (int) (height/20))
-		.setColorBackground(color(2, 52, 76))
-		.setColorForeground(color(2, 52, 76))
-		.setColorActive(color(2, 52, 76)); //just a label
+				.setColorBackground(color(2, 52, 76))
+				.setColorForeground(color(2, 52, 76))
+				.setColorActive(color(2, 52, 76)); //just a label
 		choose.captionLabel().setControlFont(new ControlFont(createFont("arial", (float) (width/80))));
 		chooseMutants = new CheckBox(info, "boxes");
 		chooseMutants.setItemsPerRow(3)
@@ -117,11 +117,11 @@ public class BasicVisual extends PApplet{
 		}
 		createShell = new Button(info, "createShell").setPosition(width/3, (float) (height/1.65)).setLabel("create shell").setSize((int) (width/3), (int) (height/20)); //button to confirm checkbox settings
 		createShell.captionLabel().setControlFont(new ControlFont(createFont("arial", (float) (width/80))));
-		
+
 		currentTime = 1;
 		farthestSeen = 1;
 	}
-	
+
 	//called after mutants are confirmed, to set up the main simulation screen
 	@SuppressWarnings("deprecation")
 	public void secondarySetup(){
@@ -138,7 +138,7 @@ public class BasicVisual extends PApplet{
 		lineageState = true;
 		fateState = false;
 		parsState = false;
-		
+
 		userTextArea = new Textarea(info, "infoText"); //textarea where the user can input commands and receive information
 		userTextArea.setPosition((float) (width/1.25), height/40)
 		.setSize((int) (width/5), (int) (height/4)).
@@ -147,14 +147,14 @@ public class BasicVisual extends PApplet{
 		cellNamesArea.setPosition((float) (width/1.25), (float) (3*height/10))
 		.setSize((int) (width/5), (int) (height/5)).
 		setFont(createFont("arial", (width/114)));
-		
+
 		new Button(info, "cell color key") //just a label, not interactive
 		.setPosition((float) (width/1.26), (float) (height - 13*height/30))
 		.setColorBackground(color(0, 0, 0))
 		.setColorActive(color(0, 0, 0))
 		.setColorForeground(color(0, 0, 0))
 		.captionLabel().setControlFont(new ControlFont(createFont("arial", (float) (width/90))));
-		
+
 		//initialize buttons that control camera to choose orthogonal views
 		frontB = new Button(info, "front").setPosition((float) (width/1.25), (float) (height - 5*height/60)).setColorBackground(color(49, 130, 189))
 				.setColorForeground(color(107, 174, 214))
@@ -186,8 +186,8 @@ public class BasicVisual extends PApplet{
 		.setColorActive(color(0, 0, 0))
 		.setColorForeground(color(0, 0, 0))
 		.captionLabel().setControlFont(new ControlFont(createFont("arial", (float) (width/90))));
-		
-		
+
+
 		//initialize the color keys; these are not interactive
 		fateKey0 = new Button(info, "germline").setPosition((float) (width/1.25), (float) (height - 12*height/30)).setColorBackground(color(102, 194, 165)).setColorActive(color(102, 194, 165)).setColorForeground(color(102, 194, 165)).setVisible(false).setSize((int) (width/20), (int) (height/40));
 		fateKey0.captionLabel().setControlFont(new ControlFont(createFont("arial", (float) (width/133))));
@@ -197,7 +197,7 @@ public class BasicVisual extends PApplet{
 		fateKey2.captionLabel().setControlFont(new ControlFont(createFont("arial", (float) (width/133))));
 		fateKey3 = new Button(info, "Default").setPosition((float) (width/1.25), (float) (height - 11*height/30)).setColorBackground(color(231, 138, 195)).setColorActive(color(231, 138, 195)).setColorForeground(color(231, 138, 195)).setVisible(false).setSize((int) (width/20), (int) (height/40));
 		fateKey3.captionLabel().setControlFont(new ControlFont(createFont("arial", (float) (width/133))));
-		
+
 		parsKey0 = new Button(info, "par-1").setPosition((float) (width/1.25), (float) (height - 12*height/30)).setColorBackground(color(255, 0, 255)).setColorActive(color(255, 0, 255)).setColorForeground(color(255, 0, 255)).setVisible(false).setSize((int) (width/20), (int) (height/40));
 		parsKey0.captionLabel().setControlFont(new ControlFont(createFont("arial", (float) (width/133))));
 		parsKey1 = new Button(info, "par-2").setPosition((float) (width/1.25), (float) (height - 11*height/30)).setColorBackground(color(255, 0, 0)).setColorActive(color(255, 0, 0)).setColorForeground(color(255, 0, 0)).setVisible(false).setSize((int) (width/20), (int) (height/40));
@@ -210,7 +210,7 @@ public class BasicVisual extends PApplet{
 		parsKey4.captionLabel().setControlFont(new ControlFont(createFont("arial", (float) (width/133))));
 		parsKey5 = new Button(info, "par-6").setPosition((float) (width - width/15), (float) (height - 11*height/30)).setColorBackground(color(0, 255, 0)).setColorActive(color(0, 255, 0)).setColorForeground(color(0, 255, 0)).setVisible(false).setSize((int) (width/20), (int) (height/40));
 		parsKey5.captionLabel().setControlFont(new ControlFont(createFont("arial", (float) (width/133))));
-		
+
 		lineageKey0 = new Button(info, "ab-a").setPosition((float) (width/1.25), (float) (height - 12*height/30)).setColorBackground(color(255, 0, 0)).setColorActive(color(255, 0, 0)).setColorForeground(color(255, 0, 0)).setVisible(true).setSize((int) (width/20), (int) (height/40));
 		lineageKey0.captionLabel().setControlFont(new ControlFont(createFont("arial", (float) (width/133))));
 		lineageKey1 = new Button(info, "ab-p").setPosition((float) (width/1.25), (float) (height - 11*height/30)).setColorBackground(color(0, 0, 255)).setColorActive(color(0, 0, 255)).setColorForeground(color(0, 0, 255)).setVisible(true).setSize((int) (width/20), (int) (height/40));
@@ -225,7 +225,7 @@ public class BasicVisual extends PApplet{
 		lineageKey5.captionLabel().setControlFont(new ControlFont(createFont("arial", (float) (width/133))));
 		lineageKey6 = new Button(info, "p").setPosition((float) (width/1.25), (float) (height - 10*height/30)).setColorBackground(color(255, 255, 0)).setColorActive(color(255, 255, 0)).setColorForeground(color(255, 255, 0)).setVisible(true).setSize((int) (width/20), (int) (height/40));		
 		lineageKey6.captionLabel().setControlFont(new ControlFont(createFont("arial", (float) (width/133))));
-		
+
 		new Button(info, "set time flow mode") //just a label for the radio buttons, not interactive
 		.setPosition((float) (width/1.26), (float) (height - 6*height/30))
 		.setColorBackground(color(0, 0, 0))
@@ -247,8 +247,8 @@ public class BasicVisual extends PApplet{
 		for(Toggle t: chooseTimeflowMode.getItems()){
 			t.captionLabel().setControlFont(new ControlFont(createFont("arial", (float) (width/100))));
 		}
-		
-		
+
+
 		new Button(info, "choose color mode") //just a label for the radio buttons, not interactive
 		.setPosition((float) (width/1.26), (float) (height - 17*height/60))
 		.setColorBackground(color(0, 0, 0))
@@ -271,13 +271,13 @@ public class BasicVisual extends PApplet{
 		for(Toggle t: chooseColorMode.getItems()){
 			t.captionLabel().setControlFont(new ControlFont(createFont("arial", (float) (width/100))));
 		}
-		
+
 		startOver = new Button(info, "startOver")
 		.setLabel("  generate new embryo")
 		.setPosition((float) (width/60), (float) (height/40))
 		.setSize((int) (width/6), (int) (height/20));
 		startOver.captionLabel().setControlFont(new ControlFont(createFont("arial", (float) (width/90))));
-		
+
 		drawKey(displayShell.colorMode); //draw the appropriate key (set to lineage by default)
 
 		//set up the slider bar
@@ -325,10 +325,10 @@ public class BasicVisual extends PApplet{
 		//this prevents clicks on the infoView (right hand side) from affecting the camera
 		if(mouseX > 4 * (width/5)) camera.setActive(false);
 		else camera.setActive(true);
-		
+
 		gui();
 	}
-	
+
 	//action listener for the create shell button on the choose mutants screen. finalizes the mutants choice and calls secondarySetup
 	//secondary setup will draw the main simulation screen
 	void createShell(float theValue){
@@ -342,42 +342,42 @@ public class BasicVisual extends PApplet{
 		mutants.put("pkc-3", chooseMutants.getState(6));
 		secondarySetup();
 	}
-	
+
 	//action listeners for the orthogonal button views; set the camera position
 	void front(float theValue){
 		camera.reset(0);
 	}
-	
+
 	void back(float theValue){
 		camera.reset(0);
 		camera.rotateY(160);
 	}
-	
+
 	void top(float theValue){
 		camera.reset(0);
 		camera.rotateX(90);
 	}
-	
+
 	void bottom(float theValue){
 		camera.reset(0);
 		camera.rotateX(-90);
 	}
-	
+
 	void left(float theValue){
 		camera.reset(0);
 		camera.rotateY(-90);
 	}
-	
+
 	void right(float theValue){
 		camera.reset(0);
 		camera.rotateY(90);
 	}
-	
+
 	void startOver(float theValue){
 		camera.reset(0);
 		setup();
 	}
-	
+
 	//detects changes in the selected value of the colormode radio buttons
 	//this only gets called if the new selected value doesn't match the boolean switches for lineageState, fateState, parsState
 	public void updateColorMode(){
@@ -405,7 +405,7 @@ public class BasicVisual extends PApplet{
 		}
 		displayShell.updateColorMode(); //calls the method that will change the colors of the existing cells
 	}
-	
+
 	public void progressForward(){
 		if(currentTime <= 95){
 			userText = "Type a cell name to see its contents,\nor press right arrow to progress 1 timestep\nor left arrow to move backwards 1 timestep.";
@@ -429,15 +429,15 @@ public class BasicVisual extends PApplet{
 			}
 		}
 	}
-	
+
 	//when the user is typing, different things should happen
 	public void keyReleased(){
 		if(keyCode == ESC) exit();
-		
+
 		if(mutantsChosen){ //only run if mutantsChosen is set, because userText doesn't exist yet if not
 			//if(key == ' '){ //spacebar triggers a timestep
-				//displayShell.timeStep();
-				//userText = "Type a cell name to see its contents,\nor press right arrow to progress 1 timestep\nor left arrow to move backwards 1 timestep.";
+			//displayShell.timeStep();
+			//userText = "Type a cell name to see its contents,\nor press right arrow to progress 1 timestep\nor left arrow to move backwards 1 timestep.";
 			//}
 			if(keyCode == RIGHT){
 				progressForward();
@@ -453,7 +453,7 @@ public class BasicVisual extends PApplet{
 					updateColorMode();
 					progressBar.setValue(currentTime);
 				}
-				
+
 			}
 			else if(keyCode == BACKSPACE){ //manually implement backspace
 				if (userText.length() > 0) {
@@ -478,7 +478,7 @@ public class BasicVisual extends PApplet{
 			}
 		}
 	}
-	
+
 	public void mouseClicked(){
 		if(mutantsChosen){
 			if(!firstClick){
@@ -486,33 +486,20 @@ public class BasicVisual extends PApplet{
 			}
 			else{
 				if(mouseX < 4*(width/5)){ //only do object picking in the 3d side of the screen
-					loadPixels();
-					int pixelColor = pixels[(int) (mouseY*width+mouseX)];
-					if(pixelColor != -16777216){ //only do object picking if the selected pixel isn't black
-						RGB pixelRGB = new RGB(pixelColor);
-						
-						LinkedList<Cell> qualifyingCells = new LinkedList<Cell>();
+					int colorFound = getHiddenColor();
+					if(colorFound != -16777216){ //only do object picking if the selected pixel isn't black
+						Cell chosen = null;
 						for(String s: displayShell.getCells().keySet()){
 							Cell c = displayShell.getCells().get(s);
-							if(pointInBounds(mouseX, mouseY, c) && pixelRGB.colorIsClose(c.getColor())){ //if the clicked pixel is within a cell's bounding box, and the color of the clicked pixel is close to the color of the cell, the cell qualifies
-								qualifyingCells.add(c);
+							int keyColor = color(c.getUniqueColor().getRed(), c.getUniqueColor().getGreen(), c.getUniqueColor().getBlue());
+							if(colorFound == keyColor){
+								chosen = c;
 							}
 						}
-						if(qualifyingCells.size() > 0){ //if there are any qualifying cells...
-							Cell chosen = qualifyingCells.getFirst(); //initially choose the first cell
-							if(qualifyingCells.size() > 1){ //but if there's more than two, we want the one with the smallest z coordinate in screen space
-								float distance = screenZ(chosen.getCenter().getX(), chosen.getCenter().getY(), chosen.getCenter().getZ()); //current best
-								for(Cell c: qualifyingCells){ //check the other qualifiers
-									float dist = screenZ(c.getCenter().getX(), c.getCenter().getY(), c.getCenter().getZ()); //get their z coordinates
-									if(dist < distance){ //if this one is closest, overwrite current best with this
-										chosen = c;
-										distance = dist;
-									}
-								}
-							}
-							for(String s: displayShell.getCells().keySet()){
-								displayShell.getCells().get(s).setSelected(false); //set all non qualifying cells to be unselected
-							}
+						for(String s: displayShell.getCells().keySet()){
+							displayShell.getCells().get(s).setSelected(false); //set all non qualifying cells to be unselected
+						}
+						if(chosen != null){
 							chosen.setSelected(true); //select the chosen cell
 							userText = chosen.getInfo(); //print its info
 						}
@@ -521,7 +508,7 @@ public class BasicVisual extends PApplet{
 			}
 		}
 	}
-	
+
 	//display the correct color key for the currently selected colormode
 	public void drawKey(ColorMode colorMode){
 		switch(colorMode){		
@@ -583,10 +570,12 @@ public class BasicVisual extends PApplet{
 			lineageKey6.setVisible(true);
 			break;
 		}
-		
+
 	}
-	
-	//draw the coordinate axes
+
+	/**
+	 * draw the coordinate axes to the screen
+	 */
 	public void drawAxes(){
 		strokeWeight(5);
 		//set up to draw x axis
@@ -612,103 +601,46 @@ public class BasicVisual extends PApplet{
 		fill(180, 255, 255);
 	}
 
-	/**
-	 * Computes the area of a triangle; used repeatedly to find areas of irregular shapes during object picking; called on points in screen space
-	 * @param point1 coordinates of one point
-	 * @param point2 coordinates of another point
-	 * @param point3 coordinates of the last point
-	 * @return the area of the triangle
-	 */
-	public float areaTriangle(Coordinates point1, Coordinates point2, Coordinates point3){
-		return abs((float) ((point1.getX()*(point2.getY()-point3.getY()) + point2.getX()*(point3.getY()-point1.getY()) + point3.getX()*(point1.getY()-point2.getY()))/2.0));
-	}
-	
-	/**
-	 * determines whether a point is within a cell's bounding box
-	 * @param x the x coordinate of the point in question
-	 * @param y the y coordinate of the point in question
-	 * @param s the cell in question
-	 * @return boolean indicating whether or not the point is within the box
-	 */
-	public boolean pointInBounds(int x, int y, Cell s){
-		s.boundSphere(); //generate the cell's bounding box, find the outside points, order them. this creates the 2D polygon that we are measuring if we're within or without
-		LinkedList<Coordinates> screenCoor = new LinkedList<Coordinates>();
-		for(Coordinates t: s.getBoundingBox()){
-			screenCoor.add(new Coordinates(screenX(t.getX(), t.getY(), t.getZ()), screenY(t.getX(), t.getY(), t.getZ()), 0)); // convert the coordinates of the polygon to screen space, in order
-		}
-		
-		float areaPoly = 0; //the area of the polygon
-		float areaPoint = 0; //the area of the various triangles formed between the point in question and the vertices of the polygon
-		
-		for(int i = 1; i < (screenCoor.size()-1); i++){
-			areaPoly += areaTriangle(screenCoor.getFirst(), screenCoor.get(i), screenCoor.get(i+1)); //progress through the polygon in order and measure the area of the triangles formed by adjacent points; the sum of these is the total area of the polygon
-		}
-		
-		
-		Coordinates mouse = new Coordinates(x, y, 0); //create a coordinates object with the x and y coordinates of the point in question. z is irrelevant now, we're working in 2D
-		for(int i = 0; i < (screenCoor.size()-1); i++){
-			areaPoint += areaTriangle(mouse, screenCoor.get(i), screenCoor.get(i+1)); //areas of the triangles between the subsequent vertices in the polygon and the point in question
-		}
-		areaPoint += areaTriangle(mouse, screenCoor.getLast(), screenCoor.getFirst()); //get the last one
-		
-		//areaPoint will now either be equal to or greater than areaPoly. if it's equal, the point is within the polygon, else it's not.
-		//google search for "determining if a point is within a polygon" if you're confused. this is just an algorithmic implementation of a well known mathematical theorem.
-		
-		if(areaPoint > areaPoly+.2) return false; //add .2 to give a little leeway for floating point rounding errors
-		else return true;
-	}
-	
-	/**
-	 * converts a set of coordinates in model space into screen space
-	 * @param model the coordinates in model space
-	 * @return the coordinates in screen space
-	 */
-	public Coordinates convertToScreen(Coordinates model){
-		return new Coordinates(screenX(model.getX(), model.getY(), model.getZ()), screenY(model.getX(), model.getY(), model.getZ()), 0);
-	}
-	
-	/**
-	 * finds the 4 or 6 points that form the "outside" of a cube in screen space
-	 * this works by summing the angles between the lines radiating from each point.
-	 * these angles will sum to 360 IFF the point is NOT on the outside of the cube
-	 * draw a picture if you're confused
-	 * @param boundingBox the cube
-	 * @return a list of the points along the cube's outside; these coordinates are in model space and are not ordered
-	 */
-	public LinkedList<Coordinates> selectMaxPoints(BoundingBox3D boundingBox){
-		LinkedList<Coordinates> maxes = new LinkedList<Coordinates>();
-		
-		Coordinates lbb = convertToScreen(boundingBox.leftbottomback);
-		Coordinates lbf = convertToScreen(boundingBox.leftbottomfront);
-		Coordinates ltb = convertToScreen(boundingBox.lefttopback);
-		Coordinates ltf = convertToScreen(boundingBox.lefttopfront);
-		Coordinates rbb = convertToScreen(boundingBox.rightbottomback);
-		Coordinates rbf = convertToScreen(boundingBox.rightbottomfront);
-		Coordinates rtb = convertToScreen(boundingBox.righttopback);
-		Coordinates rtf = convertToScreen(boundingBox.righttopfront);
-		
-		if(!lbb.sum360(rbb, ltb, lbf)) maxes.add(boundingBox.leftbottomback);
-		if(!lbf.sum360(rbf, ltf, lbb)) maxes.add(boundingBox.leftbottomfront);
-		if(!ltb.sum360(rtb, lbb, ltf)) maxes.add(boundingBox.lefttopback);
-		if(!ltf.sum360(rtf, lbf, ltb)) maxes.add(boundingBox.lefttopfront);
-		if(!rbb.sum360(lbb, rtb, rbf)) maxes.add(boundingBox.rightbottomback);
-		if(!rbf.sum360(lbf, rtf, rbb)) maxes.add(boundingBox.rightbottomfront);
-		if(!rtb.sum360(ltb, rbb, rtf)) maxes.add(boundingBox.righttopback);
-		if(!rtf.sum360(ltf, rbf, rtb)) maxes.add(boundingBox.righttopfront);
-		
-		return maxes;
-	}
-	
 	public void gui(){
-		  hint(DISABLE_DEPTH_TEST);
-		  camera.beginHUD();
-		  info.draw();
-		  camera.endHUD();
-		  hint(ENABLE_DEPTH_TEST);
-		}
-	
+		hint(DISABLE_DEPTH_TEST);
+		camera.beginHUD();
+		info.draw();
+		camera.endHUD();
+		hint(ENABLE_DEPTH_TEST);
+	}
+
 	public static void main(String args[]){
-		   PApplet.main(new String[] { "--present", "processing.BasicVisual" });
+		PApplet.main(new String[] { "--present", "processing.BasicVisual" });
 	} 
-	
+
+	/**
+	 * calls incrementColor on the visual's instance of currentColor
+	 */
+	public void incrementCurrentColor(){
+		currentColor.incrementColor();
+	}
+
+	/**
+	 * renders the scene with each cell as its unique color
+	 * no lighting so that each cell is a flat color
+	 * for object picking
+	 */
+	public void renderAsHiddenColors(){
+		noLights();
+		for(String s: displayShell.getCells().keySet()){
+			Cell c = displayShell.getCells().get(s);
+			c.drawCellWithHiddenColor();
+		}
+	}
+
+	/**
+	 * gets the hidden color of the pixel that was just selected
+	 * @return the color as an int
+	 */
+	public int getHiddenColor(){
+		renderAsHiddenColors();
+		loadPixels();
+		return pixels[width*mouseY+mouseX];
+	}
+
 }
