@@ -24,7 +24,7 @@ public class MethodsTests {
 	BasicVisual testVis = new BasicVisual();
 	HashMap<String, Boolean> mutants = new HashMap<String, Boolean>();
 	Shell testShell;
-	
+
 	@Before
 	public void init(){
 		mutants.put("par-1", false);
@@ -36,9 +36,9 @@ public class MethodsTests {
 		mutants.put("pkc-3", false);
 		testShell = new Shell(testVis, mutants);
 	}
-	
+
 	//note that many of these tests are sensitive to the current data in the CSV's; altering this data might cause failures
-	
+
 	@Test
 	public void firstDivision() {
 		ArrayList<CellChangesData> cellChanges = new ArrayList<CellChangesData>();
@@ -52,7 +52,7 @@ public class MethodsTests {
 		p1Changes.put("lgl-1", new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER));
 		p1Changes.put("skn-1", new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER));
 		p1Changes.put("pal-1", new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER));
-		
+
 		DivisionData data = testShell.getDivisions().get("p-0");
 		cellChanges.add(testShell.cellDivision(data));
 		for(CellChangesData d: cellChanges){
@@ -67,7 +67,7 @@ public class MethodsTests {
 		Cell p1 = testShell.getCells().get("p-1");
 		assertTrue(ab.getCenter().getX() == 150 && p1.getCenter().getX() == 400 && ab.getLengths().getX() == 300 && p1.getLengths().getX() == 200);
 	}
-	
+
 	//@Test no longer works now that we converted to hashmap - doesn't run in order
 	public void runEventsQueue(){
 		System.out.println("Start events queue: new shell created");
@@ -76,14 +76,14 @@ public class MethodsTests {
 			testShell.cellDivision(d);
 		}
 	}
-	
+
 	@Test
 	public void testGeneInitiation(){
 		Gene testGene = new Gene("pal-1", new GeneState(true), new Coordinates(Compartment.XCENTER,Compartment.YCENTER,Compartment.ZCENTER), new HashMap<String, Coordinates>(), testVis);
 		testGene.populateCons();
 		assertEquals(3, testGene.getRelevantCons().size());
 	}
-	
+
 	@Test
 	public void testApplyingConsequences(){
 		Cell testCell = testShell.getCells().get("p-0");
@@ -92,15 +92,15 @@ public class MethodsTests {
 		assertTrue(effects.containsKey("pal-1"));
 		assertEquals(2, effects.size());
 	}
-	
+
 	@Test
 	public void testTimeLapse(){
-//		System.out.println("Begin time lapse tests");
+		//		System.out.println("Begin time lapse tests");
 		for(int i = 0; i<45; i++){
 			testShell.timeStep();
 		}
 	}
-	
+
 	@Test
 	public void enumTests(){
 		Coordinates testCoor = new Coordinates(Compartment.POSTERIOR, Compartment.YCENTER, Compartment.ZCENTER);
@@ -108,7 +108,7 @@ public class MethodsTests {
 		Gene testGene = new Gene("par-1", new GeneState(true), new Coordinates(Compartment.POSTERIOR, Compartment.YCENTER, Compartment.ZCENTER), new HashMap<String, Coordinates>(), testVis).populateCons();
 		assertEquals(Compartment.POSTERIOR, testGene.getLocation().getAP());
 	}
-	
+
 	@Test
 	public void randomTests(){
 		float prob = (float) .28;
@@ -118,13 +118,13 @@ public class MethodsTests {
 		int randInt = r.nextInt(possibilities);
 		assertTrue(randInt == 0 || randInt == 1 || randInt == 2 || randInt == 3);
 	}
-	
+
 	@Test
 	public void testInheritance(){
-		
-		
+
+
 		CellChangesData cellChanges;
-		
+
 		assertEquals(1, testShell.getCells().keySet().size());
 		int numPars = 0;
 		for(String s: testShell.getCells().get("p-0").getGenes().keySet()){
@@ -134,14 +134,14 @@ public class MethodsTests {
 		assertEquals(6, numPars);
 		DivisionData d = testShell.getDivisions().get("p-0");
 		cellChanges = testShell.cellDivision(d);
-		
+
 		for(String s: cellChanges.cellsRemoved){
 			testShell.getCells().remove(s);
 		}
 		for(Cell c: cellChanges.cellsAdded){
 			testShell.getCells().put(c.getName(), c);
 		}
-		
+
 		assertEquals(2, testShell.getCells().keySet().size());
 		numPars = 0;
 		for(String s: testShell.getCells().get("p-1").getGenes().keySet()){
@@ -157,14 +157,14 @@ public class MethodsTests {
 		assertEquals(4, numPars);
 		d = testShell.getDivisions().get("ab");
 		cellChanges = testShell.cellDivision(d);
-		
+
 		for(String s: cellChanges.cellsRemoved){
 			testShell.getCells().remove(s);
 		}
 		for(Cell c: cellChanges.cellsAdded){
 			testShell.getCells().put(c.getName(), c);
 		}
-		
+
 		numPars = 0;
 		for(String s: testShell.getCells().get("ab-a").getGenes().keySet()){
 			Gene g = testShell.getCells().get("ab-a").getGenes().get(s);
@@ -178,26 +178,26 @@ public class MethodsTests {
 		}
 		assertEquals(4, numPars);
 	}
-	
+
 	@Test
 	public void instancesTest(){
 		Gene g = new Gene("test", new GeneState(true), new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER), new HashMap<String, Coordinates>(), testVis);
 		Gene g2 = g;
 		g2.setState(new GeneState(false));
 		assertFalse(g.getState().isOn());
-		
+
 		Gene h = new Gene("test", new GeneState(true), new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER), new HashMap<String, Coordinates>(), testVis);
 		Gene h2 = new Gene(h.getName(), h.getState(), h.getLocation(), h.getChanges(), testVis);
 		h2.setState(new GeneState(false));
 		assertTrue(h.getState().isOn());
 	}
-	
+
 	//@Test tests a deprecated method
 	public void mutationsTest(){
 		//Cell c = testShell.getCells().get("p-0");
 		//testShell.calcMutation(c);
 	}
-	
+
 	@Test
 	public void perShellMutationTest1(){
 		HashMap<String, Boolean> mutants = new HashMap<String, Boolean>();
@@ -246,7 +246,7 @@ public class MethodsTests {
 			}
 		}
 	}
-	
+
 	@Test
 	public void perShellMutationTest2(){
 		HashMap<String, Boolean> mutants = new HashMap<String, Boolean>();
@@ -295,7 +295,7 @@ public class MethodsTests {
 			}
 		}
 	}
-	
+
 	@Test
 	public void perCellMutationsTest(){
 		HashMap<String, Boolean> mutants = new HashMap<String, Boolean>();
@@ -309,7 +309,7 @@ public class MethodsTests {
 		Shell mutantShell = new Shell(testVis, mutants);
 		mutantShell.perCellMutations(mutantShell.getCells().get("p-0"));
 	}
-	
+
 	@Test
 	public void moreInstancesTests(){
 		Coordinates c = null;
@@ -322,7 +322,7 @@ public class MethodsTests {
 		assertFalse(c == e);
 		assertTrue(c.getX() == e.getX()); //primitive - comparing values
 	}
-	
+
 	@Test
 	public void par1MutantTest(){
 		Cell c = testShell.par1Mutations(testShell.getCells().get("p-0"));
@@ -349,7 +349,7 @@ public class MethodsTests {
 				c.getGenes().get("mex-5").getLocation().getAP() == Compartment.POSTERIOR);
 		//System.out.println("mex-5 " + c.getGenes().get("mex-5").getLocation().getAP());
 	}
-	
+
 	@Test
 	public void par2MutantTest(){
 		Cell c = testShell.par2Mutations(testShell.getCells().get("p-0"));
@@ -364,7 +364,7 @@ public class MethodsTests {
 				c.getGenes().get("par-1").getLocation().getAP() == Compartment.POSTERIOR);
 		//System.out.println("par-1 " + c.getGenes().get("par-1").getLocation().getAP());
 	}
-	
+
 	@Test
 	public void par3MutantTest(){
 		Cell c = testShell.par3Mutations(testShell.getCells().get("p-0"));
@@ -379,13 +379,13 @@ public class MethodsTests {
 				c.getGenes().get("par-1").getLocation().getAP() == Compartment.POSTERIOR);
 		//System.out.println("par-1 " + c.getGenes().get("par-1").getLocation().getAP());
 	}
-	
-	
+
+
 	@Test
 	public void par4MutantTest(){
 		testShell.par4Mutations(testShell.getCells().get("p-0"));
 	}
-	
+
 	@Test
 	public void par5MutantTest(){
 		Cell c = testShell.par5Mutations(testShell.getCells().get("p-0"));
@@ -403,7 +403,7 @@ public class MethodsTests {
 				c.getGenes().get("par-3").getLocation().getAP() == Compartment.XCENTER ||
 				c.getGenes().get("par-3").getLocation().getAP() == Compartment.POSTERIOR);
 		//System.out.println("par-3 " + c.getGenes().get("par-3").getLocation().getAP());
-		
+
 		HashMap<String, Boolean> mutants = new HashMap<String, Boolean>();
 		mutants.put("par-1", false);
 		mutants.put("par-2", false);
@@ -420,14 +420,14 @@ public class MethodsTests {
 		for(Cell e: d.cellsAdded){
 			testShell.getCells().put(e.getName(), e);
 		}
-		
+
 		//genes = testShell.getCells().get("p-1").getGenes();
 		//System.out.println("cell division");
 		//if(mex5P1) System.out.println("mex-5 p-1 " + genes.get("mex-5").getLocation().getAP());
 		//genes = testShell.getCells().get("ab").getGenes();
 		//if(mex5AB) System.out.println("mex-5 ab " + genes.get("mex-5").getLocation().getAP());	
 	}
-	
+
 	@Test 
 	public void testInstantiation(){
 		//primitive
@@ -441,7 +441,7 @@ public class MethodsTests {
 		s = null;
 		assertFalse(g.getState().equals(null));
 	}
-	
+
 	@Test
 	public void testReadingCSV(){
 		ConsList list = new ConsList();
@@ -459,7 +459,7 @@ public class MethodsTests {
 		Gene g = new Gene("par-6", new GeneState(true), new Coordinates(Compartment.ANTERIOR, Compartment.YCENTER, Compartment.ZCENTER), new HashMap<String, Coordinates>(), testVis);
 		g.populateCons();
 	}
-	
+
 	@Test
 	public void testHashMapInstances(){
 		Coordinates testCoor = new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER);
@@ -467,9 +467,9 @@ public class MethodsTests {
 		test.put("a", testCoor);
 		testCoor = null;
 		assertNotNull(test.get("a"));
-		
+
 	}
-	
+
 	//Note that this test is slow and may very occasionally fail due to random variation	
 	//@Test
 	public void testMutantVariation1(){
@@ -509,7 +509,7 @@ public class MethodsTests {
 		assertNotEquals(200, mex5Count);
 		System.out.println(sknCount + " " + par3Count + " " + mex3Count + " " + mex5Count);
 	}
-	
+
 
 	@Test
 	public void testObjectInstantiation(){
@@ -520,7 +520,7 @@ public class MethodsTests {
 		s.setOn(false);
 		assertFalse(map.get(1).isOn());
 	}
-	
+
 	@Test
 	public void testObjectInstantiation2(){
 		HashMap<Integer, GeneState> map = new HashMap<Integer, GeneState>();
@@ -532,7 +532,7 @@ public class MethodsTests {
 		s.setOn(false);
 		assertFalse(map.get(1).isOn());
 	}
-	
+
 	@Test
 	public void testObjectInstantiation3(){
 		HashMap<Integer, Gene> map = new HashMap<Integer, Gene>();
@@ -543,7 +543,7 @@ public class MethodsTests {
 		g.setState(new GeneState(false));
 		assertTrue(map.get(1).getState().isOn());
 	}
-	
+
 	@Test
 	public void testObjectInstantiation4(){
 		HashMap<Integer, Gene> map = new HashMap<Integer, Gene>();
@@ -554,7 +554,7 @@ public class MethodsTests {
 		g.getState().setOn(false);
 		assertFalse(map.get(1).getState().isOn());
 	}
-	
+
 	@Test
 	public void testObjectInstatiation5(){
 		HashMap<Integer, Gene> map = new HashMap<Integer, Gene>();
@@ -564,7 +564,7 @@ public class MethodsTests {
 		g.setName("new");
 		assertEquals("name", map.get(1).getName()); 
 	}
-	
+
 	@Test
 	public void testObjectInstatiation6(){
 		Coordinates x = new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER);
@@ -572,7 +572,7 @@ public class MethodsTests {
 		x.setAP(Compartment.ANTERIOR);
 		assertNotEquals(x.getAP(), y.getAP());
 	}
-	
+
 	@Test
 	public void testDupCoord(){
 		Coordinates x = new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER);
@@ -580,7 +580,7 @@ public class MethodsTests {
 		x.setAP(Compartment.ANTERIOR);
 		assertNotEquals(x.getAP(), y.getAP());
 	}
-	
+
 	@Test
 	public void testDupCoord2(){
 		Coordinates x = new Coordinates(1, 1, 1);
@@ -588,7 +588,7 @@ public class MethodsTests {
 		x.setX(2);
 		assertNotEquals(x.getX(), y.getX());
 	}
-	
+
 	@Test
 	public void testShellDup(){
 		Shell aShell = new Shell(testVis, mutants);
@@ -597,7 +597,7 @@ public class MethodsTests {
 		assertFalse(aShell.getCells().get("p-0").getGenes().get("skn-1").getState().isOn());
 		assertTrue(anotherShell.getCells().get("p-0").getGenes().get("skn-1").getState().isOn());
 	}
-	
+
 	@Test
 	public void testDup(){
 		Gene g = new Gene("name", new GeneState(true));
@@ -605,7 +605,7 @@ public class MethodsTests {
 		h.setName("new");
 		assertEquals("new", g.getName());
 	}
-	
+
 	@Test
 	public void testDup2(){
 		Gene g = new Gene("name", new GeneState(true));
@@ -613,7 +613,7 @@ public class MethodsTests {
 		h.setName("new");
 		assertEquals("name", g.getName());
 	}
-	
+
 	//Very slow test - generates data for histograms
 	//@Test
 	public void generateMutantData(){
@@ -687,7 +687,7 @@ public class MethodsTests {
 			else germValues.put((int) germ, germValues.get(germ)+1);
 			if(defValues.get(def) == null) defValues.put((int) def, 1);
 			else defValues.put((int) def, defValues.get(def)+1);
-			
+
 			assertEquals(26, germ+mse+cd+def);	
 			mseFate += mse/26.0;
 			cdFate += cd/26.0;
@@ -699,7 +699,7 @@ public class MethodsTests {
 		//System.out.println("C/D: " + cdFate/iterations);
 		//System.out.println("germline: " + germFate/iterations);
 		//System.out.println("default: " + defFate/iterations);
-		
+
 		for(Integer i: mseValues.keySet()){
 			System.out.println(mseValues.get(i) + " shells have " + i + " cells with MS/E cell fate");
 		}
@@ -713,17 +713,26 @@ public class MethodsTests {
 			System.out.println(defValues.get(i) + " shells have " + i + " cells with default cell fate");
 		}
 	}
-	
+
 	//alter the sandbox file however you please to ensure that error checking is working properly
 	@Test
 	public void parsingSandbox(){
 		try{
 			ConsList AC = new ConsList();
 			AC.readAandCInfo("src/components/parsingSandbox.csv");
-//			testShell.readEventsQueue("src/components/parsingSandbox.csv");
-//			testShell.getCells().get("p-0").readGeneInfo("src/components/parsingSandbox.csv", testShell);
+			//			testShell.readEventsQueue("src/components/parsingSandbox.csv");
+			//			testShell.getCells().get("p-0").readGeneInfo("src/components/parsingSandbox.csv", testShell);
 		}
 		catch(Exception e){
 		}
+	}
+
+	@Test
+	public void getSuffix(){
+		String prefix = "blah";
+		String word2 = "blahgrhr";
+		assertTrue(word2.startsWith(prefix));
+		String suffix = word2.substring(prefix.length(), word2.length());
+		assertEquals("grhr", suffix);
 	}
 }

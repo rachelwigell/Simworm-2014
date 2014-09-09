@@ -3,7 +3,6 @@ package processing;
 import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.util.HashMap;
-import java.util.LinkedList;
 
 import peasy.PeasyCam;
 import processing.core.PApplet;
@@ -18,7 +17,6 @@ import controlP5.Toggle;
 import dataStructures.Cell;
 import dataStructures.ColorMode;
 import dataStructures.ConsList;
-import dataStructures.Coordinates;
 import dataStructures.RGB;
 import dataStructures.Shell;
 

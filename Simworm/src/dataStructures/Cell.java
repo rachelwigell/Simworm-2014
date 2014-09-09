@@ -328,12 +328,9 @@ public class Cell {
 			while((line = reader.readLine()) != null){ //read one line
 				String[] geneInfo = line.split(","); //split line into an array using commas as separators
 				name = geneInfo[0]; //name of the gene is in the first cell in the row
-				for(int i=0; i<name.length(); i++){ //check that gene name only contains particular characters
-					int c = (int) name.charAt(i);
-					if((c != 45) && (c < 97 || c > 122) && (c < 48 || c > 57)){ //lower case, numbers, hyphen accepted
-						reader.close();
-						throw new InvalidFormatException(FormatProblem.INVALIDNAME, row, 0);
-					}
+				if(shell.validGenes.get(name) == null){ //check that the gene name is one listed by wormbase as being valid
+					reader.close();
+					throw new InvalidFormatException(FormatProblem.INVALIDGENENAME, row, 0);
 				}				
 				//second cell is gene state. should only be A, I, U, or a number
 				if(geneInfo[1].equals("A")) state = new GeneState(true); //if A, gene set to active

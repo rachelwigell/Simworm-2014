@@ -22,6 +22,7 @@ public class Shell{
 	public ColorMode colorMode; //set colorMode to lineage initially
 	public boolean recentGrowth; //indicates when the shell has recently gained cells
 	public ArrayList<String> mislocalized; // genes that are mislocalized due to a mutation
+	public HashMap<String, Integer> validGenes; //valid  C. elegans gene names as determined by Wormbase text file parser
 	
 	/**
 	 * Constructor for a shell - initializes everything
@@ -44,8 +45,6 @@ public class Shell{
 		Coordinates startCenter = new Coordinates(250, 150, 150);
 		Coordinates startLengths = new Coordinates(500, 300, 300);
 		
-		//populate the cell's genes from csv file
-		
 		//populate events queue data from csv file
 		//for java application or junit test
 		try{
@@ -55,6 +54,19 @@ public class Shell{
 			//for java applet or executable
 			try{
 				divisions = readEventsQueue("eventsQueue.csv");
+			}
+			catch(Exception f){}
+		}
+		
+		//populate valid gene names from wormbase file
+		//for java application or junit test
+		try{
+			compileValidGenes("src/components/wormbaseGeneInfo.txt");
+		}
+		catch(Exception e){
+			//for java applet or executable
+			try{
+				compileValidGenes("wormbaseGeneInfo.txt");
 			}
 			catch(Exception f){}
 		}
@@ -830,6 +842,39 @@ public class Shell{
 	}
 	
 	/**
+	 * Checks that the given string is a possible cell name
+	 * @param cell name
+	 * @return true if the cell name is possible
+	 */
+	public boolean validCellName(String name){
+		LinkedList<String> validPrefixes = new LinkedList<String>();
+		validPrefixes.add("p-0");
+		validPrefixes.add("ab");
+		validPrefixes.add("ems");
+		validPrefixes.add("p-2");
+		validPrefixes.add("p-1");
+		validPrefixes.add("ms");
+		validPrefixes.add("e");
+		validPrefixes.add("c");
+		validPrefixes.add("p-3");
+		validPrefixes.add("d");
+		validPrefixes.add("p-4");
+		if(validPrefixes.contains(name)) return true; //if it's any of the above, it's valid
+		for(String s: validPrefixes){
+			if(name.startsWith(s)){ //if one of the above is a prefix...
+				if(!(name.charAt(s.length()+1) != '-')) return false; // next character must be a hyphen
+				String suffix = name.substring(s.length()+1, name.length()); //get the rest of the word
+				for(int i = 0; i < suffix.length(); i++){
+					char c = suffix.charAt(i);
+					if(c != 'a' && c != 'p' && c != 'l' && c != 'r' && c != 'v' && c != 'd') return false; //if the rest is only a/p/l/r/v/d suffixes we'll consider it valid
+				}
+				return true;
+			}
+		}
+		return false; //anything else is invalid
+	}
+	
+	/**
 	 * Reads info about the events queue from CSV
 	 * @param file the name of the CSV as a string
 	 * @return The events queue as populated
@@ -843,12 +888,9 @@ public class Shell{
 			while((line = reader.readLine()) != null){ //read one row
 				String[] queueInfo = line.split(","); //split into an array using commas as separators
 				String parent = queueInfo[0]; //name of the splitting cell is in first cell of the row
-				for(int i=0; i<parent.length(); i++){ //check that cell name only contains particular characters
-					int c = (int) parent.charAt(i);
-					if((c != 45) && (c < 97 || c > 122) && (c < 48 || c > 57)){ //lower case, numbers, hyphen accepted
-						reader.close();
-						throw new InvalidFormatException(FormatProblem.INVALIDNAME, row, 0);
-					}
+				if(!validCellName(parent)){ //check that the given cell name is a valid C. elegans cell name
+					reader.close();
+					throw new InvalidFormatException(FormatProblem.INVALIDCELLNAME, row, 0);
 				}	
 				double d1Percentage;
 				try{
@@ -893,6 +935,33 @@ public class Shell{
 			throw new FileNotFoundException();
 		}
 		return queue;
+	}
+	
+	/**
+	 * Compiles a list of valid gene C. elegans gene names based on input data from wormbase
+	 * @param file the name of the txt file from wormbase
+	 */
+	public void compileValidGenes(String file) throws FileReadErrorException{
+		validGenes = new HashMap<String, Integer>();
+		try{
+			BufferedReader reader = new BufferedReader(new FileReader(file)); //open the file
+			String line = "";
+			while((line = reader.readLine()) != null){ //read one line
+				String[] geneInfo = line.split("\t"); //split line into an array using spaces as separators
+				if(geneInfo.length > 2 && !geneInfo[2].equals(".")){
+					validGenes.put(geneInfo[2], 1);
+				}
+			}
+			reader.close();
+		}
+		catch (FileNotFoundException e){
+			System.out.println("file not found");
+			throw new FileReadErrorException(file);
+		}
+		catch (IOException e){
+			System.out.println("IO exception");
+			throw new FileReadErrorException(file);
+		}
 	}
 	
 }
