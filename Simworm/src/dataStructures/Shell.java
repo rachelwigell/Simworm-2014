@@ -947,8 +947,8 @@ public class Shell{
 			BufferedReader reader = new BufferedReader(new FileReader(file)); //open the file
 			String line = "";
 			while((line = reader.readLine()) != null){ //read one line
-				String[] geneInfo = line.split("\t"); //split line into an array using spaces as separators
-				if(geneInfo.length > 2 && !geneInfo[2].equals(".")){
+				String[] geneInfo = line.split(","); //split line into an array using spaces as separators
+				if(geneInfo.length > 2){
 					validGenes.put(geneInfo[2], 1);
 				}
 			}
