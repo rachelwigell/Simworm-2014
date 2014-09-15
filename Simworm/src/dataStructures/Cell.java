@@ -5,9 +5,9 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.LinkedList;
 
 import processing.BasicVisual;
+import processing.Metaball;
 
 public class Cell {
 	BasicVisual window;
@@ -22,9 +22,7 @@ public class Cell {
 	private DivisionData divide;
 	private int generation;
 	private boolean selected;
-	LinkedList<Coordinates> boundingBox;
-	
-	Coordinates sphereLocation;
+	private Metaball representation;
 	
 	/**
 	 * Constructor for a cell object
@@ -52,9 +50,14 @@ public class Cell {
 		this.uniqueColor = new RGB(window.currentColor.getRed(), window.currentColor.getGreen(), window.currentColor.getBlue());
 		window.incrementCurrentColor();
 		
+		createRepresentation();
 		allRecentlyChanged();
 	}
 	
+	/**
+	 * Duplication constructor for a cell
+	 * @param toDup a cell object to duplicate
+	 */
 	public Cell(Cell toDup){
 		this.window = toDup.window;
 		this.name = toDup.name;
@@ -77,9 +80,26 @@ public class Cell {
 		for(String s: toDup.recentlyChanged.keySet()){
 			changesmap.put(s, new Gene(toDup.recentlyChanged.get(s)));
 		}
+		this.representation = toDup.createRepresentation();
 		this.recentlyChanged = changesmap;
 	}
 	
+	/**
+	 * Create a metaball to represent this cell
+	 * @return the metaball
+	 */
+	public Metaball createRepresentation(){
+		float chargeCoefficient =  1/600.0f;
+		Metaball metaball = new Metaball(this.center.getX(), this.center.getY(), this.center.getZ(),
+				chargeCoefficient*this.lengths.getX()*this.lengths.getY()*this.lengths.getZ(),
+				this.displayColor.getRed(), this.displayColor.getGreen(), this.displayColor.getBlue());
+		this.representation = metaball;
+		return metaball;
+	}
+	
+	/**
+	 * Put all genes in the recently changed list
+	 */
 	public void allRecentlyChanged(){
 		for(String s: genes.keySet()){
 			recentlyChanged.put(s, genes.get(s));
@@ -87,6 +107,10 @@ public class Cell {
 	}
 	
 	//getters	
+	public Metaball getRepresentation(){
+		return representation;
+	}
+	
 	public String getName() {
 		return name;
 	}
@@ -111,20 +135,12 @@ public class Cell {
 		return recentlyChanged;
 	}
 
-	public Coordinates getSphereLocation() {
-		return sphereLocation;
-	}
-
 	public DivisionData getDivide() {
 		return divide;
 	}
 
 	public int getGeneration() {
 		return generation;
-	}
-	
-	public LinkedList<Coordinates> getBoundingBox() {
-		return boundingBox;
 	}
 
 	public RGB getColor() {
@@ -261,7 +277,7 @@ public class Cell {
 	/**
 	 * Draws the cell to the PApplet
 	 */
-	public void drawCell(){
+	public void drawCellEllipsoid(){
 		window.pushMatrix();
 		window.translate(this.center.getX(), this.center.getY(), this.center.getZ());
 		float smallSide = this.lengths.getSmallest();

@@ -24,6 +24,10 @@ public class Shell{
 	public ArrayList<String> mislocalized; // genes that are mislocalized due to a mutation
 	public HashMap<String, Integer> validGenes; //valid  C. elegans gene names as determined by Wormbase text file parser
 	
+	private final int shellWidth = 500;
+	private final int shellHeight = 300;
+	private final int shellDepth = 300;
+	
 	/**
 	 * Constructor for a shell - initializes everything
 	 * @param window The PApplet in which the shell will be drawn
@@ -42,8 +46,8 @@ public class Shell{
 		this.cells = new HashMap<String, Cell>();
 		
 		//info about p-0, which fills the whole shell at the start
-		Coordinates startCenter = new Coordinates(250, 150, 150);
-		Coordinates startLengths = new Coordinates(500, 300, 300);
+		Coordinates startCenter = new Coordinates(0, 0, 0);
+		Coordinates startLengths = new Coordinates(shellWidth, shellHeight, shellDepth);
 		
 		//populate events queue data from csv file
 		//for java application or junit test
@@ -104,6 +108,17 @@ public class Shell{
 		return divisions;
 	}
 	
+	public int getShellWidth(){
+		return shellWidth;
+	}
+	
+	public int getShellHeight(){
+		return shellHeight;
+	}
+	
+	public int getShellDepth(){
+		return shellDepth;
+	}	
 	
 	/**
 	 * Determines the name of a daughter cell based on what the parent cell is and what axis it's dividing along
@@ -433,7 +448,7 @@ public class Shell{
 	 */
 	public void drawAllCells(){
 		for(String s: this.cells.keySet()){
-			this.cells.get(s).drawCell();
+			this.cells.get(s).drawCellEllipsoid();
 		}
 	}
 	
@@ -470,6 +485,8 @@ public class Shell{
 		if(this.colorMode == ColorMode.FATE){
 			updateColorMode();
 		}
+		//if the cell divided, update metaballs in display
+		if(recentGrowth) window.iterateThroughGrid();
 		simTime++;
 	}
 	

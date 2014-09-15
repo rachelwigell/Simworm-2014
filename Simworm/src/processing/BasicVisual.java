@@ -2,6 +2,7 @@ package processing;
 
 import java.awt.Dimension;
 import java.awt.Toolkit;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import peasy.PeasyCam;
@@ -17,6 +18,7 @@ import controlP5.Toggle;
 import dataStructures.Cell;
 import dataStructures.ColorMode;
 import dataStructures.ConsList;
+import dataStructures.Coordinates;
 import dataStructures.RGB;
 import dataStructures.Shell;
 
@@ -75,6 +77,14 @@ public class BasicVisual extends PApplet{
 	boolean firstTime = true;
 	boolean firstClick = false;
 	public RGB currentColor;
+	
+	//marching cubes fields
+	final int gridSize = 8;
+	float threshold = 16.0f;
+	private ArrayList<ArrayList<Coordinates>> vertices;
+	private ArrayList<RGB> displayColorField;
+	private ArrayList<RGB> uniqueColorField;
+	private boolean drawWithEllisoids = false;
 
 	//called on start. opens the screen where the user chooses mutant genes
 	@SuppressWarnings("deprecation")
@@ -83,7 +93,7 @@ public class BasicVisual extends PApplet{
 		mutants = new HashMap<String, Boolean>();
 		if(firstTime){
 			size((int) width, (int) height, P3D);
-			camera = new PeasyCam(this, 500, height/2, 0, width/2.65); //initialize the peasycam
+			camera = new PeasyCam(this, 600); //initialize the peasycam
 		}
 		firstTime = false;
 		info = new ControlP5(this);
@@ -131,6 +141,8 @@ public class BasicVisual extends PApplet{
 		shellsOverTime = new HashMap<Integer, Shell>();
 		shellsOverTime.put(1, new Shell(farthestShell)); //populate the first member of the hashmap
 		timeCount = 0;
+		iterateThroughGrid();
+		
 		userText = "Type a cell name to see its contents,\nor press right arrow to progress 1 timestep\nor left arrow to move backwards 1 timestep.";
 		autoTime = false;
 		lineageState = true;
@@ -292,7 +304,6 @@ public class BasicVisual extends PApplet{
 	//implicitly called in a loop
 	public void draw(){
 		background(0);
-		translate(250, 250, -150);
 		lights();
 		//spotLight(255, 255, 255, 250, 0, 400, 0, 0, -1, PI/4, 2);
 		noStroke();
@@ -301,7 +312,12 @@ public class BasicVisual extends PApplet{
 		//boolean mutantsChosen will get set when we exit that screen
 		if(mutantsChosen){
 			drawAxes(); //draw the coordinate axes
-			displayShell.drawAllCells(); //draw the shell
+			if(drawWithEllisoids){
+				displayShell.drawAllCells(); //draw the shell using ellipsoids
+			}
+			else{
+				printVertices(false); //draw the shell using metaballs
+			}
 			userTextArea.setText(userText); //show the text output that userText is currently set to
 			cellNamesArea.setText(displayShell.getCellNames());
 			//boolean values for lineageState, fateState, parsState exist so that we don't have to continuously set the color
@@ -325,6 +341,175 @@ public class BasicVisual extends PApplet{
 		else camera.setActive(true);
 
 		gui();
+	}
+	
+	public float netChargeHere(Coordinates point){
+		float total = 0;
+		for(String s: displayShell.getCells().keySet()){
+			Metaball m = displayShell.getCells().get(s).getRepresentation();
+			total += m.chargeFrom(point.getX(), point.getY(), point.getZ());
+		}
+		return total;
+	}
+	
+	public RGB netColorHere(Coordinates point){
+		int red = 0;
+		int green = 0;
+		int blue = 0;
+		boolean someCellSelected = false;
+		for(String s: displayShell.getCells().keySet()){
+			if(displayShell.getCells().get(s).isSelected()){
+				someCellSelected = true;
+			}
+		}
+		for(String s: displayShell.getCells().keySet()){
+			int colorCoefficient = 800;
+			if(someCellSelected){
+				colorCoefficient = 400;
+			}
+			if(displayShell.getCells().get(s).isSelected()){
+				colorCoefficient *= 4;
+			}
+			Metaball m = displayShell.getCells().get(s).getRepresentation();
+			float charge = Math.abs(colorCoefficient/m.squaredRadius(point.getX(), point.getY(), point.getZ()));
+			if(charge > 1) charge = 1;
+			red += charge*m.color.getRed();
+			green += charge*m.color.getGreen();
+			blue += charge*m.color.getBlue();
+		}
+		return new RGB(red, green, blue);
+	}
+	
+	public RGB uniqueColorHere(Coordinates point){
+		float influence = 0;
+		Cell nearest = null;
+		for(String s: displayShell.getCells().keySet()){
+			Cell c = displayShell.getCells().get(s);
+			Metaball m = c.getRepresentation();
+			float infFrom = Math.abs(m.chargeFrom(point.getX(), point.getY(), point.getZ()));
+			if(infFrom > influence){
+				influence = infFrom;
+				nearest = c;
+			}
+		}
+		return nearest.getUniqueColor();
+	}
+	
+	public void iterateThroughGrid(){
+		vertices = new ArrayList<ArrayList<Coordinates>>();
+		displayColorField = new ArrayList<RGB>();
+		uniqueColorField = new ArrayList<RGB>();
+		int W = displayShell.getShellWidth();
+		int H = displayShell.getShellWidth();
+		int D = displayShell.getShellWidth();
+		for(int i = -W/2; i < W/2; i += gridSize){
+			for(int j = -H/2; j < H/2; j += gridSize){	
+				for(int k = -D/2; k < D/2; k += gridSize){
+					handleOneCube(i, j, k);
+				}
+			}
+		}
+	}
+	
+	public void printVertices(boolean unique){
+		int colorCounter = 0;
+		for(ArrayList<Coordinates> shape: vertices){
+			if(unique){
+				RGB color = uniqueColorField.get(colorCounter);
+				fill(color.getRed(), color.getGreen(), color.getBlue());
+			}
+			else{
+				RGB color = displayColorField.get(colorCounter);
+				fill(color.getRed(), color.getGreen(), color.getBlue());
+			}
+			pushMatrix();
+//			scale(1, (float) displayShell.getShellHeight()/displayShell.getShellWidth(), (float) displayShell.getShellDepth()/displayShell.getShellWidth());
+			beginShape();
+			for(Coordinates c: shape){
+				vertex(c.getX(), c.getY(), c.getZ());
+			}
+			endShape(CLOSE);
+			popMatrix();
+			colorCounter++;
+		}
+	}
+	
+	public void handleOneCube(int x, int y, int z){
+		RGB color = netColorHere(new Coordinates(x, y, z));
+		RGB uniqueColor = uniqueColorHere(new Coordinates(x, y, z));
+		Cube cube = new Cube(this, x, y, z, gridSize);
+		cube.vertices.put(cube.vertex1, aboveThreshold(cube.vertex1));
+		cube.vertices.put(cube.vertex2, aboveThreshold(cube.vertex2));
+		cube.vertices.put(cube.vertex3, aboveThreshold(cube.vertex3));
+		cube.vertices.put(cube.vertex4, aboveThreshold(cube.vertex4));
+		cube.vertices.put(cube.vertex5, aboveThreshold(cube.vertex5));
+		cube.vertices.put(cube.vertex6, aboveThreshold(cube.vertex6));
+		cube.vertices.put(cube.vertex7, aboveThreshold(cube.vertex7));
+		cube.vertices.put(cube.vertex8, aboveThreshold(cube.vertex8));
+		cube.populateMids();
+		
+		switch(cube.midpoints.size()){
+		case 3:
+			vertices.add(cube.threeCase());
+			displayColorField.add(color);
+			uniqueColorField.add(uniqueColor);
+			return;
+		case 4:
+			vertices.add(cube.fourCase());
+			displayColorField.add(color);
+			uniqueColorField.add(uniqueColor);
+			return;
+		case 5:
+			ArrayList<ArrayList<Coordinates>> shapes5 = cube.fiveCase();
+			vertices.addAll(shapes5);
+			for(int i = 0; i < shapes5.size(); i++){
+				displayColorField.add(color);
+				uniqueColorField.add(uniqueColor);
+			}
+			return;
+		case 6:
+			ArrayList<ArrayList<Coordinates>> shapes6 = cube.sixCase();
+			vertices.addAll(shapes6);
+			for(int i = 0; i < shapes6.size(); i++){
+				displayColorField.add(color);
+				uniqueColorField.add(uniqueColor);
+			}
+			return;
+		case 7:
+			ArrayList<ArrayList<Coordinates>> shapes7 = cube.sevenCase();
+			vertices.addAll(shapes7);
+			for(int i = 0; i < shapes7.size(); i++){
+				displayColorField.add(color);
+				uniqueColorField.add(uniqueColor);
+			}
+			return;
+		case 8:
+			ArrayList<ArrayList<Coordinates>> shapes8 = cube.eightCase();
+			vertices.addAll(shapes8);
+			for(int i = 0; i < shapes8.size(); i++){
+				displayColorField.add(color);
+				uniqueColorField.add(uniqueColor);
+			}
+			return;
+		case 9:
+			ArrayList<ArrayList<Coordinates>> shapes9 = cube.nineCase();
+			vertices.addAll(shapes9);
+			for(int i = 0; i < shapes9.size(); i++){
+				displayColorField.add(color);
+				uniqueColorField.add(uniqueColor);
+			}
+			return;
+		case 0:
+			return;
+		default:
+			System.out.println("unhandled case of " + cube.midpoints.size());
+			return;
+		}			
+	}
+
+	public boolean aboveThreshold(Coordinates point){
+		float charge = netChargeHere(point);
+		return Math.abs(charge) > threshold;
 	}
 
 	//action listener for the create shell button on the choose mutants screen. finalizes the mutants choice and calls secondarySetup
@@ -433,21 +618,22 @@ public class BasicVisual extends PApplet{
 		if(keyCode == ESC) exit();
 
 		if(mutantsChosen){ //only run if mutantsChosen is set, because userText doesn't exist yet if not
-			//if(key == ' '){ //spacebar triggers a timestep
-			//displayShell.timeStep();
-			//userText = "Type a cell name to see its contents,\nor press right arrow to progress 1 timestep\nor left arrow to move backwards 1 timestep.";
-			//}
 			if(keyCode == RIGHT){
 				progressForward();
 			}
 			else if(keyCode == LEFT){
 				if(currentTime > 1){
+					int numCellsPresent = displayShell.getCells().keySet().size();
 					for(String s: displayShell.getCells().keySet()){
 						displayShell.getCells().get(s).setSelected(true);
 					}
 					userText = "Type a cell name to see its contents,\nor press right arrow to progress 1 timestep\nor left arrow to move backwards 1 timestep.";
 					currentTime--;
 					displayShell = shellsOverTime.get(currentTime);
+					//need to update visual only if some of the cells are supposed to "disappear"
+					if(displayShell.getCells().keySet().size() < numCellsPresent){
+						iterateThroughGrid();
+					}
 					updateColorMode();
 					progressBar.setValue(currentTime);
 				}
@@ -477,6 +663,10 @@ public class BasicVisual extends PApplet{
 		}
 	}
 
+	public void mouseReleased(){
+		camera.stop();
+	}
+	
 	public void mouseClicked(){
 		if(mutantsChosen){
 			if(!firstClick){
@@ -500,6 +690,7 @@ public class BasicVisual extends PApplet{
 						if(chosen != null){
 							chosen.setSelected(true); //select the chosen cell
 							userText = chosen.getInfo(); //print its info
+							iterateThroughGrid();
 						}
 					}
 				}
@@ -579,21 +770,21 @@ public class BasicVisual extends PApplet{
 		//set up to draw x axis
 		stroke(255,0,0);
 		fill(255,0,0);
-		line(-200, 400, 0, 0, 400, 0);
-		text("a", -200, 390, 0);
-		text("p", 0, 390, 0);
+		line(-550, 150, 0, -350, 150, 0);
+		text("a", -550, 140, 0);
+		text("p", -350, 140, 0);
 		//set up to draw y axis
 		stroke(0,255,0);
 		fill(0,255,0);
-		text("v", -100, 510, 0);
-		text("d", -100, 290, 0);
-		line(-100, 500, 0, -100, 300, 0);
+		text("v", -450, 270, 0);
+		text("d", -450, 40, 0);
+		line(-450, 250, 0, -450, 50, 0);
 		//set up to draw z axis
 		stroke(0,0,255);
 		fill(0,0,255);
-		line(-100, 400, -100, -100, 400, 100);
-		text("r", -90, 400, -100);
-		text("l", -110, 400, 100);
+		line(-450, 150, -100, -450, 150, 100);
+		text("r", -440, 150, -100);
+		text("l", -460, 150, 100);
 		//set up to draw cells
 		noStroke();
 		fill(180, 255, 255);
@@ -625,10 +816,7 @@ public class BasicVisual extends PApplet{
 	 */
 	public void renderAsHiddenColors(){
 		noLights();
-		for(String s: displayShell.getCells().keySet()){
-			Cell c = displayShell.getCells().get(s);
-			c.drawCellWithHiddenColor();
-		}
+		printVertices(true);
 	}
 
 	/**

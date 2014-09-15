@@ -49,7 +49,6 @@ public class RGB {
 		return blue;
 	}
 	
-	
 	/**
 	 * Used to generate unique colors. First increments red until reaches 255, then green, etc.
 	 */
