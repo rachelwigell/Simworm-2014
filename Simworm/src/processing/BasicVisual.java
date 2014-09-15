@@ -343,6 +343,11 @@ public class BasicVisual extends PApplet{
 		gui();
 	}
 	
+	/**
+	 * Gets the total metaball influence at a given point
+	 * @param point the point we're considering
+	 * @return metaball field value
+	 */
 	public float netChargeHere(Coordinates point){
 		float total = 0;
 		for(String s: displayShell.getCells().keySet()){
@@ -352,6 +357,12 @@ public class BasicVisual extends PApplet{
 		return total;
 	}
 	
+	/**
+	 * Color is determined according to the metaball field; each metaball's color
+	 * contributes to the color at a point proportionate to its distance from the point
+	 * @param point the point we want to get the color at
+	 * @return the color at that point
+	 */
 	public RGB netColorHere(Coordinates point){
 		int red = 0;
 		int green = 0;
@@ -380,6 +391,12 @@ public class BasicVisual extends PApplet{
 		return new RGB(red, green, blue);
 	}
 	
+	/**
+	 * Attempts to define the boundaries of the metaballs such that picking
+	 * method using color buffer can continue to be used
+	 * @param point the point at which we're trying to define a unique color
+	 * @return the unique color for this point
+	 */
 	public RGB uniqueColorHere(Coordinates point){
 		float influence = 0;
 		Cell nearest = null;
@@ -395,6 +412,9 @@ public class BasicVisual extends PApplet{
 		return nearest.getUniqueColor();
 	}
 	
+	/**
+	 * Populates the array of shapes; call when image needs to change
+	 */
 	public void iterateThroughGrid(){
 		vertices = new ArrayList<ArrayList<Coordinates>>();
 		displayColorField = new ArrayList<RGB>();
@@ -411,6 +431,10 @@ public class BasicVisual extends PApplet{
 		}
 	}
 	
+	/**
+	 * Prints the stored vertices to the screen; call every time step
+	 * @param unique whether or not we're printing with unique colors
+	 */
 	public void printVertices(boolean unique){
 		int colorCounter = 0;
 		for(ArrayList<Coordinates> shape: vertices){
@@ -434,6 +458,12 @@ public class BasicVisual extends PApplet{
 		}
 	}
 	
+	/**
+	 * Applies the marching cubes algorithm to the cube at this point
+	 * @param x x coordinate of point
+	 * @param y y coordinate of point
+	 * @param z z coordinate of point
+	 */
 	public void handleOneCube(int x, int y, int z){
 		RGB color = netColorHere(new Coordinates(x, y, z));
 		RGB uniqueColor = uniqueColorHere(new Coordinates(x, y, z));
@@ -507,6 +537,11 @@ public class BasicVisual extends PApplet{
 		}			
 	}
 
+	/**
+	 * Determines if the metaball field is above the threshold value at this point
+	 * @param point the point we're considering
+	 * @return true if above, false if below
+	 */
 	public boolean aboveThreshold(Coordinates point){
 		float charge = netChargeHere(point);
 		return Math.abs(charge) > threshold;
