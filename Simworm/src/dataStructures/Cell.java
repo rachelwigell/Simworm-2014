@@ -46,7 +46,7 @@ public class Cell {
 		this.displayColor = color;
 		this.divide = divide;
 		this.generation = generation;
-		this.selected = true;
+		this.selected = false;
 		this.uniqueColor = new RGB(window.currentColor.getRed(), window.currentColor.getGreen(), window.currentColor.getBlue());
 		window.incrementCurrentColor();
 		
@@ -75,7 +75,7 @@ public class Cell {
 			this.divide = new DivisionData(toDup.divide);
 		}
 		this.generation = toDup.generation;
-		this.selected = true;
+		this.selected = false;
 		HashMap<String, Gene> changesmap = new HashMap<String, Gene>();
 		for(String s: toDup.recentlyChanged.keySet()){
 			changesmap.put(s, new Gene(toDup.recentlyChanged.get(s)));
@@ -270,7 +270,7 @@ public class Cell {
 			genes.put(s, genes.get(s).updateCons(stage, recentGrowth));
 		}
 		this.applyCons();
-		this.selected = true;
+		this.selected = false;
 		return this;
 	}
 	

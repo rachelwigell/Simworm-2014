@@ -358,6 +358,19 @@ public class BasicVisual extends PApplet{
 	}
 	
 	/**
+	 * returns the selected cell if there is one
+	 * @return null if no cell is selected
+	 */
+	public Cell someCellSelected(){
+		for(String s: displayShell.getCells().keySet()){
+			if(displayShell.getCells().get(s).isSelected()){
+				return displayShell.getCells().get(s);
+			}
+		}
+		return null;
+	}
+	
+	/**
 	 * Color is determined according to the metaball field; each metaball's color
 	 * contributes to the color at a point proportionate to its distance from the point
 	 * @param point the point we want to get the color at
@@ -367,15 +380,10 @@ public class BasicVisual extends PApplet{
 		int red = 0;
 		int green = 0;
 		int blue = 0;
-		boolean someCellSelected = false;
-		for(String s: displayShell.getCells().keySet()){
-			if(displayShell.getCells().get(s).isSelected()){
-				someCellSelected = true;
-			}
-		}
+		Cell selected = someCellSelected();
 		for(String s: displayShell.getCells().keySet()){
 			int colorCoefficient = 800;
-			if(someCellSelected){
+			if(selected != null){
 				colorCoefficient = 400;
 			}
 			if(displayShell.getCells().get(s).isSelected()){
@@ -416,6 +424,7 @@ public class BasicVisual extends PApplet{
 	 * Populates the array of shapes; call when image needs to change
 	 */
 	public void iterateThroughGrid(){
+		System.out.println("called");
 		vertices = new ArrayList<ArrayList<Coordinates>>();
 		displayColorField = new ArrayList<RGB>();
 		uniqueColorField = new ArrayList<RGB>();
@@ -627,8 +636,9 @@ public class BasicVisual extends PApplet{
 	public void progressForward(){
 		if(currentTime <= 95){
 			userText = "Type a cell name to see its contents,\nor press right arrow to progress 1 timestep\nor left arrow to move backwards 1 timestep.";
-			for(String s: displayShell.getCells().keySet()){
-				displayShell.getCells().get(s).setSelected(true);
+			boolean mustUpdateDisplay = false;
+			if(someCellSelected() != null){
+				mustUpdateDisplay = true;
 			}
 			if(currentTime == farthestSeen){
 				farthestShell.timeStep();
@@ -640,10 +650,18 @@ public class BasicVisual extends PApplet{
 				progressBar.setValue(currentTime);
 			}
 			else{
+				int cellDepicted = displayShell.getCells().keySet().size();
 				currentTime++;
 				displayShell = shellsOverTime.get(currentTime);
+				//if we need to show another cell, need to update visual
+				if(displayShell.getCells().keySet().size() > cellDepicted){
+					mustUpdateDisplay = true;
+				}
 				updateColorMode();
 				progressBar.setValue(currentTime);
+			}
+			if(mustUpdateDisplay){
+				iterateThroughGrid();
 			}
 		}
 	}
@@ -659,14 +677,20 @@ public class BasicVisual extends PApplet{
 			else if(keyCode == LEFT){
 				if(currentTime > 1){
 					int numCellsPresent = displayShell.getCells().keySet().size();
-					for(String s: displayShell.getCells().keySet()){
-						displayShell.getCells().get(s).setSelected(true);
-					}
 					userText = "Type a cell name to see its contents,\nor press right arrow to progress 1 timestep\nor left arrow to move backwards 1 timestep.";
 					currentTime--;
+					boolean mustUpdateDisplay = false;
+					if(someCellSelected() != null){
+						System.out.println("recognized selected cell");
+						someCellSelected().setSelected(false);
+						mustUpdateDisplay = true;
+					}
 					displayShell = shellsOverTime.get(currentTime);
 					//need to update visual only if some of the cells are supposed to "disappear"
 					if(displayShell.getCells().keySet().size() < numCellsPresent){
+						mustUpdateDisplay = true;
+					}
+					if(mustUpdateDisplay){
 						iterateThroughGrid();
 					}
 					updateColorMode();

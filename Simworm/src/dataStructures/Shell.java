@@ -486,7 +486,9 @@ public class Shell{
 			updateColorMode();
 		}
 		//if the cell divided, update metaballs in display
-		if(recentGrowth) window.iterateThroughGrid();
+		if(recentGrowth){
+			window.iterateThroughGrid();
+		}
 		simTime++;
 	}
 	
