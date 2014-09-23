@@ -10,8 +10,8 @@ public class Gene /*implements Comparable<Gene>*/{
 	private String name;
 	private GeneState state; //active or inactive
 	private List<Consequence> relevantCons; //consequences that involve this gene as an antecedent
-	Coordinates location; //compartment in cell
-	HashMap<String, Coordinates> changes; //optional field for genes that change compartments during the course of the sim
+	Coordinate location; //compartment in cell
+	HashMap<String, Coordinate> changes; //optional field for genes that change compartments during the course of the sim
 	BasicVisual window;
 	
 	/**
@@ -21,7 +21,7 @@ public class Gene /*implements Comparable<Gene>*/{
 	 * @param location  Compartment in which the gene is located
 	 * @param changes Info on compartment that the gene moves to and what time the move occurs
 	 */
-	public Gene(String name, GeneState state, Coordinates location, HashMap<String, Coordinates> changes, BasicVisual window){
+	public Gene(String name, GeneState state, Coordinate location, HashMap<String, Coordinate> changes, BasicVisual window){
 		this.name = name;
 		this.state = state;		
 		this.location = location;
@@ -43,12 +43,12 @@ public class Gene /*implements Comparable<Gene>*/{
 		this.name = toDup.name;
 		this.state = new GeneState(toDup.state);
 		if(toDup.location != null){
-			this.location = new Coordinates(toDup.location);
+			this.location = new Coordinate(toDup.location);
 		}
 		if(toDup.changes != null){
-			HashMap<String, Coordinates> map = new HashMap<String, Coordinates>();
+			HashMap<String, Coordinate> map = new HashMap<String, Coordinate>();
 			for(String s: toDup.changes.keySet()){
-				map.put(s, new Coordinates(toDup.changes.get(s)));
+				map.put(s, new Coordinate(toDup.changes.get(s)));
 			}
 			this.changes = map;
 		}
@@ -117,11 +117,11 @@ public class Gene /*implements Comparable<Gene>*/{
 		return relevantCons;
 	}
 
-	public Coordinates getLocation() {
+	public Coordinate getLocation() {
 		return location;
 	}
 
-	public HashMap<String, Coordinates> getChanges() {
+	public HashMap<String, Coordinate> getChanges() {
 		return changes;
 	}
 
@@ -130,7 +130,7 @@ public class Gene /*implements Comparable<Gene>*/{
 		return this;
 	}
 
-	public Gene setLocation(Coordinates location) {
+	public Gene setLocation(Coordinate location) {
 		this.location = location;
 		return this;
 	}

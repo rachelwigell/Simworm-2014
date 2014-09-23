@@ -1,7 +1,7 @@
 package dataStructures;
 
 
-public class Coordinates{
+public class Coordinate{
 	private float x; //smaller numbers are more anterior, larger numbers are more posterior when used for locations
 	private float y; //smaller numbers are more dorsal, larger numbers are more ventral when used for locations
 	private float z; //smaller numbers are more right, larger numbers are more left when used for locations
@@ -10,9 +10,9 @@ public class Coordinates{
 	private Compartment DV;
 	private Compartment LR;
 
-	private Coordinates xAdjacent;
-	private Coordinates yAdjacent;
-	private Coordinates zAdjacent;
+	private Coordinate xAdjacent;
+	private Coordinate yAdjacent;
+	private Coordinate zAdjacent;
 
 	private float distance;
 
@@ -22,7 +22,7 @@ public class Coordinates{
 	 * @param y The y coordinate
 	 * @param z The z coordinate
 	 */
-	public Coordinates(float x, float y, float z){
+	public Coordinate(float x, float y, float z){
 		this.x = x;
 		this.y = y;
 		this.z = z;
@@ -34,13 +34,13 @@ public class Coordinates{
 	 * @param DV The compartment on the dorsal-ventral axis
 	 * @param LR The compartment on the left-right axis
 	 */
-	public Coordinates(Compartment AP, Compartment DV, Compartment LR){
+	public Coordinate(Compartment AP, Compartment DV, Compartment LR){
 		this.AP = AP;
 		this.DV = DV;
 		this.LR = LR;
 	}
 
-	public Coordinates(Coordinates toDup){
+	public Coordinate(Coordinate toDup){
 		this.AP = toDup.AP;
 		this.DV = toDup.DV;
 		this.LR = toDup.LR;
@@ -49,7 +49,7 @@ public class Coordinates{
 		this.z = toDup.z;
 	}
 
-	public Coordinates(float x, float y, float z, Coordinates xAdjacent, Coordinates yAdjacent, Coordinates zAdjacent){
+	public Coordinate(float x, float y, float z, Coordinate xAdjacent, Coordinate yAdjacent, Coordinate zAdjacent){
 		this.x = x;
 		this.y = y;
 		this.z = z;
@@ -88,15 +88,15 @@ public class Coordinates{
 		return LR;
 	}
 
-	public Coordinates getxAdjacent() {
+	public Coordinate getxAdjacent() {
 		return xAdjacent;
 	}
 
-	public Coordinates getyAdjacent() {
+	public Coordinate getyAdjacent() {
 		return yAdjacent;
 	}
 
-	public Coordinates getzAdjacent() {
+	public Coordinate getzAdjacent() {
 		return zAdjacent;
 	}
 
@@ -131,15 +131,15 @@ public class Coordinates{
 		this.z = z;
 	}
 
-	public void setxAdjacent(Coordinates xAdjacent) {
+	public void setxAdjacent(Coordinate xAdjacent) {
 		this.xAdjacent = xAdjacent;
 	}
 
-	public void setyAdjacent(Coordinates yAdjacent) {
+	public void setyAdjacent(Coordinate yAdjacent) {
 		this.yAdjacent = yAdjacent;
 	}
 
-	public void setzAdjacent(Coordinates zAdjacent) {
+	public void setzAdjacent(Coordinate zAdjacent) {
 		this.zAdjacent = zAdjacent;
 	}
 
@@ -152,9 +152,9 @@ public class Coordinates{
 	 * returns a set of coordinates such that the smallest one will be .5 and the others will be proportionately larger
 	 * @return scaled coordinates
 	 */
-	public Coordinates lengthsToScale(){
+	public Coordinate lengthsToScale(){
 		float smallest = this.getSmallest();
-		return new Coordinates(this.x/(smallest*2), this.y/(smallest*2), this.z/(smallest*2)); //divide by two to convert diameter to radius
+		return new Coordinate(this.x/(smallest*2), this.y/(smallest*2), this.z/(smallest*2)); //divide by two to convert diameter to radius
 	}
 
 	/**
@@ -162,9 +162,23 @@ public class Coordinates{
 	 * @param to the points whose distance from "this" point is computed
 	 * @return the distance
 	 */
-	public float distanceBetween(Coordinates to){
+	public float distanceBetween(Coordinate to){
 		float distance = (float) Math.sqrt((to.x - this.x) * (to.x-this.x) + (to.y - this.y) * (to.y - this.y) + (to.z - this.z) * (to.z - this.z));
-		//System.out.println("distance to " + to.name + " is " + distance);
 		return distance;
+	}
+	
+	/**
+	 * Square of the distance formula for efficiency, since this value frequently gets squared
+	 * and the square root operation is expensive
+	 * @param to the points whose distance from "this" point is computed
+	 * @return the distance
+	 */
+	public float squareDistance(Coordinate to){
+		float distance = (float) (to.x - this.x) * (to.x-this.x) + (to.y - this.y) * (to.y - this.y) + (to.z - this.z) * (to.z - this.z);
+		return distance;
+	}
+	
+	public boolean samePoint(Coordinate as){
+		return this.x == as.x && this.y == as.y && this.z == as.z;
 	}
 }

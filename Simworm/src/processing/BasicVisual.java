@@ -18,7 +18,7 @@ import controlP5.Toggle;
 import dataStructures.Cell;
 import dataStructures.ColorMode;
 import dataStructures.ConsList;
-import dataStructures.Coordinates;
+import dataStructures.Coordinate;
 import dataStructures.RGB;
 import dataStructures.Shell;
 
@@ -44,7 +44,6 @@ public class BasicVisual extends PApplet{
 	Button createShell;
 	RadioButton chooseColorMode;
 	RadioButton chooseTimeflowMode;
-	boolean autoTime;
 	boolean lineageState;
 	boolean fateState;
 	boolean parsState;
@@ -74,14 +73,19 @@ public class BasicVisual extends PApplet{
 	int height = screenSize.height;
 	Slider progressBar;
 	Button startOver;
+	RadioButton showAnimations;
+	Slider chooseGridSize;
+	
 	boolean firstTime = true;
 	boolean firstClick = false;
 	public RGB currentColor;
+	boolean moving = false;
 	
 	//marching cubes fields
-	final int gridSize = 8;
+	int gridSize = 8;
 	float threshold = 16.0f;
-	private ArrayList<ArrayList<Coordinates>> vertices;
+//	boolean field[][][]; 
+	private ArrayList<ArrayList<Coordinate>> vertices;
 	private ArrayList<RGB> displayColorField;
 	private ArrayList<RGB> uniqueColorField;
 	private boolean drawWithEllisoids = false;
@@ -144,18 +148,17 @@ public class BasicVisual extends PApplet{
 		iterateThroughGrid();
 		
 		userText = "Type a cell name to see its contents,\nor press right arrow to progress 1 timestep\nor left arrow to move backwards 1 timestep.";
-		autoTime = false;
 		lineageState = true;
 		fateState = false;
 		parsState = false;
 
 		userTextArea = new Textarea(info, "infoText"); //textarea where the user can input commands and receive information
 		userTextArea.setPosition((float) (width/1.25), height/40)
-		.setSize((int) (width/5), (int) (height/4)).
+		.setSize((int) (width/5), (int) (height/5)).
 		setFont(createFont("arial", (width/114)));
 		cellNamesArea = new Textarea(info, "namesText"); //textarea where the names of the currently present cells are displayed
-		cellNamesArea.setPosition((float) (width/1.25), (float) (3*height/10))
-		.setSize((int) (width/5), (int) (height/5)).
+		cellNamesArea.setPosition((float) (width/1.25), (float) (5*height/20))
+		.setSize((int) (width/5), (int) (height/8)).
 		setFont(createFont("arial", (width/114)));
 
 		new Button(info, "cell color key") //just a label, not interactive
@@ -164,6 +167,48 @@ public class BasicVisual extends PApplet{
 		.setColorActive(color(0, 0, 0))
 		.setColorForeground(color(0, 0, 0))
 		.captionLabel().setControlFont(new ControlFont(createFont("arial", (float) (width/90))));
+		
+		new Button(info, "show animations") //just a label, not interactive
+		.setPosition((float) (width/1.26), (float) (height - 18*height/30))
+		.setColorBackground(color(0, 0, 0))
+		.setColorActive(color(0, 0, 0))
+		.setColorForeground(color(0, 0, 0))
+		.captionLabel().setControlFont(new ControlFont(createFont("arial", (float) (width/90))));
+		
+		showAnimations = new RadioButton(info, "animations");
+		showAnimations.setItemsPerRow(3)
+		.setSpacingColumn((int) (width/18))
+		.setPosition((float) (width/1.25), (float) (height - 17*height/30))
+		.addItem("On", 0)
+		.addItem("Off", 1)
+		.activate(0)
+		.setNoneSelectedAllowed(false)
+		.setSize((int) (width/75), (int) (height/40))
+		.setColorBackground(color(49, 130, 189))
+		.setColorForeground(color(107, 174, 214))
+		.setColorActive(color(189, 215, 231));
+		for(Toggle t: showAnimations.getItems()){
+			t.captionLabel().setControlFont(new ControlFont(createFont("arial", (float) (width/100))));
+		}
+		
+		new Button(info, "image granularity") //just a label, not interactive
+		.setPosition((float) (width/1.26), (float) (height - 8*height/15))
+		.setColorBackground(color(0, 0, 0))
+		.setColorActive(color(0, 0, 0))
+		.setColorForeground(color(0, 0, 0))
+		.captionLabel().setControlFont(new ControlFont(createFont("arial", (float) (width/90))));
+		
+		chooseGridSize = new Slider(info, "")
+		.setPosition((float) (width/1.25), (float) (height - 1*height/2))
+		.setSize((int) (23*width/125), (int) (height/40))
+		.setLock(false)
+		.setNumberOfTickMarks(19)
+		.snapToTickMarks(true)
+		.showTickMarks(false)
+		.setMin(4)
+		.setMax(22)
+		.setValue(gridSize);
+		chooseGridSize.captionLabel().setControlFont(new ControlFont(createFont("arial", (float) (width/100))));
 
 		//initialize buttons that control camera to choose orthogonal views
 		frontB = new Button(info, "front").setPosition((float) (width/1.25), (float) (height - 5*height/60)).setColorBackground(color(49, 130, 189))
@@ -324,8 +369,15 @@ public class BasicVisual extends PApplet{
 			//they hold the current state of the color mode (that is, false for those that aren't currently set and true for the one that is)
 			//we only set colors when the colormode doesn't match these, which indicates that the colormode has been recently changed
 			if(chooseColorMode.getState(0) != lineageState || chooseColorMode.getState(1) != fateState || chooseColorMode.getState(2) != parsState) updateColorMode();
-			if(chooseTimeflowMode.getState(1) != autoTime) autoTime = !autoTime;
-			if(autoTime){
+		
+			if(moving){
+				boolean equilibrium = false;
+				equilibrium = moveAllMetaballs();
+				iterateThroughGrid();
+				if(equilibrium) moving = false;
+			}
+			
+			if(chooseTimeflowMode.getState(1)){
 				if(timeCount >= 10){
 					progressForward();
 					timeCount = 0;
@@ -348,13 +400,117 @@ public class BasicVisual extends PApplet{
 	 * @param point the point we're considering
 	 * @return metaball field value
 	 */
-	public float netChargeHere(Coordinates point){
+	public float netChargeHere(Coordinate point){
 		float total = 0;
+//		total += ellipsoidContribution(point) * 80;
 		for(String s: displayShell.getCells().keySet()){
 			Metaball m = displayShell.getCells().get(s).getRepresentation();
 			total += m.chargeFrom(point.getX(), point.getY(), point.getZ());
 		}
 		return total;
+	}
+	
+	public float netChargeMinusThis(Coordinate point, Metaball metaball){
+		float total = 0;
+		for(String s: displayShell.getCells().keySet()){
+			Metaball m = displayShell.getCells().get(s).getRepresentation();
+			if(!(m.getCenter().samePoint(metaball.getCenter()))){
+				total += m.chargeFrom(point.getX(), point.getY(), point.getZ());
+			}
+		}
+		return total;
+	}
+	
+	/**
+	 * A metball looks at all its surroundings and moves in a direction that reduces the forces acting upon it
+	 * @param m the metaball
+	 * @param unit granularity of movement; i.e. put 1 to move 1 unit each time, higher numbers for coarser granularity
+	 * @return an int representing which direction, if any, it moved. Used to test for equilibrium (if it returns 0)
+	 */
+	public int considerAllSides(Metaball m, int unit){
+		float lowest = Math.abs(netChargeMinusThis(m.getCenter(), m));
+		Coordinate location = m.getCenter();
+		
+		int directionMoved = 0;
+
+		Coordinate below = new Coordinate(m.getCenter().getX(), m.getCenter().getY()+unit, m.getCenter().getZ());
+		if(inShellEllipsoid(below)){
+			float belowVal = Math.abs(netChargeMinusThis(below, m));
+			if(belowVal > lowest){
+				lowest = belowVal;
+				location = below;
+				directionMoved = 1;
+			}
+		}
+		Coordinate above = new Coordinate(m.getCenter().getX(), m.getCenter().getY()-unit, m.getCenter().getZ());
+		if(inShellEllipsoid(above)){
+			float aboveVal = Math.abs(netChargeMinusThis(above, m));
+			if(aboveVal > lowest){
+				lowest = aboveVal;
+				location = above;
+				directionMoved = 2;
+			}
+		}
+		Coordinate right = new Coordinate(m.getCenter().getX()+unit, m.getCenter().getY(), m.getCenter().getZ());
+		if(inShellEllipsoid(right)){
+			float rightVal = Math.abs(netChargeMinusThis(right, m));
+			if(rightVal > lowest){
+				lowest = rightVal;
+				location = right;
+				directionMoved = 3;
+			}
+		}
+		Coordinate left = new Coordinate(m.getCenter().getX()-unit, m.getCenter().getY(), m.getCenter().getZ());
+		if(inShellEllipsoid(left)){
+			float leftVal = Math.abs(netChargeMinusThis(left, m));
+			if(leftVal > lowest){
+				lowest = leftVal;
+				location = left;
+				directionMoved = 4;
+			}
+		}
+		Coordinate towards = new Coordinate(m.getCenter().getX(), m.getCenter().getY(), m.getCenter().getZ()+unit);
+		if(inShellEllipsoid(towards)){
+			float towardsVal = Math.abs(netChargeMinusThis(towards, m));
+			if(towardsVal > lowest){
+				lowest = towardsVal;
+				location = towards;
+				directionMoved = 5;
+			}
+		}
+		Coordinate away = new Coordinate(m.getCenter().getX(), m.getCenter().getY(), m.getCenter().getZ()-unit);
+		if(inShellEllipsoid(away)){
+			float awayVal = Math.abs(netChargeMinusThis(away, m));
+			if(awayVal > lowest){
+				lowest = awayVal;
+				location = away;
+				directionMoved = 6;
+			}
+		}
+
+		m.move(location);
+		return directionMoved;
+	}
+	
+	/**
+	 * Iterates through the list of metaballs and allows all of them to move to places with less force
+	 * @return a boolean indicating whether the system is in equilibrium (if none of the metaballs moved)
+	 */
+	public boolean moveAllMetaballs(){
+		int equilibrium = 0;
+		for(String s: displayShell.getCells().keySet()){
+			Metaball m = displayShell.getCells().get(s).getRepresentation();
+			equilibrium += considerAllSides(m, 5);
+		}
+		return equilibrium == 0;
+	}
+	
+	public void moveToEquilibrium(){
+		boolean equilibrium = false;
+		while(!equilibrium){
+			equilibrium = moveAllMetaballs();
+		}
+		iterateThroughGrid();
 	}
 	
 	/**
@@ -376,7 +532,7 @@ public class BasicVisual extends PApplet{
 	 * @param point the point we want to get the color at
 	 * @return the color at that point
 	 */
-	public RGB netColorHere(Coordinates point){
+	public RGB netColorHere(Coordinate point){
 		int red = 0;
 		int green = 0;
 		int blue = 0;
@@ -392,9 +548,9 @@ public class BasicVisual extends PApplet{
 			Metaball m = displayShell.getCells().get(s).getRepresentation();
 			float charge = Math.abs(colorCoefficient/m.squaredRadius(point.getX(), point.getY(), point.getZ()));
 			if(charge > 1) charge = 1;
-			red += charge*m.color.getRed();
-			green += charge*m.color.getGreen();
-			blue += charge*m.color.getBlue();
+			red += charge*m.getColor().getRed();
+			green += charge*m.getColor().getGreen();
+			blue += charge*m.getColor().getBlue();
 		}
 		return new RGB(red, green, blue);
 	}
@@ -405,7 +561,7 @@ public class BasicVisual extends PApplet{
 	 * @param point the point at which we're trying to define a unique color
 	 * @return the unique color for this point
 	 */
-	public RGB uniqueColorHere(Coordinates point){
+	public RGB uniqueColorHere(Coordinate point){
 		float influence = 0;
 		Cell nearest = null;
 		for(String s: displayShell.getCells().keySet()){
@@ -424,13 +580,14 @@ public class BasicVisual extends PApplet{
 	 * Populates the array of shapes; call when image needs to change
 	 */
 	public void iterateThroughGrid(){
-		System.out.println("called");
-		vertices = new ArrayList<ArrayList<Coordinates>>();
+//		System.out.println("called");
+		vertices = new ArrayList<ArrayList<Coordinate>>();
 		displayColorField = new ArrayList<RGB>();
 		uniqueColorField = new ArrayList<RGB>();
 		int W = displayShell.getShellWidth();
 		int H = displayShell.getShellWidth();
 		int D = displayShell.getShellWidth();
+//		field = new boolean[W][H][D];
 		for(int i = -W/2; i < W/2; i += gridSize){
 			for(int j = -H/2; j < H/2; j += gridSize){	
 				for(int k = -D/2; k < D/2; k += gridSize){
@@ -446,7 +603,7 @@ public class BasicVisual extends PApplet{
 	 */
 	public void printVertices(boolean unique){
 		int colorCounter = 0;
-		for(ArrayList<Coordinates> shape: vertices){
+		for(ArrayList<Coordinate> shape: vertices){
 			if(unique){
 				RGB color = uniqueColorField.get(colorCounter);
 				fill(color.getRed(), color.getGreen(), color.getBlue());
@@ -458,7 +615,7 @@ public class BasicVisual extends PApplet{
 			pushMatrix();
 //			scale(1, (float) displayShell.getShellHeight()/displayShell.getShellWidth(), (float) displayShell.getShellDepth()/displayShell.getShellWidth());
 			beginShape();
-			for(Coordinates c: shape){
+			for(Coordinate c: shape){
 				vertex(c.getX(), c.getY(), c.getZ());
 			}
 			endShape(CLOSE);
@@ -474,8 +631,10 @@ public class BasicVisual extends PApplet{
 	 * @param z z coordinate of point
 	 */
 	public void handleOneCube(int x, int y, int z){
-		RGB color = netColorHere(new Coordinates(x, y, z));
-		RGB uniqueColor = uniqueColorHere(new Coordinates(x, y, z));
+//		if(!inShellEllipsoid(new Coordinate(x, y, z))) return;
+		
+		RGB color = netColorHere(new Coordinate(x, y, z));
+		RGB uniqueColor = uniqueColorHere(new Coordinate(x, y, z));
 		Cube cube = new Cube(this, x, y, z, gridSize);
 		cube.vertices.put(cube.vertex1, aboveThreshold(cube.vertex1));
 		cube.vertices.put(cube.vertex2, aboveThreshold(cube.vertex2));
@@ -499,7 +658,7 @@ public class BasicVisual extends PApplet{
 			uniqueColorField.add(uniqueColor);
 			return;
 		case 5:
-			ArrayList<ArrayList<Coordinates>> shapes5 = cube.fiveCase();
+			ArrayList<ArrayList<Coordinate>> shapes5 = cube.fiveCase();
 			vertices.addAll(shapes5);
 			for(int i = 0; i < shapes5.size(); i++){
 				displayColorField.add(color);
@@ -507,7 +666,7 @@ public class BasicVisual extends PApplet{
 			}
 			return;
 		case 6:
-			ArrayList<ArrayList<Coordinates>> shapes6 = cube.sixCase();
+			ArrayList<ArrayList<Coordinate>> shapes6 = cube.sixCase();
 			vertices.addAll(shapes6);
 			for(int i = 0; i < shapes6.size(); i++){
 				displayColorField.add(color);
@@ -515,7 +674,7 @@ public class BasicVisual extends PApplet{
 			}
 			return;
 		case 7:
-			ArrayList<ArrayList<Coordinates>> shapes7 = cube.sevenCase();
+			ArrayList<ArrayList<Coordinate>> shapes7 = cube.sevenCase();
 			vertices.addAll(shapes7);
 			for(int i = 0; i < shapes7.size(); i++){
 				displayColorField.add(color);
@@ -523,7 +682,7 @@ public class BasicVisual extends PApplet{
 			}
 			return;
 		case 8:
-			ArrayList<ArrayList<Coordinates>> shapes8 = cube.eightCase();
+			ArrayList<ArrayList<Coordinate>> shapes8 = cube.eightCase();
 			vertices.addAll(shapes8);
 			for(int i = 0; i < shapes8.size(); i++){
 				displayColorField.add(color);
@@ -531,7 +690,7 @@ public class BasicVisual extends PApplet{
 			}
 			return;
 		case 9:
-			ArrayList<ArrayList<Coordinates>> shapes9 = cube.nineCase();
+			ArrayList<ArrayList<Coordinate>> shapes9 = cube.nineCase();
 			vertices.addAll(shapes9);
 			for(int i = 0; i < shapes9.size(); i++){
 				displayColorField.add(color);
@@ -551,7 +710,7 @@ public class BasicVisual extends PApplet{
 	 * @param point the point we're considering
 	 * @return true if above, false if below
 	 */
-	public boolean aboveThreshold(Coordinates point){
+	public boolean aboveThreshold(Coordinate point){
 		float charge = netChargeHere(point);
 		return Math.abs(charge) > threshold;
 	}
@@ -631,6 +790,7 @@ public class BasicVisual extends PApplet{
 			parsState = true;
 		}
 		displayShell.updateColorMode(); //calls the method that will change the colors of the existing cells
+		iterateThroughGrid();
 	}
 
 	public void progressForward(){
@@ -646,7 +806,7 @@ public class BasicVisual extends PApplet{
 				currentTime++;
 				farthestSeen++;
 				shellsOverTime.put(currentTime, new Shell(farthestShell));
-				updateColorMode();
+//				updateColorMode();
 				progressBar.setValue(currentTime);
 			}
 			else{
@@ -671,58 +831,76 @@ public class BasicVisual extends PApplet{
 		if(keyCode == ESC) exit();
 
 		if(mutantsChosen){ //only run if mutantsChosen is set, because userText doesn't exist yet if not
-			if(keyCode == RIGHT){
-				progressForward();
-			}
-			else if(keyCode == LEFT){
-				if(currentTime > 1){
-					int numCellsPresent = displayShell.getCells().keySet().size();
-					userText = "Type a cell name to see its contents,\nor press right arrow to progress 1 timestep\nor left arrow to move backwards 1 timestep.";
-					currentTime--;
-					boolean mustUpdateDisplay = false;
-					if(someCellSelected() != null){
-						System.out.println("recognized selected cell");
-						someCellSelected().setSelected(false);
-						mustUpdateDisplay = true;
-					}
-					displayShell = shellsOverTime.get(currentTime);
-					//need to update visual only if some of the cells are supposed to "disappear"
-					if(displayShell.getCells().keySet().size() < numCellsPresent){
-						mustUpdateDisplay = true;
-					}
-					if(mustUpdateDisplay){
-						iterateThroughGrid();
-					}
-					updateColorMode();
-					progressBar.setValue(currentTime);
+			if(!moving){
+				if(keyCode == RIGHT){
+					progressForward();
 				}
+				else if(keyCode == LEFT){
+					if(currentTime > 1){
+						int numCellsPresent = displayShell.getCells().keySet().size();
+						userText = "Type a cell name to see its contents,\nor press right arrow to progress 1 timestep\nor left arrow to move backwards 1 timestep.";
+						currentTime--;
+						boolean mustUpdateDisplay = false;
+						if(someCellSelected() != null){
+							System.out.println("recognized selected cell");
+							someCellSelected().setSelected(false);
+							mustUpdateDisplay = true;
+						}
+						displayShell = shellsOverTime.get(currentTime);
+						//need to update visual only if some of the cells are supposed to "disappear"
+						if(displayShell.getCells().keySet().size() < numCellsPresent){
+							mustUpdateDisplay = true;
+						}
+						if(mustUpdateDisplay){
+							iterateThroughGrid();
+						}
+//						updateColorMode();
+						progressBar.setValue(currentTime);
+					}
 
-			}
-			else if(keyCode == BACKSPACE){ //manually implement backspace
-				if (userText.length() > 0) {
-					userText = userText.substring(0, userText.length()-1);
 				}
-			}
-			else if(keyCode == ENTER || keyCode == RETURN){ //enter finalizes a command
-				if(!displayShell.getCells().containsKey(userText)){ //if the userText isn't currently an existing cell name, print that the cell doesn't exist
-					userText = "Cell not present";
+				else if(keyCode == UP){
+					moveAllMetaballs();
+					iterateThroughGrid();
 				}
-				else{ //if it is a cell name, print the genes list for the cell
-					for(String s: displayShell.getCells().keySet()){
-						if(!s.equals(userText)) displayShell.getCells().get(s).setSelected(false);
-						else displayShell.getCells().get(s).setSelected(true);
+				else if(keyCode == DOWN){
+					if(showAnimations.getState(0)){
+						moving = true;
 					}
-					userText = displayShell.getCells().get(userText).getInfo();
+					else{
+						moveToEquilibrium();
+					}
 				}
-			}
-			else if(((int) key) >= 33 && ((int) key) <= 126){ //if it's any other ("normal" ascii) key, just add that letter to the userText
-				if (userText.length() > 10) userText = ""; //clear it if it gets to more than 10 characters so the user never has to delete a bunch of text; no useful commands are over 10 char anyway
-				userText = userText + key;
+				else if(keyCode == BACKSPACE){ //manually implement backspace
+					if (userText.length() > 0) {
+						userText = userText.substring(0, userText.length()-1);
+					}
+				}
+				else if(keyCode == ENTER || keyCode == RETURN){ //enter finalizes a command
+					if(!displayShell.getCells().containsKey(userText)){ //if the userText isn't currently an existing cell name, print that the cell doesn't exist
+						userText = "Cell not present";
+					}
+					else{ //if it is a cell name, print the genes list for the cell
+						for(String s: displayShell.getCells().keySet()){
+							if(!s.equals(userText)) displayShell.getCells().get(s).setSelected(false);
+							else displayShell.getCells().get(s).setSelected(true);
+						}
+						userText = displayShell.getCells().get(userText).getInfo();
+					}
+				}
+				else if(((int) key) >= 33 && ((int) key) <= 126){ //if it's any other ("normal" ascii) key, just add that letter to the userText
+					if (userText.length() > 10) userText = ""; //clear it if it gets to more than 10 characters so the user never has to delete a bunch of text; no useful commands are over 10 char anyway
+					userText = userText + key;
+				}
 			}
 		}
 	}
 
 	public void mouseReleased(){
+		if(chooseGridSize.getValue() != gridSize){
+			gridSize = (int) chooseGridSize.getValue();
+			iterateThroughGrid();
+		}
 		camera.stop();
 	}
 	
@@ -732,24 +910,26 @@ public class BasicVisual extends PApplet{
 				firstClick = true;
 			}
 			else{
-				if(mouseX < 4*(width/5)){ //only do object picking in the 3d side of the screen
-					int colorFound = getHiddenColor();
-					if(colorFound != -16777216){ //only do object picking if the selected pixel isn't black
-						Cell chosen = null;
-						for(String s: displayShell.getCells().keySet()){
-							Cell c = displayShell.getCells().get(s);
-							int keyColor = color(c.getUniqueColor().getRed(), c.getUniqueColor().getGreen(), c.getUniqueColor().getBlue());
-							if(colorFound == keyColor){
-								chosen = c;
+				if(!moving){
+					if(mouseX < 4*(width/5)){ //only do object picking in the 3d side of the screen
+						int colorFound = getHiddenColor();
+						if(colorFound != -16777216){ //only do object picking if the selected pixel isn't black
+							Cell chosen = null;
+							for(String s: displayShell.getCells().keySet()){
+								Cell c = displayShell.getCells().get(s);
+								int keyColor = color(c.getUniqueColor().getRed(), c.getUniqueColor().getGreen(), c.getUniqueColor().getBlue());
+								if(colorFound == keyColor){
+									chosen = c;
+								}
 							}
-						}
-						for(String s: displayShell.getCells().keySet()){
-							displayShell.getCells().get(s).setSelected(false); //set all non qualifying cells to be unselected
-						}
-						if(chosen != null){
-							chosen.setSelected(true); //select the chosen cell
-							userText = chosen.getInfo(); //print its info
-							iterateThroughGrid();
+							for(String s: displayShell.getCells().keySet()){
+								displayShell.getCells().get(s).setSelected(false); //set all non qualifying cells to be unselected
+							}
+							if(chosen != null){
+								chosen.setSelected(true); //select the chosen cell
+								userText = chosen.getInfo(); //print its info
+								iterateThroughGrid();
+							}
 						}
 					}
 				}
@@ -886,6 +1066,16 @@ public class BasicVisual extends PApplet{
 		renderAsHiddenColors();
 		loadPixels();
 		return pixels[width*mouseY+mouseX];
+	}
+	
+	public boolean inShellEllipsoid(Coordinate point){
+		return ellipsoidContribution(point) < 1;
+	}
+	
+	public float ellipsoidContribution(Coordinate point){
+		return point.getX() * point.getX() / (displayShell.getShellWidth() * displayShell.getShellWidth()) +
+				point.getY() * point.getY() / (displayShell.getShellHeight() * displayShell.getShellHeight()) +
+				point.getZ() * point.getZ() / (displayShell.getShellDepth() * displayShell.getShellDepth());
 	}
 
 }

@@ -14,7 +14,7 @@ import dataStructures.Cell;
 import dataStructures.CellChangesData;
 import dataStructures.Compartment;
 import dataStructures.ConsList;
-import dataStructures.Coordinates;
+import dataStructures.Coordinate;
 import dataStructures.DivisionData;
 import dataStructures.Gene;
 import dataStructures.GeneState;
@@ -42,16 +42,16 @@ public class MethodsTests {
 	@Test
 	public void firstDivision() {
 		ArrayList<CellChangesData> cellChanges = new ArrayList<CellChangesData>();
-		HashMap<String, Coordinates> abChanges = new HashMap<String, Coordinates>();
-		abChanges.put("pkc-3", new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER));
-		abChanges.put("par-3", new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER));
-		abChanges.put("par-6", new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER));
-		abChanges.put("mex-5", new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER));
-		abChanges.put("mex-3", new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER));
-		HashMap<String, Coordinates> p1Changes = new HashMap<String, Coordinates>();
-		p1Changes.put("lgl-1", new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER));
-		p1Changes.put("skn-1", new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER));
-		p1Changes.put("pal-1", new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER));
+		HashMap<String, Coordinate> abChanges = new HashMap<String, Coordinate>();
+		abChanges.put("pkc-3", new Coordinate(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER));
+		abChanges.put("par-3", new Coordinate(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER));
+		abChanges.put("par-6", new Coordinate(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER));
+		abChanges.put("mex-5", new Coordinate(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER));
+		abChanges.put("mex-3", new Coordinate(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER));
+		HashMap<String, Coordinate> p1Changes = new HashMap<String, Coordinate>();
+		p1Changes.put("lgl-1", new Coordinate(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER));
+		p1Changes.put("skn-1", new Coordinate(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER));
+		p1Changes.put("pal-1", new Coordinate(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER));
 
 		DivisionData data = testShell.getDivisions().get("p-0");
 		cellChanges.add(testShell.cellDivision(data));
@@ -79,7 +79,7 @@ public class MethodsTests {
 
 	@Test
 	public void testGeneInitiation(){
-		Gene testGene = new Gene("pal-1", new GeneState(true), new Coordinates(Compartment.XCENTER,Compartment.YCENTER,Compartment.ZCENTER), new HashMap<String, Coordinates>(), testVis);
+		Gene testGene = new Gene("pal-1", new GeneState(true), new Coordinate(Compartment.XCENTER,Compartment.YCENTER,Compartment.ZCENTER), new HashMap<String, Coordinate>(), testVis);
 		testGene.populateCons();
 		assertEquals(3, testGene.getRelevantCons().size());
 	}
@@ -103,9 +103,9 @@ public class MethodsTests {
 
 	@Test
 	public void enumTests(){
-		Coordinates testCoor = new Coordinates(Compartment.POSTERIOR, Compartment.YCENTER, Compartment.ZCENTER);
+		Coordinate testCoor = new Coordinate(Compartment.POSTERIOR, Compartment.YCENTER, Compartment.ZCENTER);
 		assertEquals(Compartment.POSTERIOR, testCoor.getAP());
-		Gene testGene = new Gene("par-1", new GeneState(true), new Coordinates(Compartment.POSTERIOR, Compartment.YCENTER, Compartment.ZCENTER), new HashMap<String, Coordinates>(), testVis).populateCons();
+		Gene testGene = new Gene("par-1", new GeneState(true), new Coordinate(Compartment.POSTERIOR, Compartment.YCENTER, Compartment.ZCENTER), new HashMap<String, Coordinate>(), testVis).populateCons();
 		assertEquals(Compartment.POSTERIOR, testGene.getLocation().getAP());
 	}
 
@@ -181,12 +181,12 @@ public class MethodsTests {
 
 	@Test
 	public void instancesTest(){
-		Gene g = new Gene("test", new GeneState(true), new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER), new HashMap<String, Coordinates>(), testVis);
+		Gene g = new Gene("test", new GeneState(true), new Coordinate(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER), new HashMap<String, Coordinate>(), testVis);
 		Gene g2 = g;
 		g2.setState(new GeneState(false));
 		assertFalse(g.getState().isOn());
 
-		Gene h = new Gene("test", new GeneState(true), new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER), new HashMap<String, Coordinates>(), testVis);
+		Gene h = new Gene("test", new GeneState(true), new Coordinate(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER), new HashMap<String, Coordinate>(), testVis);
 		Gene h2 = new Gene(h.getName(), h.getState(), h.getLocation(), h.getChanges(), testVis);
 		h2.setState(new GeneState(false));
 		assertTrue(h.getState().isOn());
@@ -312,9 +312,9 @@ public class MethodsTests {
 
 	@Test
 	public void moreInstancesTests(){
-		Coordinates c = null;
-		Coordinates d = new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER);
-		Coordinates e = new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER);
+		Coordinate c = null;
+		Coordinate d = new Coordinate(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER);
+		Coordinate e = new Coordinate(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER);
 		c = d;
 		assertTrue(c == d); //not primitive - comparing pointers
 		assertTrue(c.equals(d));
@@ -432,7 +432,7 @@ public class MethodsTests {
 	public void testInstantiation(){
 		//primitive
 		Compartment x = Compartment.XCENTER;
-		Coordinates test = new Coordinates(x, Compartment.YCENTER, Compartment.ZCENTER);
+		Coordinate test = new Coordinate(x, Compartment.YCENTER, Compartment.ZCENTER);
 		x = null;
 		assertTrue(test.getAP() == Compartment.XCENTER);
 		//non-primitive
@@ -456,14 +456,14 @@ public class MethodsTests {
 		assertFalse(list.AandC.get(0).getConsequence().getState().isOn());
 		assertFalse(list.AandC.get(17).getAntecedents()[1].getState().isOn());
 		assertEquals("pie-1", list.AandC.get(1).getAntecedents()[0].getName());
-		Gene g = new Gene("par-6", new GeneState(true), new Coordinates(Compartment.ANTERIOR, Compartment.YCENTER, Compartment.ZCENTER), new HashMap<String, Coordinates>(), testVis);
+		Gene g = new Gene("par-6", new GeneState(true), new Coordinate(Compartment.ANTERIOR, Compartment.YCENTER, Compartment.ZCENTER), new HashMap<String, Coordinate>(), testVis);
 		g.populateCons();
 	}
 
 	@Test
 	public void testHashMapInstances(){
-		Coordinates testCoor = new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER);
-		HashMap<String, Coordinates> test = new HashMap<String, Coordinates>();
+		Coordinate testCoor = new Coordinate(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER);
+		HashMap<String, Coordinate> test = new HashMap<String, Coordinate>();
 		test.put("a", testCoor);
 		testCoor = null;
 		assertNotNull(test.get("a"));
@@ -567,24 +567,24 @@ public class MethodsTests {
 
 	@Test
 	public void testObjectInstatiation6(){
-		Coordinates x = new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER);
-		Coordinates y = new Coordinates(x.getAP(), x.getDV(), x.getLR());
+		Coordinate x = new Coordinate(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER);
+		Coordinate y = new Coordinate(x.getAP(), x.getDV(), x.getLR());
 		x.setAP(Compartment.ANTERIOR);
 		assertNotEquals(x.getAP(), y.getAP());
 	}
 
 	@Test
 	public void testDupCoord(){
-		Coordinates x = new Coordinates(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER);
-		Coordinates y = new Coordinates(x);
+		Coordinate x = new Coordinate(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER);
+		Coordinate y = new Coordinate(x);
 		x.setAP(Compartment.ANTERIOR);
 		assertNotEquals(x.getAP(), y.getAP());
 	}
 
 	@Test
 	public void testDupCoord2(){
-		Coordinates x = new Coordinates(1, 1, 1);
-		Coordinates y = new Coordinates(x);
+		Coordinate x = new Coordinate(1, 1, 1);
+		Coordinate y = new Coordinate(x);
 		x.setX(2);
 		assertNotEquals(x.getX(), y.getX());
 	}

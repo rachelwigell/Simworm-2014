@@ -12,8 +12,8 @@ import processing.Metaball;
 public class Cell {
 	BasicVisual window;
 	private String name;
-	private Coordinates center;
-	private Coordinates lengths; //a little misleading, this isn't a set of coordinates, it's the length of the cell in each direction
+	private Coordinate center;
+	private Coordinate lengths; //a little misleading, this isn't a set of coordinates, it's the length of the cell in each direction
 	private String parent;
 	private HashMap<String, Gene> genes;
 	private HashMap<String, Gene> recentlyChanged = new HashMap<String, Gene>();
@@ -36,7 +36,7 @@ public class Cell {
 	 * @param divide The data that will be required to calculate this cell's division
 	 * @param generation Generation that the cell belongs to (p-0 is 0th generation, ab and p-1 are first generation, etc)
 	 */
-	public Cell(BasicVisual window, String name, Coordinates center, Coordinates lengths, String parent, HashMap<String, Gene> genes, RGB color, DivisionData divide, int generation){
+	public Cell(BasicVisual window, String name, Coordinate center, Coordinate lengths, String parent, HashMap<String, Gene> genes, RGB color, DivisionData divide, int generation){
 		this.window = window;
 		this.name = name;
 		this.center = center;
@@ -61,8 +61,8 @@ public class Cell {
 	public Cell(Cell toDup){
 		this.window = toDup.window;
 		this.name = toDup.name;
-		this.center = new Coordinates(toDup.center);
-		this.lengths = new Coordinates(toDup.lengths);
+		this.center = new Coordinate(toDup.center);
+		this.lengths = new Coordinate(toDup.lengths);
 		this.parent = toDup.parent;
 		HashMap<String, Gene> genesmap = new HashMap<String, Gene>();
 		for(String s: toDup.genes.keySet()){
@@ -115,11 +115,11 @@ public class Cell {
 		return name;
 	}
 
-	public Coordinates getCenter() {
+	public Coordinate getCenter() {
 		return center;
 	}
 
-	public Coordinates getLengths() {
+	public Coordinate getLengths() {
 		return lengths;
 	}
 
@@ -149,6 +149,7 @@ public class Cell {
 
 	public void setColor(RGB color) {
 		this.displayColor = color;
+		this.representation.setColor(color);
 	}
 
 	public boolean isSelected() {
@@ -217,7 +218,7 @@ public class Cell {
 						//System.out.println("\t\tneeds to be " + a.getState().isOn() + " but actually is " + aInGenes.getState().isOn());
 						break checkAnte; //stop looking through antecedents as soon as one contradictory one is found
 					}
-					Coordinates compartment = consInGenes.getLocation(); //holds location of the consequence gene
+					Coordinate compartment = consInGenes.getLocation(); //holds location of the consequence gene
 					//check that antecedent is in the same compartment as the consequence - by making sure that all antecedents match the consequence,
 					//we also make sure that all antecedents are in the same compartment
 					//only a problem if we're not in the center
@@ -281,7 +282,7 @@ public class Cell {
 		window.pushMatrix();
 		window.translate(this.center.getX(), this.center.getY(), this.center.getZ());
 		float smallSide = this.lengths.getSmallest();
-		Coordinates scaling = this.lengths.lengthsToScale();
+		Coordinate scaling = this.lengths.lengthsToScale();
 		window.scale(scaling.getX(), scaling.getY(), scaling.getZ());
 		if(selected) window.fill(this.displayColor.getRed(), this.displayColor.getGreen(), this.displayColor.getBlue());
 		else window.fill((float) (this.displayColor.getRed()/2.0), (float) (this.displayColor.getGreen()/2.0), (float) (this.displayColor.getBlue()/2.0));
@@ -297,7 +298,7 @@ public class Cell {
 		window.noStroke();
 		window.translate(this.center.getX(), this.center.getY(), this.center.getZ());
 		float smallSide = this.lengths.getSmallest();
-		Coordinates scaling = this.lengths.lengthsToScale();
+		Coordinate scaling = this.lengths.lengthsToScale();
 		window.scale(scaling.getX(), scaling.getY(), scaling.getZ());
 		window.fill(this.getUniqueColor().getRed(), this.getUniqueColor().getGreen(), this.getUniqueColor().getBlue());
 		window.sphere(smallSide);		
@@ -335,7 +336,7 @@ public class Cell {
 	public HashMap<String, Gene> readGeneInfo(String file, Shell shell) throws FileReadErrorException, InvalidFormatException{
 		String name = null;
 		GeneState state = null;
-		Coordinates location = null;
+		Coordinate location = null;
 		HashMap<String, Gene> genes = new HashMap<String, Gene>();
 		try{
 			BufferedReader reader = new BufferedReader(new FileReader(file)); //open the file
@@ -381,9 +382,9 @@ public class Cell {
 					reader.close();
 					throw new InvalidFormatException(FormatProblem.INVALIDCOMPARTMENT, row, 4);
 				}
-				location = new Coordinates(x, y, z);
+				location = new Coordinate(x, y, z);
 				int i = 0;
-				HashMap <String, Coordinates> changes = new HashMap<String, Coordinates>();
+				HashMap <String, Coordinate> changes = new HashMap<String, Coordinate>();
 				Compartment newX = Compartment.XCENTER;
 				Compartment newY = Compartment.YCENTER;
 				Compartment newZ = Compartment.ZCENTER;
@@ -399,7 +400,7 @@ public class Cell {
 								reader.close();
 								throw new InvalidFormatException(FormatProblem.INVALIDCOMPARTMENT, row, i);
 							}
-							changes.put(changeTime, new Coordinates(newX, newY, newZ));
+							changes.put(changeTime, new Coordinate(newX, newY, newZ));
 							break;
 						case 1:
 							changeTime = s; //the division in which the change takes place
