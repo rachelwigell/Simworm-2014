@@ -65,7 +65,7 @@ public class MethodsTests {
 		}
 		Cell ab = testShell.getCells().get("ab");
 		Cell p1 = testShell.getCells().get("p-1");
-		assertTrue(ab.getCenter().getX() == 150 && p1.getCenter().getX() == 400 && ab.getLengths().getX() == 300 && p1.getLengths().getX() == 200);
+		assertTrue(ab.getRepresentation().getCenter().getX() == 150 && p1.getRepresentation().getCenter().getX() == 400 && ab.getLengths().getX() == 300 && p1.getLengths().getX() == 200);
 	}
 
 	//@Test no longer works now that we converted to hashmap - doesn't run in order

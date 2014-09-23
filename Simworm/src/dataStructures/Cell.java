@@ -12,7 +12,7 @@ import processing.Metaball;
 public class Cell {
 	BasicVisual window;
 	private String name;
-	private Coordinate center;
+//	private Coordinate center;
 	private Coordinate lengths; //a little misleading, this isn't a set of coordinates, it's the length of the cell in each direction
 	private String parent;
 	private HashMap<String, Gene> genes;
@@ -39,7 +39,6 @@ public class Cell {
 	public Cell(BasicVisual window, String name, Coordinate center, Coordinate lengths, String parent, HashMap<String, Gene> genes, RGB color, DivisionData divide, int generation){
 		this.window = window;
 		this.name = name;
-		this.center = center;
 		this.lengths = lengths;
 		this.parent = parent;
 		this.genes = genes;
@@ -50,7 +49,7 @@ public class Cell {
 		this.uniqueColor = new RGB(window.currentColor.getRed(), window.currentColor.getGreen(), window.currentColor.getBlue());
 		window.incrementCurrentColor();
 		
-		createRepresentation();
+		createRepresentation(center);
 		allRecentlyChanged();
 	}
 	
@@ -61,7 +60,7 @@ public class Cell {
 	public Cell(Cell toDup){
 		this.window = toDup.window;
 		this.name = toDup.name;
-		this.center = new Coordinate(toDup.center);
+//		this.center = new Coordinate(toDup.center);
 		this.lengths = new Coordinate(toDup.lengths);
 		this.parent = toDup.parent;
 		HashMap<String, Gene> genesmap = new HashMap<String, Gene>();
@@ -80,7 +79,7 @@ public class Cell {
 		for(String s: toDup.recentlyChanged.keySet()){
 			changesmap.put(s, new Gene(toDup.recentlyChanged.get(s)));
 		}
-		this.representation = toDup.createRepresentation();
+//		this.representation = toDup.createRepresentation();
 		this.recentlyChanged = changesmap;
 	}
 	
@@ -88,9 +87,9 @@ public class Cell {
 	 * Create a metaball to represent this cell
 	 * @return the metaball
 	 */
-	public Metaball createRepresentation(){
+	public Metaball createRepresentation(Coordinate center){
 		float chargeCoefficient =  1/50.0f;
-		Metaball metaball = new Metaball(this.center.getX(), this.center.getY(), this.center.getZ(),
+		Metaball metaball = new Metaball(center.getX(), center.getY(), center.getZ(),
 				chargeCoefficient*this.lengths.getX()*this.lengths.getY()*this.lengths.getZ(),
 				this.displayColor.getRed(), this.displayColor.getGreen(), this.displayColor.getBlue());
 		this.representation = metaball;
@@ -115,9 +114,9 @@ public class Cell {
 		return name;
 	}
 
-	public Coordinate getCenter() {
-		return center;
-	}
+//	public Coordinate getCenter() {
+//		return center;
+//	}
 
 	public Coordinate getLengths() {
 		return lengths;
@@ -164,9 +163,9 @@ public class Cell {
 		this.selected = selected;
 	}
 	
-	public void move(){
-		this.center = representation.getCenter();
-	}
+//	public void move(){
+//		this.center = representation.getCenter();
+//	}
 
 	/**
 	 * Checks for fulfilled antecedents and applies their consequences. Cascading effects handled on next timestep.
@@ -282,17 +281,17 @@ public class Cell {
 	/**
 	 * Draws the cell to the PApplet
 	 */
-	public void drawCellEllipsoid(){
-		window.pushMatrix();
-		window.translate(this.center.getX(), this.center.getY(), this.center.getZ());
-		float smallSide = this.lengths.getSmallest();
-		Coordinate scaling = this.lengths.lengthsToScale();
-		window.scale(scaling.getX(), scaling.getY(), scaling.getZ());
-		if(selected) window.fill(this.displayColor.getRed(), this.displayColor.getGreen(), this.displayColor.getBlue());
-		else window.fill((float) (this.displayColor.getRed()/2.0), (float) (this.displayColor.getGreen()/2.0), (float) (this.displayColor.getBlue()/2.0));
-		window.sphere(smallSide);		
-		window.popMatrix();
-	}
+//	public void drawCellEllipsoid(){
+//		window.pushMatrix();
+//		window.translate(this.center.getX(), this.center.getY(), this.center.getZ());
+//		float smallSide = this.lengths.getSmallest();
+//		Coordinate scaling = this.lengths.lengthsToScale();
+//		window.scale(scaling.getX(), scaling.getY(), scaling.getZ());
+//		if(selected) window.fill(this.displayColor.getRed(), this.displayColor.getGreen(), this.displayColor.getBlue());
+//		else window.fill((float) (this.displayColor.getRed()/2.0), (float) (this.displayColor.getGreen()/2.0), (float) (this.displayColor.getBlue()/2.0));
+//		window.sphere(smallSide);		
+//		window.popMatrix();
+//	}
 	
 	/**
 	 * Draws the cell to the PApplet with its unique color
@@ -300,7 +299,7 @@ public class Cell {
 	public void drawCellWithHiddenColor(){
 		window.pushMatrix();
 		window.noStroke();
-		window.translate(this.center.getX(), this.center.getY(), this.center.getZ());
+		window.translate(this.getRepresentation().getCenter().getX(), this.getRepresentation().getCenter().getY(), this.getRepresentation().getCenter().getZ());
 		float smallSide = this.lengths.getSmallest();
 		Coordinate scaling = this.lengths.lengthsToScale();
 		window.scale(scaling.getX(), scaling.getY(), scaling.getZ());

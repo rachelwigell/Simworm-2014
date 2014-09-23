@@ -357,12 +357,12 @@ public class BasicVisual extends PApplet{
 		//boolean mutantsChosen will get set when we exit that screen
 		if(mutantsChosen){
 			drawAxes(); //draw the coordinate axes
-			if(drawWithEllisoids){
-				displayShell.drawAllCells(); //draw the shell using ellipsoids
-			}
-			else{
+//			if(drawWithEllisoids){
+//				displayShell.drawAllCells(); //draw the shell using ellipsoids
+//			}
+//			else{
 				printVertices(false); //draw the shell using metaballs
-			}
+//			}
 			userTextArea.setText(userText); //show the text output that userText is currently set to
 			cellNamesArea.setText(displayShell.getCellNames());
 			//boolean values for lineageState, fateState, parsState exist so that we don't have to continuously set the color
@@ -516,7 +516,7 @@ public class BasicVisual extends PApplet{
 		while(!equilibrium){
 			equilibrium = moveAllMetaballs();
 		}
-		displayShell.moveAllCells();
+//		displayShell.moveAllCells();
 //		farthestShell.moveAllCells();
 		iterateThroughGrid();
 	}

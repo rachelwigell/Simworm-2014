@@ -280,12 +280,12 @@ public class Shell{
 		CellChangesData changes = new CellChangesData(new ArrayList<String>(), new ArrayList<Cell>()); //will hold all the added/removed cells; this is returned and the changes will propagate within other functions
 		switch(axis){ //how we proceed depends on which axis we're dividing along
 			case X:
-				d1Center = new Coordinate((float) ((d1Percentage - 1) * (ofInterest.getLengths().getX() / 2.0) + ofInterest.getCenter().getX()),
-						ofInterest.getCenter().getY(), ofInterest.getCenter().getZ()); //calculations to get the center of daughter1
+				d1Center = new Coordinate((float) ((d1Percentage - 1) * (ofInterest.getLengths().getX() / 2.0) + ofInterest.getRepresentation().getCenter().getX()),
+						ofInterest.getRepresentation().getCenter().getY(), ofInterest.getRepresentation().getCenter().getZ()); //calculations to get the center of daughter1
 				d1Lengths = new Coordinate((float) (d1Percentage*ofInterest.getLengths().getX()), ofInterest.getLengths().getY(), ofInterest.getLengths().getZ()); //calculations to get the dimensions of daughter1
 				daughter1 = new Cell(this.window, d1name, d1Center, d1Lengths, parent, d1genes, color1, divisions.get(d1name), ofInterest.getGeneration()+1); //create daughter1 with all the fields we have calculated
-				d2Center = new Coordinate((float) (d1Percentage * ofInterest.getLengths().getX() / 2.0 + ofInterest.getCenter().getX()), //repeat for daughter2
-						ofInterest.getCenter().getY(), ofInterest.getCenter().getZ());
+				d2Center = new Coordinate((float) (d1Percentage * ofInterest.getLengths().getX() / 2.0 + ofInterest.getRepresentation().getCenter().getX()), //repeat for daughter2
+						ofInterest.getRepresentation().getCenter().getY(), ofInterest.getRepresentation().getCenter().getZ());
 				d2Lengths = new Coordinate((float) ((1-d1Percentage)*ofInterest.getLengths().getX()), ofInterest.getLengths().getY(), ofInterest.getLengths().getZ());
 				daughter2 = new Cell(this.window, d2name, d2Center, d2Lengths, parent, d2genes, color2, divisions.get(d2name), ofInterest.getGeneration()+1);
 				perCellMutations(daughter1);
@@ -295,14 +295,14 @@ public class Shell{
 				changes.cellsAdded.add(daughter2);
 				break;
 			case Y: //equivalent cases for y and z
-				d1Center = new Coordinate(ofInterest.getCenter().getX(),
-						(float) ((d1Percentage - 1) * (ofInterest.getLengths().getY() / 2.0) + ofInterest.getCenter().getY()),
-						ofInterest.getCenter().getZ());
+				d1Center = new Coordinate(ofInterest.getRepresentation().getCenter().getX(),
+						(float) ((d1Percentage - 1) * (ofInterest.getLengths().getY() / 2.0) + ofInterest.getRepresentation().getCenter().getY()),
+						ofInterest.getRepresentation().getCenter().getZ());
 				d1Lengths = new Coordinate(ofInterest.getLengths().getX(), (float) (d1Percentage*ofInterest.getLengths().getY()), ofInterest.getLengths().getZ());
 				daughter1 = new Cell(this.window, d1name, d1Center, d1Lengths, parent, d1genes, color1, divisions.get(d1name), ofInterest.getGeneration()+1);
-				d2Center = new Coordinate(ofInterest.getCenter().getX(),
-						(float) (d1Percentage * ofInterest.getLengths().getY() / 2.0 + ofInterest.getCenter().getY()),
-						ofInterest.getCenter().getZ());
+				d2Center = new Coordinate(ofInterest.getRepresentation().getCenter().getX(),
+						(float) (d1Percentage * ofInterest.getLengths().getY() / 2.0 + ofInterest.getRepresentation().getCenter().getY()),
+						ofInterest.getRepresentation().getCenter().getZ());
 				d2Lengths = new Coordinate(ofInterest.getLengths().getX(), (float) ((1-d1Percentage)*ofInterest.getLengths().getY()), ofInterest.getLengths().getZ());
 				daughter2 = new Cell(this.window, d2name, d2Center, d2Lengths, parent, d2genes, color2, divisions.get(d2name), ofInterest.getGeneration()+1);
 				perCellMutations(daughter1);
@@ -312,12 +312,12 @@ public class Shell{
 				changes.cellsAdded.add(daughter2);
 				break;
 			case Z:
-				d1Center = new Coordinate(ofInterest.getCenter().getX(), ofInterest.getCenter().getY(),
-						(float) ((d1Percentage - 1) * (ofInterest.getLengths().getZ() / 2.0) + ofInterest.getCenter().getZ()));
+				d1Center = new Coordinate(ofInterest.getRepresentation().getCenter().getX(), ofInterest.getRepresentation().getCenter().getY(),
+						(float) ((d1Percentage - 1) * (ofInterest.getLengths().getZ() / 2.0) + ofInterest.getRepresentation().getCenter().getZ()));
 				d1Lengths = new Coordinate(ofInterest.getLengths().getX(), ofInterest.getLengths().getY(), (float) (d1Percentage*ofInterest.getLengths().getZ()));
 				daughter1 = new Cell(this.window, d1name, d1Center, d1Lengths, parent, d1genes, color1, divisions.get(d1name), ofInterest.getGeneration()+1);
-				d2Center = new Coordinate(ofInterest.getCenter().getX(), ofInterest.getCenter().getY(),
-						(float) (d1Percentage * ofInterest.getLengths().getZ() / 2.0 + ofInterest.getCenter().getZ()));
+				d2Center = new Coordinate(ofInterest.getRepresentation().getCenter().getX(), ofInterest.getRepresentation().getCenter().getY(),
+						(float) (d1Percentage * ofInterest.getLengths().getZ() / 2.0 + ofInterest.getRepresentation().getCenter().getZ()));
 				d2Lengths = new Coordinate(ofInterest.getLengths().getX(), ofInterest.getLengths().getY(), (float) ((1-d1Percentage)*ofInterest.getLengths().getZ()));
 				daughter2 = new Cell(this.window, d2name, d2Center, d2Lengths, parent, d2genes, color2, divisions.get(d2name), ofInterest.getGeneration()+1);
 				perCellMutations(daughter1);
@@ -366,11 +366,11 @@ public class Shell{
 		return new RGB(red, green, blue);
 	}
 	
-	public void moveAllCells(){
-		for(String s: this.cells.keySet()){
-			this.cells.get(s).move();
-		}
-	}
+//	public void moveAllCells(){
+//		for(String s: this.cells.keySet()){
+//			this.cells.get(s).move();
+//		}
+//	}
 	
 	/**
 	 * color codes based on lineage, which can be determined from the cell name
@@ -452,11 +452,11 @@ public class Shell{
 	/**
 	 * Draws all cells present in the shell to the screen
 	 */
-	public void drawAllCells(){
-		for(String s: this.cells.keySet()){
-			this.cells.get(s).drawCellEllipsoid();
-		}
-	}
+//	public void drawAllCells(){
+//		for(String s: this.cells.keySet()){
+//			this.cells.get(s).drawCellEllipsoid();
+//		}
+//	}
 	
 	/**
 	 * does any divisions that occur at this timestep then runs per cell timestep function on each cell 
@@ -562,7 +562,7 @@ public class Shell{
 		//place all of the parts into a divisiondata structure
 		DivisionData mutatedData = new DivisionData(cData.getParent(), mutatedPercent, cData.getAxis(), mutatedTime, c.getGeneration());
 		//and finally place all of the parts into a cell to be returned. the non-mutatable attribute are drawn directly from the original cell.
-		return new Cell(c.window, c.getName(), c.getCenter(), c.getLengths(), c.getParent(), mutatedGenes, mutatedColor, mutatedData, c.getGeneration());
+		return new Cell(c.window, c.getName(), c.getRepresentation().getCenter(), c.getLengths(), c.getParent(), mutatedGenes, mutatedColor, mutatedData, c.getGeneration());
 	}
 	
 	/**
