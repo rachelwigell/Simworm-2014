@@ -84,7 +84,7 @@ public class BasicVisual extends PApplet{
 	//marching cubes fields
 	int gridSize = 8;
 	float threshold = 16.0f;
-//	boolean field[][][]; 
+	boolean field[][][]; 
 	private ArrayList<ArrayList<Coordinate>> vertices;
 	private ArrayList<RGB> displayColorField;
 	private ArrayList<RGB> uniqueColorField;
@@ -405,7 +405,7 @@ public class BasicVisual extends PApplet{
 //		total += ellipsoidContribution(point) * 80;
 		for(String s: displayShell.getCells().keySet()){
 			Metaball m = displayShell.getCells().get(s).getRepresentation();
-			total += m.chargeFrom(point.getX(), point.getY(), point.getZ());
+			total += m.chargeFrom(point);
 		}
 		return total;
 	}
@@ -415,7 +415,7 @@ public class BasicVisual extends PApplet{
 		for(String s: displayShell.getCells().keySet()){
 			Metaball m = displayShell.getCells().get(s).getRepresentation();
 			if(!(m.getCenter().samePoint(metaball.getCenter()))){
-				total += m.chargeFrom(point.getX(), point.getY(), point.getZ());
+				total += m.chargeFrom(point);
 			}
 		}
 		return total;
@@ -546,7 +546,7 @@ public class BasicVisual extends PApplet{
 				colorCoefficient *= 4;
 			}
 			Metaball m = displayShell.getCells().get(s).getRepresentation();
-			float charge = Math.abs(colorCoefficient/m.squaredRadius(point.getX(), point.getY(), point.getZ()));
+			float charge = Math.abs(colorCoefficient/m.squaredDistanceFromCenter(point));
 			if(charge > 1) charge = 1;
 			red += charge*m.getColor().getRed();
 			green += charge*m.getColor().getGreen();
@@ -567,7 +567,7 @@ public class BasicVisual extends PApplet{
 		for(String s: displayShell.getCells().keySet()){
 			Cell c = displayShell.getCells().get(s);
 			Metaball m = c.getRepresentation();
-			float infFrom = Math.abs(m.chargeFrom(point.getX(), point.getY(), point.getZ()));
+			float infFrom = Math.abs(m.chargeFrom(point));
 			if(infFrom > influence){
 				influence = infFrom;
 				nearest = c;
@@ -1073,9 +1073,9 @@ public class BasicVisual extends PApplet{
 	}
 	
 	public float ellipsoidContribution(Coordinate point){
-		return point.getX() * point.getX() / (displayShell.getShellWidth() * displayShell.getShellWidth()) +
-				point.getY() * point.getY() / (displayShell.getShellHeight() * displayShell.getShellHeight()) +
-				point.getZ() * point.getZ() / (displayShell.getShellDepth() * displayShell.getShellDepth());
+		return (float) Math.pow((Math.pow(point.getX(), 2) / Math.pow(displayShell.getShellWidth(), 2) +
+				Math.pow(point.getY(), 2) / Math.pow(displayShell.getShellHeight(), 2) +
+				Math.pow(point.getZ(), 2) / Math.pow(displayShell.getShellDepth(), 2)), 2);
 	}
 
 }
