@@ -82,9 +82,9 @@ public class BasicVisual extends PApplet{
 	boolean moving = false;
 	
 	//marching cubes fields
-	int gridSize = 8;
+	int gridSize = 12;
 	float threshold = 16.0f;
-	boolean field[][][]; 
+	boolean[][][] field;
 	private ArrayList<ArrayList<Coordinate>> vertices;
 	private ArrayList<RGB> displayColorField;
 	private ArrayList<RGB> uniqueColorField;
@@ -400,18 +400,24 @@ public class BasicVisual extends PApplet{
 	 * @param point the point we're considering
 	 * @return metaball field value
 	 */
-	public float netChargeHere(Coordinate point){
+	public float netChargeHere(Coordinate point, Metaball metaball){
 		float total = 0;
-//		total += ellipsoidContribution(point) * 80;
+		total -= ellipsoidContribution(point) * 200;
 		for(String s: displayShell.getCells().keySet()){
 			Metaball m = displayShell.getCells().get(s).getRepresentation();
-			total += m.chargeFrom(point);
+			if(m.getCenter().samePoint(metaball.getCenter())){
+				total += m.chargeFrom(point);
+			}
+			else{
+				total -= m.chargeFrom(point);
+			}
 		}
 		return total;
 	}
 	
 	public float netChargeMinusThis(Coordinate point, Metaball metaball){
 		float total = 0;
+		total += ellipsoidContribution(point) * 200;
 		for(String s: displayShell.getCells().keySet()){
 			Metaball m = displayShell.getCells().get(s).getRepresentation();
 			if(!(m.getCenter().samePoint(metaball.getCenter()))){
@@ -428,15 +434,15 @@ public class BasicVisual extends PApplet{
 	 * @return an int representing which direction, if any, it moved. Used to test for equilibrium (if it returns 0)
 	 */
 	public int considerAllSides(Metaball m, int unit){
-		float lowest = Math.abs(netChargeMinusThis(m.getCenter(), m));
+		float lowest = netChargeMinusThis(m.getCenter(), m);
 		Coordinate location = m.getCenter();
 		
 		int directionMoved = 0;
 
 		Coordinate below = new Coordinate(m.getCenter().getX(), m.getCenter().getY()+unit, m.getCenter().getZ());
 		if(inShellEllipsoid(below)){
-			float belowVal = Math.abs(netChargeMinusThis(below, m));
-			if(belowVal > lowest){
+			float belowVal = netChargeMinusThis(below, m);
+			if(belowVal < lowest){
 				lowest = belowVal;
 				location = below;
 				directionMoved = 1;
@@ -444,8 +450,8 @@ public class BasicVisual extends PApplet{
 		}
 		Coordinate above = new Coordinate(m.getCenter().getX(), m.getCenter().getY()-unit, m.getCenter().getZ());
 		if(inShellEllipsoid(above)){
-			float aboveVal = Math.abs(netChargeMinusThis(above, m));
-			if(aboveVal > lowest){
+			float aboveVal = netChargeMinusThis(above, m);
+			if(aboveVal < lowest){
 				lowest = aboveVal;
 				location = above;
 				directionMoved = 2;
@@ -453,8 +459,8 @@ public class BasicVisual extends PApplet{
 		}
 		Coordinate right = new Coordinate(m.getCenter().getX()+unit, m.getCenter().getY(), m.getCenter().getZ());
 		if(inShellEllipsoid(right)){
-			float rightVal = Math.abs(netChargeMinusThis(right, m));
-			if(rightVal > lowest){
+			float rightVal = netChargeMinusThis(right, m);
+			if(rightVal < lowest){
 				lowest = rightVal;
 				location = right;
 				directionMoved = 3;
@@ -462,8 +468,8 @@ public class BasicVisual extends PApplet{
 		}
 		Coordinate left = new Coordinate(m.getCenter().getX()-unit, m.getCenter().getY(), m.getCenter().getZ());
 		if(inShellEllipsoid(left)){
-			float leftVal = Math.abs(netChargeMinusThis(left, m));
-			if(leftVal > lowest){
+			float leftVal = netChargeMinusThis(left, m);
+			if(leftVal < lowest){
 				lowest = leftVal;
 				location = left;
 				directionMoved = 4;
@@ -471,8 +477,8 @@ public class BasicVisual extends PApplet{
 		}
 		Coordinate towards = new Coordinate(m.getCenter().getX(), m.getCenter().getY(), m.getCenter().getZ()+unit);
 		if(inShellEllipsoid(towards)){
-			float towardsVal = Math.abs(netChargeMinusThis(towards, m));
-			if(towardsVal > lowest){
+			float towardsVal = netChargeMinusThis(towards, m);
+			if(towardsVal < lowest){
 				lowest = towardsVal;
 				location = towards;
 				directionMoved = 5;
@@ -480,8 +486,8 @@ public class BasicVisual extends PApplet{
 		}
 		Coordinate away = new Coordinate(m.getCenter().getX(), m.getCenter().getY(), m.getCenter().getZ()-unit);
 		if(inShellEllipsoid(away)){
-			float awayVal = Math.abs(netChargeMinusThis(away, m));
-			if(awayVal > lowest){
+			float awayVal = netChargeMinusThis(away, m);
+			if(awayVal < lowest){
 				lowest = awayVal;
 				location = away;
 				directionMoved = 6;
@@ -510,6 +516,8 @@ public class BasicVisual extends PApplet{
 		while(!equilibrium){
 			equilibrium = moveAllMetaballs();
 		}
+		displayShell.moveAllCells();
+//		farthestShell.moveAllCells();
 		iterateThroughGrid();
 	}
 	
@@ -538,15 +546,15 @@ public class BasicVisual extends PApplet{
 		int blue = 0;
 		Cell selected = someCellSelected();
 		for(String s: displayShell.getCells().keySet()){
-			int colorCoefficient = 800;
+			float colorCoefficient = .02f;
 			if(selected != null){
-				colorCoefficient = 400;
+				colorCoefficient = .01f;
 			}
 			if(displayShell.getCells().get(s).isSelected()){
-				colorCoefficient *= 4;
+				colorCoefficient = .04f;
 			}
 			Metaball m = displayShell.getCells().get(s).getRepresentation();
-			float charge = Math.abs(colorCoefficient/m.squaredDistanceFromCenter(point));
+			float charge = Math.abs(colorCoefficient * m.getCharge()/m.squaredDistanceFromCenter(point));
 			if(charge > 1) charge = 1;
 			red += charge*m.getColor().getRed();
 			green += charge*m.getColor().getGreen();
@@ -580,18 +588,37 @@ public class BasicVisual extends PApplet{
 	 * Populates the array of shapes; call when image needs to change
 	 */
 	public void iterateThroughGrid(){
-//		System.out.println("called");
 		vertices = new ArrayList<ArrayList<Coordinate>>();
 		displayColorField = new ArrayList<RGB>();
 		uniqueColorField = new ArrayList<RGB>();
 		int W = displayShell.getShellWidth();
 		int H = displayShell.getShellWidth();
 		int D = displayShell.getShellWidth();
-//		field = new boolean[W][H][D];
+		field = new boolean[W+gridSize][H+gridSize][D+gridSize];
+		for(String s: displayShell.getCells().keySet()){
+			Metaball m = displayShell.getCells().get(s).getRepresentation();
+			setFieldNearBall(m);
+		}
 		for(int i = -W/2; i < W/2; i += gridSize){
 			for(int j = -H/2; j < H/2; j += gridSize){	
 				for(int k = -D/2; k < D/2; k += gridSize){
 					handleOneCube(i, j, k);
+				}
+			}
+		}
+	}
+	
+	//need to confine to metaball's radius of influence
+	public void setFieldNearBall(Metaball metaball){
+		int W = displayShell.getShellWidth();
+		int H = displayShell.getShellWidth();
+		int D = displayShell.getShellWidth();
+		for(int i = -W/2; i < W/2; i+= gridSize){
+			for(int j = -H/2; j < H/2; j+= gridSize){
+				for(int k = -D/2; k < D/2; k += gridSize){
+					if(aboveThreshold(new Coordinate(i, j, k), metaball)){
+						field[i+W/2][j+H/2][k+D/2] = true;
+					}
 				}
 			}
 		}
@@ -624,6 +651,13 @@ public class BasicVisual extends PApplet{
 		}
 	}
 	
+	public boolean pollField(Coordinate at){
+		int W = displayShell.getShellWidth();
+		int H = displayShell.getShellWidth();
+		int D = displayShell.getShellWidth();
+		return field[(int) at.getX() + W/2][(int) at.getY() + H/2][(int) at.getZ() + D/2];
+	}
+	
 	/**
 	 * Applies the marching cubes algorithm to the cube at this point
 	 * @param x x coordinate of point
@@ -632,18 +666,20 @@ public class BasicVisual extends PApplet{
 	 */
 	public void handleOneCube(int x, int y, int z){
 //		if(!inShellEllipsoid(new Coordinate(x, y, z))) return;
-		
+		int W = displayShell.getShellWidth();
+		int H = displayShell.getShellWidth();
+		int D = displayShell.getShellWidth();
 		RGB color = netColorHere(new Coordinate(x, y, z));
 		RGB uniqueColor = uniqueColorHere(new Coordinate(x, y, z));
 		Cube cube = new Cube(this, x, y, z, gridSize);
-		cube.vertices.put(cube.vertex1, aboveThreshold(cube.vertex1));
-		cube.vertices.put(cube.vertex2, aboveThreshold(cube.vertex2));
-		cube.vertices.put(cube.vertex3, aboveThreshold(cube.vertex3));
-		cube.vertices.put(cube.vertex4, aboveThreshold(cube.vertex4));
-		cube.vertices.put(cube.vertex5, aboveThreshold(cube.vertex5));
-		cube.vertices.put(cube.vertex6, aboveThreshold(cube.vertex6));
-		cube.vertices.put(cube.vertex7, aboveThreshold(cube.vertex7));
-		cube.vertices.put(cube.vertex8, aboveThreshold(cube.vertex8));
+		cube.vertices.put(cube.vertex1, pollField(cube.vertex1));
+		cube.vertices.put(cube.vertex2, pollField(cube.vertex2));
+		cube.vertices.put(cube.vertex3, pollField(cube.vertex3));
+		cube.vertices.put(cube.vertex4, pollField(cube.vertex4));
+		cube.vertices.put(cube.vertex5, pollField(cube.vertex5));
+		cube.vertices.put(cube.vertex6, pollField(cube.vertex6));
+		cube.vertices.put(cube.vertex7, pollField(cube.vertex7));
+		cube.vertices.put(cube.vertex8, pollField(cube.vertex8));
 		cube.populateMids();
 		
 		switch(cube.midpoints.size()){
@@ -710,9 +746,9 @@ public class BasicVisual extends PApplet{
 	 * @param point the point we're considering
 	 * @return true if above, false if below
 	 */
-	public boolean aboveThreshold(Coordinate point){
-		float charge = netChargeHere(point);
-		return Math.abs(charge) > threshold;
+	public boolean aboveThreshold(Coordinate point, Metaball m){
+		float charge = netChargeHere(point, m);
+		return charge > threshold;
 	}
 
 	//action listener for the create shell button on the choose mutants screen. finalizes the mutants choice and calls secondarySetup
@@ -842,7 +878,6 @@ public class BasicVisual extends PApplet{
 						currentTime--;
 						boolean mustUpdateDisplay = false;
 						if(someCellSelected() != null){
-							System.out.println("recognized selected cell");
 							someCellSelected().setSelected(false);
 							mustUpdateDisplay = true;
 						}

@@ -89,7 +89,7 @@ public class Cell {
 	 * @return the metaball
 	 */
 	public Metaball createRepresentation(){
-		float chargeCoefficient =  1/600.0f;
+		float chargeCoefficient =  1/50.0f;
 		Metaball metaball = new Metaball(this.center.getX(), this.center.getY(), this.center.getZ(),
 				chargeCoefficient*this.lengths.getX()*this.lengths.getY()*this.lengths.getZ(),
 				this.displayColor.getRed(), this.displayColor.getGreen(), this.displayColor.getBlue());
@@ -162,6 +162,10 @@ public class Cell {
 
 	public void setSelected(boolean selected) {
 		this.selected = selected;
+	}
+	
+	public void move(){
+		this.center = representation.getCenter();
 	}
 
 	/**

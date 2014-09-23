@@ -366,6 +366,12 @@ public class Shell{
 		return new RGB(red, green, blue);
 	}
 	
+	public void moveAllCells(){
+		for(String s: this.cells.keySet()){
+			this.cells.get(s).move();
+		}
+	}
+	
 	/**
 	 * color codes based on lineage, which can be determined from the cell name
 	 * @param genes The name of the cell to be colored
