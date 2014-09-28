@@ -79,7 +79,7 @@ public class Cell {
 		for(String s: toDup.recentlyChanged.keySet()){
 			changesmap.put(s, new Gene(toDup.recentlyChanged.get(s)));
 		}
-//		this.representation = toDup.createRepresentation();
+		this.representation = new Metaball(toDup.getRepresentation());
 		this.recentlyChanged = changesmap;
 	}
 	
