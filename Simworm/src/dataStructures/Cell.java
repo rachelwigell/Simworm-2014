@@ -88,7 +88,7 @@ public class Cell {
 	 * @return the metaball
 	 */
 	public Metaball createRepresentation(Coordinate center){
-		float chargeCoefficient =  1/50.0f;
+		float chargeCoefficient =  500;
 		Metaball metaball = new Metaball(center.getX(), center.getY(), center.getZ(),
 				chargeCoefficient*this.lengths.getX()*this.lengths.getY()*this.lengths.getZ(),
 				this.displayColor.getRed(), this.displayColor.getGreen(), this.displayColor.getBlue());

@@ -163,8 +163,7 @@ public class Coordinate{
 	 * @return the distance
 	 */
 	public float distanceBetween(Coordinate to){
-		float distance = (float) Math.sqrt((to.x - this.x) * (to.x-this.x) + (to.y - this.y) * (to.y - this.y) + (to.z - this.z) * (to.z - this.z));
-		return distance;
+		return (float) Math.sqrt((to.x - this.x) * (to.x-this.x) + (to.y - this.y) * (to.y - this.y) + (to.z - this.z) * (to.z - this.z));
 	}
 	
 	/**
@@ -180,5 +179,9 @@ public class Coordinate{
 	
 	public boolean samePoint(Coordinate as){
 		return this.x == as.x && this.y == as.y && this.z == as.z;
+	}
+	
+	public float fourthPower(Coordinate to){
+		return (float) Math.pow(squareDistance(to), 2);
 	}
 }

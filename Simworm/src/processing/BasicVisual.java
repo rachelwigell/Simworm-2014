@@ -436,14 +436,14 @@ public class BasicVisual extends PApplet{
 	 */
 	public float netChargeHere(Coordinate point, Metaball metaball){
 		float total = 0;
-		total -= ellipsoidContribution(point) * 400;
+		total -= ellipsoidContribution(point) * 800;
 		for(String s: displayShell.getCells().keySet()){
 			Metaball m = displayShell.getCells().get(s).getRepresentation();
 			if(m.getCenter().samePoint(metaball.getCenter())){
-				total += m.chargeFrom(point);
+				total += m.fourthPowerChargeFrom(point);
 			}
 			else{
-				total -= m.chargeFrom(point);
+				total -= m.fourthPowerChargeFrom(point);
 			}
 		}
 		return total;
@@ -451,11 +451,11 @@ public class BasicVisual extends PApplet{
 
 	public float netChargeMinusThis(Coordinate point, Metaball metaball){
 		float total = 0;
-		total += ellipsoidContribution(point) * 400;
+		total += ellipsoidContribution(point) * 800;
 		for(String s: displayShell.getCells().keySet()){
 			Metaball m = displayShell.getCells().get(s).getRepresentation();
 			if(!(m.getCenter().samePoint(metaball.getCenter()))){
-				total += m.chargeFrom(point);
+				total += m.fourthPowerChargeFrom(point);
 			}
 		}
 		return total;
@@ -758,15 +758,15 @@ public class BasicVisual extends PApplet{
 		int blue = 0;
 		Cell selected = someCellSelected();
 		for(String s: displayShell.getCells().keySet()){
-			float colorCoefficient = .02f;
+			float colorCoefficient = .01f;
 			if(selected != null){
-				colorCoefficient = .01f;
+				colorCoefficient = .005f;
 			}
 			if(displayShell.getCells().get(s).isSelected()){
-				colorCoefficient = .04f;
+				colorCoefficient = .02f;
 			}
 			Metaball m = displayShell.getCells().get(s).getRepresentation();
-			float charge = Math.abs(colorCoefficient * m.getCharge()/m.squaredDistanceFromCenter(point));
+			float charge = Math.abs(colorCoefficient * m.fourthPowerChargeFrom(point));
 			if(charge > 1) charge = 1;
 			red += charge*m.getColor().getRed();
 			green += charge*m.getColor().getGreen();
@@ -787,7 +787,7 @@ public class BasicVisual extends PApplet{
 		for(String s: displayShell.getCells().keySet()){
 			Cell c = displayShell.getCells().get(s);
 			Metaball m = c.getRepresentation();
-			float infFrom = Math.abs(m.chargeFrom(point));
+			float infFrom = Math.abs(m.fourthPowerChargeFrom(point));
 			if(infFrom > influence){
 				influence = infFrom;
 				nearest = c;
@@ -800,7 +800,7 @@ public class BasicVisual extends PApplet{
 	 * Populates the array of shapes; call when image needs to change
 	 */
 	public void iterateThroughGrid(){		
-		threshold = (float) (16.0/displayShell.getCells().keySet().size());
+		threshold = (float) (15.0 + displayShell.getCells().keySet().size());
 		vertices = new ArrayList<ArrayList<Coordinate>>();
 		displayColorField = new ArrayList<RGB>();
 		uniqueColorField = new ArrayList<RGB>();
