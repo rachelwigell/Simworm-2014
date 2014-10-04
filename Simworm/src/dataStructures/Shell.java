@@ -59,7 +59,9 @@ public class Shell{
 			try{
 				divisions = readEventsQueue("eventsQueue.csv");
 			}
-			catch(Exception f){}
+			catch(Exception f){
+				System.out.println("Couldn't find eventsQueue.csv at either of the expected locations.");
+			}
 		}
 		
 		//populate valid gene names from wormbase file
@@ -72,7 +74,9 @@ public class Shell{
 			try{
 				compileValidGenes("wormbaseGeneInfo.txt");
 			}
-			catch(Exception f){}
+			catch(Exception f){
+				System.out.println("Couldn't find wormbaseGeneInfo.txt at either of the expected locations.");
+			}
 		}
 		
 		window.currentColor = new RGB(1, 0, 0);

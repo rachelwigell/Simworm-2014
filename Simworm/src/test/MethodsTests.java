@@ -13,7 +13,7 @@ import processing.BasicVisual;
 import dataStructures.Cell;
 import dataStructures.CellChangesData;
 import dataStructures.Compartment;
-import dataStructures.ConsList;
+import dataStructures.ConsequentsList;
 import dataStructures.Coordinate;
 import dataStructures.DivisionData;
 import dataStructures.Gene;
@@ -439,23 +439,23 @@ public class MethodsTests {
 		GeneState s = new GeneState(true);
 		Gene g = new Gene("test", s);
 		s = null;
-		assertFalse(g.getState().equals(null));
+		assertNotNull(g.getState());
 	}
 
 	@Test
 	public void testReadingCSV(){
-		ConsList list = new ConsList();
-		//list.AandC = new ArrayList<Consequence>();
+		ConsequentsList list = new ConsequentsList();
+		//list.antecedentsAndConsequents = new ArrayList<Consequence>();
 		//list.startLate = new ArrayList<Consequence>();
-		//list.readAandCInfo("AandC.csv");
-		assertEquals(18, list.AandC.size());
-		assertEquals("pal-1", list.AandC.get(0).getConsequence().getName());
-		assertEquals("pie-1", list.AandC.get(0).getAntecedents()[0].getName());
-		assertEquals("pal-1", list.AandC.get(17).getConsequence().getName());
-		assertEquals("skn-1", list.AandC.get(17).getAntecedents()[1].getName());
-		assertFalse(list.AandC.get(0).getConsequence().getState().isOn());
-		assertFalse(list.AandC.get(17).getAntecedents()[1].getState().isOn());
-		assertEquals("pie-1", list.AandC.get(1).getAntecedents()[0].getName());
+		//list.readantecedentsAndConsequentsInfo("antecedentsAndConsequents.csv");
+		assertEquals(18, list.antecedentsAndConsequents.size());
+		assertEquals("pal-1", list.antecedentsAndConsequents.get(0).getConsequence().getName());
+		assertEquals("pie-1", list.antecedentsAndConsequents.get(0).getAntecedents()[0].getName());
+		assertEquals("pal-1", list.antecedentsAndConsequents.get(17).getConsequence().getName());
+		assertEquals("skn-1", list.antecedentsAndConsequents.get(17).getAntecedents()[1].getName());
+		assertFalse(list.antecedentsAndConsequents.get(0).getConsequence().getState().isOn());
+		assertFalse(list.antecedentsAndConsequents.get(17).getAntecedents()[1].getState().isOn());
+		assertEquals("pie-1", list.antecedentsAndConsequents.get(1).getAntecedents()[0].getName());
 		Gene g = new Gene("par-6", new GeneState(true), new Coordinate(Compartment.ANTERIOR, Compartment.YCENTER, Compartment.ZCENTER), new HashMap<String, Coordinate>(), testVis);
 		g.populateCons();
 	}
@@ -679,14 +679,14 @@ public class MethodsTests {
 				else if(!germline && !MSE && CD) cd++;
 				else def++;
 			}
-			if(mseValues.get(mse) == null) mseValues.put((int) mse, 1);
-			else mseValues.put((int) mse, mseValues.get(mse)+1);
-			if(cdValues.get(cd) == null) cdValues.put((int) cd, 1);
-			else cdValues.put((int) cd, cdValues.get(cd)+1);
-			if(germValues.get(germ) == null) germValues.put((int) germ, 1);
-			else germValues.put((int) germ, germValues.get(germ)+1);
-			if(defValues.get(def) == null) defValues.put((int) def, 1);
-			else defValues.put((int) def, defValues.get(def)+1);
+			if(mseValues.get(mse) == null) mseValues.put(mse, 1);
+			else mseValues.put(mse, mseValues.get(mse)+1);
+			if(cdValues.get(cd) == null) cdValues.put(cd, 1);
+			else cdValues.put(cd, cdValues.get(cd)+1);
+			if(germValues.get(germ) == null) germValues.put(germ, 1);
+			else germValues.put(germ, germValues.get(germ)+1);
+			if(defValues.get(def) == null) defValues.put(def, 1);
+			else defValues.put(def, defValues.get(def)+1);
 
 			assertEquals(26, germ+mse+cd+def);	
 			mseFate += mse/26.0;
@@ -718,8 +718,8 @@ public class MethodsTests {
 	@Test
 	public void parsingSandbox(){
 		try{
-			ConsList AC = new ConsList();
-			AC.readAandCInfo("src/components/parsingSandbox.csv");
+			ConsequentsList AC = new ConsequentsList();
+			AC.readantecedentsAndConsequentsInfo("src/components/parsingSandbox.csv");
 			//			testShell.readEventsQueue("src/components/parsingSandbox.csv");
 			//			testShell.getCells().get("p-0").readGeneInfo("src/components/parsingSandbox.csv", testShell);
 		}
@@ -734,5 +734,29 @@ public class MethodsTests {
 		assertTrue(word2.startsWith(prefix));
 		String suffix = word2.substring(prefix.length(), word2.length());
 		assertEquals("grhr", suffix);
+	}
+	
+	public Coordinate snapToGrid(boolean lower, Coordinate near, int gridSize, int W, int H, int D){
+		float x = near.getX() - ((near.getX() + W/2) % gridSize);
+		float y = near.getY() - ((near.getY() + H/2) % gridSize);
+		float z = near.getZ() - ((near.getZ() + D/2) % gridSize);
+		if(lower){
+			return new Coordinate(x, y, z);
+		}
+		else{
+			return new Coordinate(x+gridSize, y+gridSize, z+gridSize);
+		}
+	}
+	
+	@Test
+	public void testSnapToGrid(){
+		Coordinate testCoord = snapToGrid(true, new Coordinate(5, 5, 5), 12, 500, 300, 300);
+		assertEquals((int) testCoord.getX(), 2);
+		assertEquals((int) testCoord.getY(), -6);
+		assertEquals((int) testCoord.getZ(), -6);
+		testCoord = snapToGrid(false, new Coordinate(5, 5, 5), 12, 500, 300, 300);
+		assertEquals((int) testCoord.getX(), 14);
+		assertEquals((int) testCoord.getY(), 6);
+		assertEquals((int) testCoord.getZ(), 6);
 	}
 }

@@ -85,6 +85,7 @@ public class Cell {
 	
 	/**
 	 * Create a metaball to represent this cell
+	 * @param center the center point of the metaball representation
 	 * @return the metaball
 	 */
 	public Metaball createRepresentation(Coordinate center){
@@ -334,7 +335,10 @@ public class Cell {
 	/**
 	 * Populates the initial gene list from a CSV
 	 * @param file the name of the CSV as a string
+	 * @param shell the shell where these genes will be used
 	 * @return The genes list as populated
+	 * @throws FileReadErrorException if the given filename cannot be found
+	 * @throws InvalidFormatException if there is a formatting problem in the file provided
 	 */
 	public HashMap<String, Gene> readGeneInfo(String file, Shell shell) throws FileReadErrorException, InvalidFormatException{
 		String name = null;

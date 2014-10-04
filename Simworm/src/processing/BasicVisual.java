@@ -17,7 +17,7 @@ import controlP5.Textarea;
 import controlP5.Toggle;
 import dataStructures.Cell;
 import dataStructures.ColorMode;
-import dataStructures.ConsList;
+import dataStructures.ConsequentsList;
 import dataStructures.Coordinate;
 import dataStructures.RGB;
 import dataStructures.Shell;
@@ -26,7 +26,7 @@ public class BasicVisual extends PApplet{
 	private static final long serialVersionUID = 1L;
 	Shell displayShell;
 	Shell farthestShell;
-	public ConsList conslist = new ConsList();
+	public ConsequentsList conslist = new ConsequentsList();
 	String userText;
 	PeasyCam camera;
 	ControlP5 info;
@@ -98,22 +98,22 @@ public class BasicVisual extends PApplet{
 		firstClick = false;
 		mutants = new HashMap<String, Boolean>();
 		if(firstTime){
-			size((int) width, (int) height, P3D);
+			size(width, height, P3D);
 			camera = new PeasyCam(this, 600); //initialize the peasycam
 		}
 		firstTime = false;
 		info = new ControlP5(this);
 		info.setAutoDraw(false);
 
-		Button choose = new Button(info, "Choose mutants").setPosition(width/3, height/3).setSize((int) (width/3), (int) (height/20))
+		Button choose = new Button(info, "Choose mutants").setPosition(width/3, height/3).setSize((width/3), (height/20))
 				.setColorBackground(color(2, 52, 76))
 				.setColorForeground(color(2, 52, 76))
 				.setColorActive(color(2, 52, 76)); //just a label
 		choose.captionLabel().setControlFont(new ControlFont(createFont("arial", (float) (width/80))));
 		chooseMutants = new CheckBox(info, "boxes");
 		chooseMutants.setItemsPerRow(3)
-		.setSpacingColumn((int) (width/9))
-		.setSpacingRow((int) (height/30))
+		.setSpacingColumn((width/9))
+		.setSpacingRow((height/30))
 		.setPosition(width/3, (float) (height/2.45))
 		.addItem("par-1", 0)
 		.addItem("par-2", 1)
@@ -122,14 +122,14 @@ public class BasicVisual extends PApplet{
 		.addItem("par-5", 4)
 		.addItem("par-6", 5)
 		.addItem("pkc-3", 6)
-		.setSize((int) (width/60), (int) (height/30))
+		.setSize((width/60), (height/30))
 		.setColorBackground(color(49, 130, 189))
 		.setColorForeground(color(107, 174, 214))
 		.setColorActive(color(189, 215, 231));
 		for(Toggle t: chooseMutants.getItems()){ //setting the font size on the checkbox options has to be done kind of indirectly
 			t.captionLabel().setControlFont(new ControlFont(createFont("arial", (float) (width/100))));
 		}
-		createShell = new Button(info, "createShell").setPosition(width/3, (float) (height/1.65)).setLabel("create shell").setSize((int) (width/3), (int) (height/20)); //button to confirm checkbox settings
+		createShell = new Button(info, "createShell").setPosition(width/3, (float) (height/1.65)).setLabel("create shell").setSize((width/3), (height/20)); //button to confirm checkbox settings
 		createShell.captionLabel().setControlFont(new ControlFont(createFont("arial", (float) (width/80))));
 
 		currentTime = 1;
@@ -158,7 +158,7 @@ public class BasicVisual extends PApplet{
 
 		userTextArea = new Textarea(info, "infoText"); //textarea where the user can input commands and receive information
 		userTextArea.setPosition((float) (width/1.25), height/40)
-		.setSize((int) (width/5), (int) (height/3.5)).
+		.setSize((width/5), (int) (height/3.5)).
 		setFont(createFont("arial", (width/114)));
 //		cellNamesArea = new Textarea(info, "namesText"); //textarea where the names of the currently present cells are displayed
 //		cellNamesArea.setPosition((float) (width/1.25), (float) (5*height/20))
@@ -397,6 +397,7 @@ public class BasicVisual extends PApplet{
 			drawAxes(); //draw the coordinate axes
 			printVertices(false); //draw the shell using metaballs
 			drawShell();
+//			showAllRad();
 			userTextArea.setText(userText); //show the text output that userText is currently set to
 //			cellNamesArea.setText(displayShell.getCellNames());
 			//boolean values for lineageState, fateState, parsState exist so that we don't have to continuously set the color
@@ -820,17 +821,53 @@ public class BasicVisual extends PApplet{
 			}
 		}
 	}
+	
+	public void showAllRad(){
+		for(String s: displayShell.getCells().keySet()){
+			showRadiusOfInfluence(displayShell.getCells().get(s).getRepresentation());
+		}
+	}
+	
+	public void showRadiusOfInfluence(Metaball m){
+		pushMatrix();
+		translate(m.getCenter().getX(), m.getCenter().getY(), m.getCenter().getZ());
+		fill(255, 50);
+		sphere(m.getRadiusOfInfluence());
+		popMatrix();
+	}
+	
+	public Coordinate snapToGrid(Coordinate near, boolean lower){
+		int W = displayShell.getShellWidth()/2;		
+		
+		float x = near.getX() - (near.getX() + W) % gridSize;
+		float y = near.getY() - (near.getY() + W) % gridSize;
+		float z = near.getZ() - (near.getZ() + W) % gridSize;
+		
+		x = Math.round(x);
+		y = Math.round(y);
+		z = Math.round(z);
+		
+		if(x < -W) x = -W;
+		else if(x > W) x = W;
+		if(y < -W) y = -W;
+		else if(y > W) y = W;
+		if(z < -W) z = -W;
+		else if(z > W) z = W;
+		
+		if(lower) return new Coordinate(x, y, z);
+		else return new Coordinate(x+gridSize, y+gridSize, z+gridSize);
+	}
 
 	//need to confine to metaball's radius of influence
 	public void setFieldNearBall(Metaball metaball){
-		int W = displayShell.getShellWidth();
-		int H = displayShell.getShellWidth();
-		int D = displayShell.getShellWidth();
-		for(int i = -W/2; i < W/2; i+= gridSize){
-			for(int j = -H/2; j < H/2; j+= gridSize){
-				for(int k = -D/2; k < D/2; k += gridSize){
+		Coordinate startPoint = snapToGrid(metaball.getCenter().plus(-metaball.getRadiusOfInfluence()), true);
+		Coordinate endPoint = snapToGrid(metaball.getCenter().plus(metaball.getRadiusOfInfluence()), false);
+		int W = displayShell.getShellWidth()/2;
+		for(int i = (int) startPoint.getX(); i <= endPoint.getX()+1; i += gridSize){
+			for(int j = (int) startPoint.getY(); j <= endPoint.getY()+1; j += gridSize){
+				for(int k = (int) startPoint.getZ(); k <= endPoint.getZ()+1; k += gridSize){
 					if(aboveThreshold(new Coordinate(i, j, k), metaball)){
-						field[i+W/2][j+H/2][k+D/2] = true;
+						field[i+W][j+W][k+W] = true;
 					}
 				}
 			}

@@ -62,8 +62,8 @@ public class Gene /*implements Comparable<Gene>*/{
 	 */
 	public Gene populateCons(){
 		this.relevantCons = new ArrayList<Consequence>();
-		ConsList allCons = window.conslist; //cannot be a field in Gene to avoid cyclical data
-		for(Consequence c: allCons.AandC){
+		ConsequentsList allCons = window.conslist; //cannot be a field in Gene to avoid cyclical data
+		for(Consequence c: allCons.antecedentsAndConsequents){
 			for(Gene g: c.getAntecedents()){
 				if (g.name.equals(this.name)){
 					relevantCons.add(c); //genes in consequences contain ONLY NAME AND STATE to avoid cyclical data and redundant data
@@ -82,7 +82,7 @@ public class Gene /*implements Comparable<Gene>*/{
 	 */
 	public Gene updateCons(int time, boolean recentGrowth){
 		int i = 0;
-		ConsList allCons = window.conslist;
+		ConsequentsList allCons = window.conslist;
 		ArrayList<Integer> toRemove = new ArrayList<Integer>();
 		for(Consequence c: this.relevantCons){
 			if(c.getEndStage() < time && c.getEndStage() != 0){ //0 is what we put for end if we never want the rule to end

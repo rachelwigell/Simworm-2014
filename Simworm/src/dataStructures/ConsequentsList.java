@@ -7,16 +7,16 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ConsList { //holds data about antecedents and consequences
-	public List<Consequence> AandC = new ArrayList<Consequence>(); //antecedents and consequences that are active at the beginning
+public class ConsequentsList { //holds data about antecedents and consequences
+	public List<Consequence> antecedentsAndConsequents = new ArrayList<Consequence>(); //antecedents and consequences that are active at the beginning
 	public List<Consequence> startLate = new ArrayList<Consequence>(); //rules that don't start until midway through the simulation
 	public List<String> validGeneNames = new ArrayList<String>(); //gene names in genes.csv, for error checking
 
 	/**
 	 * Constructor for a ConsList object
-	 * Just populates AandC and startLate from the CSV
+	 * Just populates antecedentsAndConsequents and startLate from the CSV
 	 */
-	public ConsList(){
+	public ConsequentsList(){
 		try{
 			populateValidGenes("src/components/genes.csv");
 		}
@@ -24,23 +24,32 @@ public class ConsList { //holds data about antecedents and consequences
 			try{
 				populateValidGenes("genes.csv");
 			}
-			catch(Exception f){}
+			catch(Exception f){
+				System.out.println("Couldn't find genes.csv at either of the expected locations.");
+			}
 		}
 		
-		//populate AandC and startLate from the CSV
+		//populate antecedentsAndConsequents and startLate from the CSV
 		//for java application
 		try{
-			readAandCInfo("src/components/AandC.csv");
+			readantecedentsAndConsequentsInfo("src/components/antecedentsAndConsequents.csv");
 		}
 		catch(Exception e){
 			try{
 				//for java applet or executable
-				readAandCInfo("AandC.csv");
+				readantecedentsAndConsequentsInfo("antecedentsAndConsequents.csv");
 			}
-				catch(Exception f){}
+				catch(Exception f){
+					System.out.println("Couldn't find antecedentsAndConsequents.csv at either of the expected locations.");
+				}
 		}
 	}
 	
+	/**
+	 * Creates a dictionary of valid C. elegans gene names from the wormbase text file
+	 * @param file the location of the text file
+	 * @throws FileReadErrorException if the file could not be found
+	 */
 	public void populateValidGenes(String file) throws FileReadErrorException{
 		try{
 			BufferedReader reader = new BufferedReader(new FileReader(file)); //open the file
@@ -62,8 +71,11 @@ public class ConsList { //holds data about antecedents and consequences
 	/**
 	 * Parses a CSV to create the antecedent and consequence rules
 	 * @param file The name of the CSV file as a string
+	 * @return 0 to indicate success
+	 * @throws FileNotFoundException if the given file name couldn't be found
+	 * @throws InvalidFormatException if there is a formatting error in the provided file
 	 */
-	public int readAandCInfo(String file) throws FileNotFoundException, InvalidFormatException{
+	public int readantecedentsAndConsequentsInfo(String file) throws FileNotFoundException, InvalidFormatException{
 		String name = null;
 		GeneState state = null;
 		try{
@@ -132,7 +144,7 @@ public class ConsList { //holds data about antecedents and consequences
 					}
 					i++;
 				}
-				if(start == 1) this.AandC.add(new Consequence(ante, cons, start, end)); //if the rule starts at the beginning, put in AandC
+				if(start == 1) this.antecedentsAndConsequents.add(new Consequence(ante, cons, start, end)); //if the rule starts at the beginning, put in antecedentsAndConsequents
 				else this.startLate.add(new Consequence(ante, cons, start, end)); //else put in startLate
 				row++;
 			}

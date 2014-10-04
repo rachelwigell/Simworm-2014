@@ -10,10 +10,6 @@ public class Coordinate{
 	private Compartment DV;
 	private Compartment LR;
 
-	private Coordinate xAdjacent;
-	private Coordinate yAdjacent;
-	private Coordinate zAdjacent;
-
 	private float distance;
 
 	/**
@@ -40,6 +36,10 @@ public class Coordinate{
 		this.LR = LR;
 	}
 
+	/**
+	 * Duplication constructor for a Coordinate
+	 * @param toDup Coordinate to duplicate
+	 */
 	public Coordinate(Coordinate toDup){
 		this.AP = toDup.AP;
 		this.DV = toDup.DV;
@@ -47,20 +47,6 @@ public class Coordinate{
 		this.x = toDup.x;
 		this.y = toDup.y;
 		this.z = toDup.z;
-	}
-
-	public Coordinate(float x, float y, float z, Coordinate xAdjacent, Coordinate yAdjacent, Coordinate zAdjacent){
-		this.x = x;
-		this.y = y;
-		this.z = z;
-
-		this.xAdjacent = xAdjacent;
-		this.yAdjacent = yAdjacent;
-		this.zAdjacent = zAdjacent;
-
-		xAdjacent.xAdjacent = this;
-		yAdjacent.yAdjacent = this;
-		zAdjacent.zAdjacent = this;
 	}
 
 	//getters
@@ -88,22 +74,15 @@ public class Coordinate{
 		return LR;
 	}
 
-	public Coordinate getxAdjacent() {
-		return xAdjacent;
-	}
-
-	public Coordinate getyAdjacent() {
-		return yAdjacent;
-	}
-
-	public Coordinate getzAdjacent() {
-		return zAdjacent;
-	}
-
 	public float getDistance() {
 		return distance;
 	}
 
+	/**
+	 * gets the smallest of the x, y, and z coordinates.
+	 * Used for scaling cells back when they were represented as ellipsoids
+	 * @return
+	 */
 	public float getSmallest(){
 		float smallest = this.x;
 		if(this.y < smallest){
@@ -129,18 +108,6 @@ public class Coordinate{
 
 	public void setZ(float z) {
 		this.z = z;
-	}
-
-	public void setxAdjacent(Coordinate xAdjacent) {
-		this.xAdjacent = xAdjacent;
-	}
-
-	public void setyAdjacent(Coordinate yAdjacent) {
-		this.yAdjacent = yAdjacent;
-	}
-
-	public void setzAdjacent(Coordinate zAdjacent) {
-		this.zAdjacent = zAdjacent;
 	}
 
 	public void setDistance(float distance) {
@@ -173,7 +140,7 @@ public class Coordinate{
 	 * @return the distance
 	 */
 	public float squareDistance(Coordinate to){
-		float distance = (float) (to.x - this.x) * (to.x-this.x) + (to.y - this.y) * (to.y - this.y) + (to.z - this.z) * (to.z - this.z);
+		float distance = (to.x - this.x) * (to.x-this.x) + (to.y - this.y) * (to.y - this.y) + (to.z - this.z) * (to.z - this.z);
 		return distance;
 	}
 	
@@ -183,5 +150,13 @@ public class Coordinate{
 	
 	public float fourthPower(Coordinate to){
 		return (float) Math.pow(squareDistance(to), 2);
+	}
+	
+	public Coordinate plus(float amount){
+		return new Coordinate(this.x + amount, this.y + amount, this.z + amount);
+	}
+	
+	public void printCoordinate(String identifier){
+		System.out.println(identifier + " x: " + x + " y: " + y + " z: " + z);
 	}
 }
