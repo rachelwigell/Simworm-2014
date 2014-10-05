@@ -23,6 +23,10 @@ public class DivisionData {
 		this.generation = generation;
 	}
 
+	/**
+	 * Duplication constructor for division data
+	 * @param toDup the DivisionData to duplicate
+	 */
 	public DivisionData(DivisionData toDup){
 		this.parent = toDup.parent;
 		this.d1Percentage = toDup.d1Percentage;
@@ -49,6 +53,7 @@ public class DivisionData {
 		return time;
 	}
 
+	//setters
 	public DivisionData setD1Percentage(double d1Percentage) {
 		this.d1Percentage = d1Percentage;
 		return this;

@@ -105,6 +105,7 @@ public class BasicVisual extends PApplet{
 		info = new ControlP5(this);
 		info.setAutoDraw(false);
 
+		//sets up the menu
 		Button choose = new Button(info, "Choose mutants").setPosition(width/3, height/3).setSize((width/3), (height/20))
 				.setColorBackground(color(2, 52, 76))
 				.setColorForeground(color(2, 52, 76))
@@ -136,7 +137,9 @@ public class BasicVisual extends PApplet{
 		farthestSeen = 1;
 	}
 
-	//called after mutants are confirmed, to set up the main simulation screen
+	/**
+	 * called after mutants are confirmed, to set up the main simulation screen
+	 */
 	@SuppressWarnings("deprecation")
 	public void secondarySetup(){
 		info.remove("Choose mutants"); //remove the elements that were used in the mutants choosing screen
@@ -156,15 +159,18 @@ public class BasicVisual extends PApplet{
 		fateState = false;
 		parsState = false;
 
-		userTextArea = new Textarea(info, "infoText"); //textarea where the user can input commands and receive information
+		//textarea where the user can input commands and receive information
+		userTextArea = new Textarea(info, "infoText");
 		userTextArea.setPosition((float) (width/1.25), height/40)
-		.setSize((width/5), (int) (height/3.5)).
-		setFont(createFont("arial", (width/114)));
+		.setSize((width/5), (int) (height/3.5))
+		.setFont(createFont("arial", (width/114)));
+		
 //		cellNamesArea = new Textarea(info, "namesText"); //textarea where the names of the currently present cells are displayed
 //		cellNamesArea.setPosition((float) (width/1.25), (float) (5*height/20))
 //		.setSize((int) (width/5), (int) (height/8)).
 //		setFont(createFont("arial", (width/114)));
 
+		//label for the color key
 		new Button(info, "cell color key") //just a label, not interactive
 		.setPosition((float) (width/1.26), (float) (height - 13*height/30))
 		.setColorBackground(color(0, 0, 0))
@@ -172,6 +178,7 @@ public class BasicVisual extends PApplet{
 		.setColorForeground(color(0, 0, 0))
 		.captionLabel().setControlFont(new ControlFont(createFont("arial", (float) (width/90))));
 		
+		//label for the option buttons to turn shell depiction on/off
 		new Button(info, "draw shell") //just a label, not interactive
 		.setPosition((float) (width/1.26), (float) (height - 41*height/60))
 		.setColorBackground(color(0, 0, 0))
@@ -179,6 +186,7 @@ public class BasicVisual extends PApplet{
 		.setColorForeground(color(0, 0, 0))
 		.captionLabel().setControlFont(new ControlFont(createFont("arial", (float) (width/90))));
 		
+		//buttons for choosing to display shell
 		showShell = new RadioButton(info, "showShell");
 		showShell.setItemsPerRow(3)
 		.setSpacingColumn((int) (width/18))
@@ -195,6 +203,7 @@ public class BasicVisual extends PApplet{
 			t.captionLabel().setControlFont(new ControlFont(createFont("arial", (float) (width/100))));
 		}
 
+		//label for the option buttons to turn animations on/off
 		new Button(info, "show animations") //just a label, not interactive
 		.setPosition((float) (width/1.26), (float) (height - 9*height/15))
 		.setColorBackground(color(0, 0, 0))
@@ -202,6 +211,7 @@ public class BasicVisual extends PApplet{
 		.setColorForeground(color(0, 0, 0))
 		.captionLabel().setControlFont(new ControlFont(createFont("arial", (float) (width/90))));
 
+		//buttons for choosing to show animations
 		showAnimations = new RadioButton(info, "animations");
 		showAnimations.setItemsPerRow(3)
 		.setSpacingColumn((int) (width/18))
@@ -218,6 +228,7 @@ public class BasicVisual extends PApplet{
 			t.captionLabel().setControlFont(new ControlFont(createFont("arial", (float) (width/100))));
 		}
 
+		//label for the slider bar for image granularity
 		new Button(info, "image granularity") //just a label, not interactive
 		.setPosition((float) (width/1.26), (float) (height - 31*height/60))
 		.setColorBackground(color(0, 0, 0))
@@ -225,6 +236,7 @@ public class BasicVisual extends PApplet{
 		.setColorForeground(color(0, 0, 0))
 		.captionLabel().setControlFont(new ControlFont(createFont("arial", (float) (width/90))));
 
+		//slider bar for choosing image granularity
 		chooseGridSize = new Slider(info, "")
 		.setPosition((float) (width/1.25), (float) (height - 29*height/60))
 		.setSize((int) (23*width/125), (int) (height/40))
@@ -269,7 +281,6 @@ public class BasicVisual extends PApplet{
 		.setColorForeground(color(0, 0, 0))
 		.captionLabel().setControlFont(new ControlFont(createFont("arial", (float) (width/90))));
 
-
 		//initialize the color keys; these are not interactive
 		fateKey0 = new Button(info, "germline").setPosition((float) (width/1.25), (float) (height - 12*height/30)).setColorBackground(color(102, 194, 165)).setColorActive(color(102, 194, 165)).setColorForeground(color(102, 194, 165)).setVisible(false).setSize((int) (width/20), (int) (height/40));
 		fateKey0.captionLabel().setControlFont(new ControlFont(createFont("arial", (float) (width/133))));
@@ -308,6 +319,7 @@ public class BasicVisual extends PApplet{
 		lineageKey6 = new Button(info, "p").setPosition((float) (width/1.25), (float) (height - 10*height/30)).setColorBackground(color(255, 255, 0)).setColorActive(color(255, 255, 0)).setColorForeground(color(255, 255, 0)).setVisible(true).setSize((int) (width/20), (int) (height/40));		
 		lineageKey6.captionLabel().setControlFont(new ControlFont(createFont("arial", (float) (width/133))));
 
+		//label for the buttons that choose time flow mode
 		new Button(info, "set time flow mode") //just a label for the radio buttons, not interactive
 		.setPosition((float) (width/1.26), (float) (height - 6*height/30))
 		.setColorBackground(color(0, 0, 0))
@@ -330,7 +342,7 @@ public class BasicVisual extends PApplet{
 			t.captionLabel().setControlFont(new ControlFont(createFont("arial", (float) (width/100))));
 		}
 
-
+		//label for the buttons to choose color mode
 		new Button(info, "choose color mode") //just a label for the radio buttons, not interactive
 		.setPosition((float) (width/1.26), (float) (height - 17*height/60))
 		.setColorBackground(color(0, 0, 0))
@@ -354,15 +366,17 @@ public class BasicVisual extends PApplet{
 			t.captionLabel().setControlFont(new ControlFont(createFont("arial", (float) (width/100))));
 		}
 
+		//the button that lets you start over with a new shell
 		startOver = new Button(info, "startOver")
 		.setLabel("  generate new embryo")
 		.setPosition((float) (width/60), (float) (height/40))
 		.setSize((int) (width/6), (int) (height/20));
 		startOver.captionLabel().setControlFont(new ControlFont(createFont("arial", (float) (width/90))));
 
-		drawKey(displayShell.colorMode); //draw the appropriate key (set to lineage by default)
+		//draw the appropriate key (set to lineage by default)
+		drawKey(displayShell.colorMode);
 
-		//set up the slider bar
+		//set up the slider bar that depicts how far into the animation we are
 		progressBar = new Slider(info, "Elapsed time")
 		.setPosition(width/40, height - height/20)
 		.setSize((int) (width-width/3), (int) (height/40))
@@ -371,8 +385,12 @@ public class BasicVisual extends PApplet{
 		.setMax(96);
 		progressBar.captionLabel().setControlFont(new ControlFont(createFont("arial", (float) (width/100))));
 		mutantsChosen = true; //value used to choose what items are drawn in draw()
+		//set this back to true to return to start menu
 	}
 
+	/**
+	 * draws the semi-transparent shell if that option is turned on
+	 */
 	public void drawShell(){
 		if(showShell.getState(0)){
 			pushMatrix();
@@ -384,34 +402,36 @@ public class BasicVisual extends PApplet{
 		}
 	}
 
-	//implicitly called in a loop
+	/**
+	 * implicitly called in a loop, handles the main actions of the program
+	 */
 	public void draw(){
 		background(0);
 		lights();
-		//spotLight(255, 255, 255, 250, 0, 400, 0, 0, -1, PI/4, 2);
 		noStroke();
+		
 		//some of these settings should only be called if we're past the mutants screen
 		//else these elements won't exist yet and you'll get null pointer exceptions
-		//boolean mutantsChosen will get set when we exit that screen
+		//boolean mutantsChosen will get set to false when we exit that screen
 		if(mutantsChosen){
 			drawAxes(); //draw the coordinate axes
 			printVertices(false); //draw the shell using metaballs
 			drawShell();
-//			showAllRad();
 			userTextArea.setText(userText); //show the text output that userText is currently set to
-//			cellNamesArea.setText(displayShell.getCellNames());
 			//boolean values for lineageState, fateState, parsState exist so that we don't have to continuously set the color
 			//they hold the current state of the color mode (that is, false for those that aren't currently set and true for the one that is)
 			//we only set colors when the colormode doesn't match these, which indicates that the colormode has been recently changed
-			if(chooseColorMode.getState(0) != lineageState || chooseColorMode.getState(1) != fateState || chooseColorMode.getState(2) != parsState) updateColorMode();
-
+			if(chooseColorMode.getState(0) != lineageState || chooseColorMode.getState(1) != fateState || chooseColorMode.getState(2) != parsState){
+				updateColorMode();
+			}
+			//if an animation is occurring, we need to continuously update the cell locations until it has ended
 			if(moving){
 				boolean equilibrium = false;
 				equilibrium = moveAllMetaballs();
 				iterateThroughGrid();
 				if(equilibrium) moving = false;
 			}
-
+			//if we're in automatic time flow mode, call progressForward periodically
 			if(chooseTimeflowMode.getState(1)){
 				if(timeCount >= 10){
 					progressForward();
@@ -450,6 +470,13 @@ public class BasicVisual extends PApplet{
 		return total;
 	}
 
+	/**
+	 * gets the total metaball influence, ignoring one metaball
+	 * necessary when calculating inter-cellular forces, as a cell doesn't exert force on itself.
+	 * @param point the point at which we want to calculate the force field
+	 * @param metaball the metaball we're ignoring
+	 * @return the metaball field strength
+	 */
 	public float netChargeMinusThis(Coordinate point, Metaball metaball){
 		float total = 0;
 		total += ellipsoidContribution(point) * 800;
@@ -463,10 +490,11 @@ public class BasicVisual extends PApplet{
 	}
 
 	/**
-	 * A metball looks at all its surroundings and moves in a direction that reduces the forces acting upon it
+	 * A metaball looks at all its surroundings and moves in a direction that reduces the forces acting upon it
 	 * @param m the metaball
 	 * @param unit granularity of movement; i.e. put 1 to move 1 unit each time, higher numbers for coarser granularity
-	 * @return an int representing which direction, if any, it moved. Used to test for equilibrium (if it returns 0)
+	 * @return an int representing which direction, if any, it moved. Used to test for equilibrium
+	 * (if it returns 0, it chose not to move and is in equilibrium)
 	 */
 	public int considerAllSides(Metaball m, int unit){
 		float lowest = netChargeMinusThis(m.getCenter(), m);
@@ -708,7 +736,6 @@ public class BasicVisual extends PApplet{
 				directionMoved = 22;
 			}
 		}
-
 		m.move(location);
 		return directionMoved;
 	}
@@ -726,6 +753,9 @@ public class BasicVisual extends PApplet{
 		return equilibrium == 0;
 	}
 
+	/**
+	 * moves each metaball until they reach equilibrium
+	 */
 	public void moveToEquilibrium(){
 		boolean equilibrium = false;
 		while(!equilibrium){
@@ -736,7 +766,7 @@ public class BasicVisual extends PApplet{
 
 	/**
 	 * returns the selected cell if there is one
-	 * @return null if no cell is selected
+	 * @return null if no cell is selected, or the selected cell
 	 */
 	public Cell someCellSelected(){
 		for(String s: displayShell.getCells().keySet()){
@@ -794,11 +824,13 @@ public class BasicVisual extends PApplet{
 				nearest = c;
 			}
 		}
+		//the metaball with the strongest influence at this point is the one that's considered to be located here
 		return nearest.getUniqueColor();
 	}
 
 	/**
 	 * Populates the array of shapes; call when image needs to change
+	 * Highest cost function!! call only when absolutely necessary!
 	 */
 	public void iterateThroughGrid(){		
 		threshold = (float) (15.0 + displayShell.getCells().keySet().size());
@@ -822,12 +854,19 @@ public class BasicVisual extends PApplet{
 		}
 	}
 	
+	/**
+	 * For testing purposes, this displays the radius of influence of each cell as a semitransparent sphere
+	 */
 	public void showAllRad(){
 		for(String s: displayShell.getCells().keySet()){
 			showRadiusOfInfluence(displayShell.getCells().get(s).getRepresentation());
 		}
 	}
 	
+	/**
+	 * For testing purposes, this displays the radius of influence of the given metaball as a semitransparent sphere
+	 * @param m the metaball to display
+	 */
 	public void showRadiusOfInfluence(Metaball m){
 		pushMatrix();
 		translate(m.getCenter().getX(), m.getCenter().getY(), m.getCenter().getZ());
@@ -836,6 +875,12 @@ public class BasicVisual extends PApplet{
 		popMatrix();
 	}
 	
+	/**
+	 * Takes in any Coordinate and returns the nearest coordinate location that is on the grid
+	 * @param near coordinate we want to be near
+	 * @param lower determines whether we round down or up
+	 * @return a coordinate on the grid
+	 */
 	public Coordinate snapToGrid(Coordinate near, boolean lower){
 		int W = displayShell.getShellWidth()/2;		
 		
@@ -858,7 +903,10 @@ public class BasicVisual extends PApplet{
 		else return new Coordinate(x+gridSize, y+gridSize, z+gridSize);
 	}
 
-	//need to confine to metaball's radius of influence
+	/**
+	 * stores the value of the field at every location within the radius of influence of the given metaball
+	 * @param metaball the metaball we're looking near
+	 */
 	public void setFieldNearBall(Metaball metaball){
 		Coordinate startPoint = snapToGrid(metaball.getCenter().plus(-metaball.getRadiusOfInfluence()), true);
 		Coordinate endPoint = snapToGrid(metaball.getCenter().plus(metaball.getRadiusOfInfluence()), false);
@@ -898,6 +946,11 @@ public class BasicVisual extends PApplet{
 		}
 	}
 
+	/**
+	 * Find out what the stored field value is at the given point
+	 * @param at the point we want to poll
+	 * @return the field value (above or below threshold)
+	 */
 	public boolean pollField(Coordinate at){
 		int W = displayShell.getShellWidth();
 		int H = displayShell.getShellWidth();
@@ -926,6 +979,7 @@ public class BasicVisual extends PApplet{
 		cube.vertices.put(cube.vertex8, pollField(cube.vertex8));
 		cube.populateMids();
 
+		//a different cube case occurs depending on how many midpoints are set to true
 		switch(cube.midpoints.size()){
 		case 3:
 			vertices.add(cube.threeCase());
@@ -1070,9 +1124,13 @@ public class BasicVisual extends PApplet{
 			parsState = true;
 		}
 		displayShell.updateColorMode(); //calls the method that will change the colors of the existing cells
-		iterateThroughGrid();
+		iterateThroughGrid(); //image has changed
 	}
 	
+	/**
+	 * moves the cells during animations
+	 * shows each step if showAnimations is on, otherwise just moves them to equilibrium immediately
+	 */
 	public void moveAllCells(){
 		if(showAnimations.getState(0)){
 			moving = true;
@@ -1082,82 +1140,95 @@ public class BasicVisual extends PApplet{
 		}
 	}
 
+	/**
+	 * progresses time forward; called when right arrow is pressed, or automatically in auto time flow mode
+	 */
 	public void progressForward(){
+		//limited to time 95; this is the end of the simulation
 		if(currentTime <= 95){
+			//reset the text
 			userText = "Click a cell to see its contents,\nor press right arrow to progress 1 timestep\nor left arrow to move backwards 1 timestep.";
-			boolean mustUpdateDisplay = fateState;
-			if(someCellSelected() != null){
-				someCellSelected().setSelected(false);
-				mustUpdateDisplay = true;
+			//certain actions occurring will cause us to need to change the picture. in these situations, we'll want to call
+			//iterateOverGrid(). But this function is very expensive, so we want to do this only if strictly necessary.
+			boolean mustUpdateDisplay = fateState; //if we're set to fateState we need to update every time step, because the colors change unpredictably
+			if(someCellSelected() != null){ //if there was a selected cell
+				someCellSelected().setSelected(false); //we want to deselect it
+				mustUpdateDisplay = true; //and we'll have to redraw the screen to reflect this
 			}
-			int cellsOnScreenBefore = displayShell.getCells().keySet().size();
-			if(currentTime == farthestSeen){
-				farthestShell.timeStep();
-				displayShell = farthestShell;
-				int cellsOnScreenAfter = displayShell.getCells().keySet().size();
-				currentTime++;
-				farthestSeen++;
-				numCellsAtTime.put(currentTime, cellsOnScreenAfter);
-				if(cellsOnScreenBefore != cellsOnScreenAfter){
-					shellsOverTime.put(cellsOnScreenAfter, new Shell(farthestShell));
-					moveAllCells();
+			int cellsOnScreenBefore = displayShell.getCells().keySet().size(); //how many cells were on the screen before this time step?
+			if(currentTime == farthestSeen){ //if this is currently as far as we've been
+				farthestShell.timeStep(); //call the shell's timestep method to calculate next step
+				displayShell = farthestShell; //and display the resultant shell
+				int cellsOnScreenAfter = displayShell.getCells().keySet().size(); //now how many cells are on the screen?
+				currentTime++; //the current time has increased
+				farthestSeen++; //the farthest-visited time has increased
+				numCellsAtTime.put(currentTime, cellsOnScreenAfter); //store the number of cells that were present at this time step
+				if(cellsOnScreenBefore != cellsOnScreenAfter){ //if we gained new cells this time step...
+					shellsOverTime.put(cellsOnScreenAfter, new Shell(farthestShell)); //store a new duplicate shell in the hashmap, for if we come backwards in time
+					moveAllCells(); //allow the cells to move around. display will be updated within this function
 				}
-				progressBar.setValue(currentTime);
+				progressBar.setValue(currentTime); //increment the progress bar
 			}
-			else{
-				currentTime++;
-				if(numCellsAtTime.get(currentTime) != cellsOnScreenBefore){
-					displayShell = new Shell(shellsOverTime.get(numCellsAtTime.get(currentTime)));
-					mustUpdateDisplay = true;
-					updateColorMode();
-					moveAllCells();
+			else{ //if we're looking at a past timestep that we have already been to before
+				currentTime++; //current time has incremented
+				if(numCellsAtTime.get(currentTime) != cellsOnScreenBefore){ //if the stored value for the number of cells on the screen at this time doesn't match what it was before
+					displayShell = new Shell(shellsOverTime.get(numCellsAtTime.get(currentTime))); //get the stored shell containing this # of cells from the hashmap
+					updateColorMode(); //update the color mode in case the shell that was stored in the hashmap at this time was with different colors
+					moveAllCells(); //allow the cells to move around. display will be updated within this function
 				}
-				progressBar.setValue(currentTime);
+				progressBar.setValue(currentTime); //increment the progress bar
 			}
 			if(mustUpdateDisplay){
-				iterateThroughGrid();
+				iterateThroughGrid(); //if any of our update conditions occurred, update the screen
 			}
 		}
 	}
+	
+	/**
+	 * progresses backward in time, called when left arrow is pressed
+	 */
+	public void progressBackward(){
+		if(currentTime > 1){ //can't go before time 1
+			int numCellsBefore = displayShell.getCells().keySet().size(); //how many cells were on the screen before we started making calculations?
+			//reset the text
+			userText = "Type a cell name to see its contents,\nor press right arrow to progress 1 timestep\nor left arrow to move backwards 1 timestep.";
+			currentTime--; //current time has decremented
+			//certain actions occurring will cause us to need to change the picture. in these situations, we'll want to call
+			//iterateOverGrid(). But this function is very expensive, so we want to do this only if strictly necessary.
+			boolean mustUpdateDisplay = false;
+			if(someCellSelected() != null){ // if there is some cell selected
+				someCellSelected().setSelected(false); //deselect it
+				mustUpdateDisplay = true; // need to update display to reflect this
+			}
+			int numCellsAfter = numCellsAtTime.get(currentTime); //what is the stored value for the number of cells that should be on the screen at this timestep?
+			if(numCellsAfter != numCellsBefore){ //if we're going back by a cell division
+				displayShell = new Shell(shellsOverTime.get(numCellsAfter)); //need to get the stored shell containing the new number of cells
+				mustUpdateDisplay = true; //need to update visual if some of the cells are supposed to "disappear"
+				moveAllCells(); //allow the cells to move around
+			}
+			if(mustUpdateDisplay){ //if one of the conditions occurred to make the sceen update necessary
+				updateColorMode(); //make sure the color mode doesn't change when we grabbed the new shell from the hashmap
+				iterateThroughGrid(); //update the display
+			}
+			progressBar.setValue(currentTime); //set the progress bar to reflect our timestep
+		}
+	}
 
-	//when the user is typing, different things should happen
+	//when the user is typing, different things should happen depending on what keys they're hitting
 	public void keyReleased(){
-		if(keyCode == ESC) exit();
+		if(keyCode == ESC) exit(); //exit program when user hits Esc key
 
-		if(mutantsChosen){ //only run if mutantsChosen is set, because userText doesn't exist yet if not
+		if(mutantsChosen){ //only run if mutantsChosen is set, because userText doesn't exist yet if not - null pointer
 			if(!moving){
-				if(keyCode == RIGHT){
+				if(keyCode == RIGHT){ //press right to progress forward in time
 					progressForward();
 				}
-				else if(keyCode == LEFT){
-					if(currentTime > 1){
-						int numCellsBefore = displayShell.getCells().keySet().size();
-						userText = "Type a cell name to see its contents,\nor press right arrow to progress 1 timestep\nor left arrow to move backwards 1 timestep.";
-						currentTime--;
-						boolean mustUpdateDisplay = false;
-						if(someCellSelected() != null){
-							someCellSelected().setSelected(false);
-							mustUpdateDisplay = true;
-						}
-						int numCellsAfter = numCellsAtTime.get(currentTime);
-						//need to update visual only if some of the cells are supposed to "disappear"
-						if(numCellsAfter != numCellsBefore){
-							displayShell = new Shell(shellsOverTime.get(numCellsAfter));
-							mustUpdateDisplay = true;
-							moveAllCells();
-						}
-						if(mustUpdateDisplay){
-							updateColorMode();
-							iterateThroughGrid();
-						}
-						//						updateColorMode();
-						progressBar.setValue(currentTime);
-					}
-
+				else if(keyCode == LEFT){ //press left arrow to progress backward in time
+					progressBackward();
 				}
 				else if(keyCode == BACKSPACE){ //manually implement backspace
-					if (userText.length() > 0) {
-						userText = userText.substring(0, userText.length()-1);
+					if (userText.length() > 0) { //if there is text
+						userText = userText.substring(0, userText.length()-1); //replace it with the same text minus the last letter
 					}
 				}
 				else if(keyCode == ENTER || keyCode == RETURN){ //enter finalizes a command
@@ -1167,9 +1238,10 @@ public class BasicVisual extends PApplet{
 					else{ //if it is a cell name, print the genes list for the cell
 						for(String s: displayShell.getCells().keySet()){
 							if(!s.equals(userText)) displayShell.getCells().get(s).setSelected(false);
-							else displayShell.getCells().get(s).setSelected(true);
+							else displayShell.getCells().get(s).setSelected(true); //and select the one that was written
 						}
 						userText = displayShell.getCells().get(userText).getInfo();
+						iterateThroughGrid(); //update display to show selected cell
 					}
 				}
 				else if(((int) key) >= 33 && ((int) key) <= 126){ //if it's any other ("normal" ascii) key, just add that letter to the userText
@@ -1180,28 +1252,34 @@ public class BasicVisual extends PApplet{
 		}
 	}
 
+	/**
+	 * detects user setting a new gridSize on the slider
+	 */
 	public void mouseReleased(){
-		if(mutantsChosen){
-			if(chooseGridSize.getValue() != gridSize){
-				gridSize = (int) chooseGridSize.getValue();
-				iterateThroughGrid();
+		if(mutantsChosen){ //the slider only exists in the main screen, after the mutant choice menu
+			if(chooseGridSize.getValue() != gridSize){ //if we notice a difference between the set grid size and the value on the slider
+				gridSize = (int) chooseGridSize.getValue(); //set the gridsize to the slider value
+				iterateThroughGrid(); //update display to reflect the change
 			}
-			camera.stop();
+			camera.stop(); //also, we didn't like the camera's "momentum" on rotation, so we stop it as soon as the mouse is released
 		}
 	}
 
+	/**
+	 * handles picking!
+	 */
 	public void mouseClicked(){
 		if(mutantsChosen){
-			if(!firstClick){
-				firstClick = true;
+			if(!firstClick){ //this ignores the very first click that occurs in the main screen
+				firstClick = true; //because we were accidentally picking the first cell after clicking the create shell button
 			}
 			else{
-				if(!moving){
+				if(!moving){ //don't allow picking during animations, it gets too confusing
 					if(mouseX < 4*(width/5)){ //only do object picking in the 3d side of the screen
-						int colorFound = getHiddenColor();
-						if(colorFound != -16777216){ //only do object picking if the selected pixel isn't black
+						int colorFound = getHiddenColor(); //render cells as their hidden unique colors. what color was the pixel we clicked on?
+						if(colorFound != -16777216){ //only do object picking if the selected pixel isn't black, black will never be a cell
 							Cell chosen = null;
-							for(String s: displayShell.getCells().keySet()){
+							for(String s: displayShell.getCells().keySet()){ //find the cell with the matching hidden color
 								Cell c = displayShell.getCells().get(s);
 								int keyColor = color(c.getUniqueColor().getRed(), c.getUniqueColor().getGreen(), c.getUniqueColor().getBlue());
 								if(colorFound == keyColor){
@@ -1214,7 +1292,7 @@ public class BasicVisual extends PApplet{
 							if(chosen != null){
 								chosen.setSelected(true); //select the chosen cell
 								userText = chosen.getInfo(); //print its info
-								iterateThroughGrid();
+								iterateThroughGrid(); //update display
 							}
 						}
 					}
@@ -1223,7 +1301,10 @@ public class BasicVisual extends PApplet{
 		}
 	}
 
-	//display the correct color key for the currently selected colormode
+	/**
+	 * display the correct color key for the currently selected colormode
+	 * @param colorMode the current colormode
+	 */
 	public void drawKey(ColorMode colorMode){
 		switch(colorMode){		
 		case FATE:
@@ -1312,9 +1393,13 @@ public class BasicVisual extends PApplet{
 		text("l", -460, 150, 100);
 		//set up to draw cells
 		noStroke();
-		fill(180, 255, 255);
 	}
 
+	/**
+	 * code grabbed from online
+	 * prevents the information panel (controlp5) from rotating
+	 * when the camera rotates
+	 */
 	public void gui(){
 		hint(DISABLE_DEPTH_TEST);
 		camera.beginHUD();
@@ -1323,6 +1408,10 @@ public class BasicVisual extends PApplet{
 		hint(ENABLE_DEPTH_TEST);
 	}
 
+	/**
+	 * this allows the program to be run as a java application
+	 * @param args
+	 */
 	public static void main(String args[]){
 		PApplet.main(new String[] { "--present", "processing.BasicVisual" });
 	} 
@@ -1341,12 +1430,12 @@ public class BasicVisual extends PApplet{
 	 */
 	public void renderAsHiddenColors(){
 		noLights();
-		if(showShell.getState(0)){
-			background(0);
-			printVertices(true);
+		if(showShell.getState(0)){ //if we were showing the shell, that will influence the color picked
+			background(0); //so cover it up
+			printVertices(true); //and print just the cells, no shell, for 1 timestep
 		}
 		else{
-			printVertices(true);
+			printVertices(true); //else just print the cells (with unique colors)
 		}
 	}
 
@@ -1355,15 +1444,27 @@ public class BasicVisual extends PApplet{
 	 * @return the color as an int
 	 */
 	public int getHiddenColor(){
-		renderAsHiddenColors();
-		loadPixels();
-		return pixels[width*mouseY+mouseX];
+		renderAsHiddenColors(); //render the cells with their unique colors
+		loadPixels(); //load the image into the pixel array
+		return pixels[width*mouseY+mouseX]; //get the color of the pixel just clicked
 	}
 
+	/**
+	 * Determines whether a given point is within the ellipsoid of the shell
+	 * @param point the point we're considering
+	 * @return true if it's inside the ellipsoid, false otherwise
+	 */
 	public boolean inShellEllipsoid(Coordinate point){
 		return ellipsoidContribution(point) < 1;
 	}
 
+	/**
+	 * A mathematical function that is largest at the surface of an ellipsoid
+	 * and drops off as you approach its center point
+	 * used to determine how hard the shell is "pushing" on cells (hardest near the surface)
+	 * @param point the point at which we want to calculate the force
+	 * @return the strength of the shell's force at that point
+	 */
 	public float ellipsoidContribution(Coordinate point){
 		return (float) Math.pow((Math.pow(point.getX(), 2) / Math.pow(displayShell.getShellWidth(), 2) +
 				Math.pow(point.getY(), 2) / Math.pow(displayShell.getShellHeight(), 2) +

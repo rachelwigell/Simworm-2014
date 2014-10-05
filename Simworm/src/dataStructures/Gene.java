@@ -20,6 +20,7 @@ public class Gene /*implements Comparable<Gene>*/{
 	 * @param state Active/inactive state of the gene
 	 * @param location  Compartment in which the gene is located
 	 * @param changes Info on compartment that the gene moves to and what time the move occurs
+	 * @param window the PApplet this gene will be in
 	 */
 	public Gene(String name, GeneState state, Coordinate location, HashMap<String, Coordinate> changes, BasicVisual window){
 		this.name = name;
@@ -39,6 +40,10 @@ public class Gene /*implements Comparable<Gene>*/{
 		this.state = state;
 	}
 	
+	/**
+	 * Duplication constructor for gene objects
+	 * @param toDup the Gene to duplicate
+	 */
 	public Gene(Gene toDup){
 		this.name = toDup.name;
 		this.state = new GeneState(toDup.state);
@@ -77,7 +82,7 @@ public class Gene /*implements Comparable<Gene>*/{
 	 * Updates the relevantCons list to remove consequences whose time period is over, or add new ones whose time periods have begun
 	 * Should be called every time step
 	 * @param time The cell stage that the simulation is currently at (number of cells present)
-	 * @param indicates whether the shell has gained new cells since the last timestep
+	 * @param recentGrowth indicates whether the shell has gained new cells since the last timestep
 	 * @return The gene with its relevantCons list updated
 	 */
 	public Gene updateCons(int time, boolean recentGrowth){

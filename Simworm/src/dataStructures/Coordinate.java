@@ -81,7 +81,7 @@ public class Coordinate{
 	/**
 	 * gets the smallest of the x, y, and z coordinates.
 	 * Used for scaling cells back when they were represented as ellipsoids
-	 * @return
+	 * @return the value of the smallest one
 	 */
 	public float getSmallest(){
 		float smallest = this.x;
@@ -137,25 +137,44 @@ public class Coordinate{
 	 * Square of the distance formula for efficiency, since this value frequently gets squared
 	 * and the square root operation is expensive
 	 * @param to the points whose distance from "this" point is computed
-	 * @return the distance
+	 * @return the squared distance
 	 */
 	public float squareDistance(Coordinate to){
 		float distance = (to.x - this.x) * (to.x-this.x) + (to.y - this.y) * (to.y - this.y) + (to.z - this.z) * (to.z - this.z);
 		return distance;
 	}
 	
+	/**
+	 * determines if two coordinates are pointing at the same point
+	 * @param as the coordinate we're comparing "this" coordinate to
+	 * @return true if x, y, and z are all the same.
+	 */
 	public boolean samePoint(Coordinate as){
 		return this.x == as.x && this.y == as.y && this.z == as.z;
 	}
 	
+	/**
+	 * The distance formula to the fourth power. Used when we switched equations
+	 * @param to the point whose distance from "this" point is computed
+	 * @return the distance to the fourth power
+	 */
 	public float fourthPower(Coordinate to){
 		return (float) Math.pow(squareDistance(to), 2);
 	}
 	
+	/**
+	 * Adds a constant value to each component of a coordinate
+	 * @param amount the amount to be added
+	 * @return this coordinate with the amount added in
+	 */
 	public Coordinate plus(float amount){
 		return new Coordinate(this.x + amount, this.y + amount, this.z + amount);
 	}
 	
+	/**
+	 * For convenience in testing, prints the x/y/z component of a coordinate with nice formatting
+	 * @param identifier a label to put in front of the print statement for identification purposes
+	 */
 	public void printCoordinate(String identifier){
 		System.out.println(identifier + " x: " + x + " y: " + y + " z: " + z);
 	}

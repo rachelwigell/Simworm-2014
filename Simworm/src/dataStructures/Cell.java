@@ -115,10 +115,6 @@ public class Cell {
 		return name;
 	}
 
-//	public Coordinate getCenter() {
-//		return center;
-//	}
-
 	public Coordinate getLengths() {
 		return lengths;
 	}
@@ -163,10 +159,6 @@ public class Cell {
 	public void setSelected(boolean selected) {
 		this.selected = selected;
 	}
-	
-//	public void move(){
-//		this.center = representation.getCenter();
-//	}
 
 	/**
 	 * Checks for fulfilled antecedents and applies their consequences. Cascading effects handled on next timestep.
@@ -176,16 +168,13 @@ public class Cell {
 		HashMap<String, Gene> effects = new HashMap<String, Gene>(); //will hold all changes to be made to the cell
 		for(String s: recentlyChanged.keySet()){ //look through list of genes that have been changed
 			Gene g = genes.get(s);
-			//System.out.println("checking a new recently changed gene " + s);
 			for(Consequence c: g.getRelevantCons()){ //for each, consider the consequences that contain it as an antecedent
 				boolean allFulfilled = true; //tracks whether all necessary antecedents for a particular consequence are fulfilled
 				Gene cons = c.getConsequence();
-				//System.out.println("checking a new consequence " + cons.getName());
 				checkAnte:
 				for(Gene a: c.getAntecedents()){ //look at the antecedents for a particular consequence
 					if(genes.get(a.getName()) == null){
 						allFulfilled = false;
-						//System.out.println("\tantecedent " + a.getName() + " isn't present");
 						break checkAnte; // if cell doesn't contain this antecedent, stop immediately
 					}
 					//now that we know the antecedent gene exists the genes hashmap, we want to start using the instance from within the cell instead of the one in conslist.
@@ -193,33 +182,27 @@ public class Cell {
 					Gene aInGenes = genes.get(a.getName());
 					if(aInGenes.getState().isUnknown()){
 						allFulfilled = false;
-						//System.out.println("\tantecedent " + a.getName() + " is unknown");
 						break checkAnte; //if any gene in the antecedents is unknown, stop immediately
 					}
 					if(genes.get(cons.getName()) == null){
 						allFulfilled = false;
-						//System.out.println("\tconsequence gene " + c.getConsequence().getName() + " not contained in " + name);
 						break checkAnte; //if cell doesn't contain consequence gene, stop immediately
 					}
 					//now that we know the consequence gene exists in the genes hashmap, we want to start using the instance from within the cell instead of the one in conslist.
 					Gene consInGenes = genes.get(c.getConsequence().getName());
 					//consider removing below if, if systematic way to determine effect "winner" is found - this line causes first to win automatically
 					if(effects.get(cons.getName()) != null){
-						//System.out.println("\t" + cons.getName() + " is already going to be applied to " + name);
 						allFulfilled = false;
 						break checkAnte; // if an effect is already going to be applied to this gene, can stop immediately
 					}
 					if(!consInGenes.getState().isUnknown()){
 						if(consInGenes.getState().isOn() == cons.getState().isOn()){
 							allFulfilled = false;
-							//System.out.println("\tconsequence gene " + cons.getName() + " already set to " + cons.getState().isOn() + " in " + name);
 							break checkAnte; //if state of the gene is already set here, stop immediately
 						}
 					}
 					if(aInGenes.getState().isOn() != a.getState().isOn()){ //check if the state of the gene in the cell is what it must be to fulfill antecedent
 						allFulfilled = false; //if any are wrong, set flag. if get to end of for without setting to false, then all antecedents are fulfilled
-						//System.out.println("\tantecedent " + a.getName() + " not fulfilled");
-						//System.out.println("\t\tneeds to be " + a.getState().isOn() + " but actually is " + aInGenes.getState().isOn());
 						break checkAnte; //stop looking through antecedents as soon as one contradictory one is found
 					}
 					Coordinate compartment = consInGenes.getLocation(); //holds location of the consequence gene
@@ -230,21 +213,18 @@ public class Cell {
 						if((compartment.getAP() != aInGenes.getLocation().getAP() && aInGenes.getLocation().getAP() != Compartment.XCENTER)
 								|| (compartment.getDV() != aInGenes.getLocation().getDV() && aInGenes.getLocation().getDV() != Compartment.YCENTER)
 								|| (compartment.getLR() != aInGenes.getLocation().getLR() && aInGenes.getLocation().getLR() != Compartment.ZCENTER)){
-							//System.out.println(aInGenes.getName() + " not in right compartment");
 							allFulfilled = false; //if not, the two genes can't interact
 							break checkAnte;
 						}
 					}
 				}
 				if(allFulfilled){
-					//System.out.println("\tsetting " + c.getConsequence().getName() + " to " + c.getConsequence().getState().isOn() + " in " + name);
 					effects.put(c.getConsequence().getName(), c.getConsequence()); //put into effects to apply
 				}
 			}
 		}
 		if(effects.size() != 0){ //if changes were made, we want to add them to the cell
 			for(String s: effects.keySet()){ //apply changes to the cell
-				//System.out.println(s);
 				genes.get(s).setState(effects.get(s).getState());
 				
 			}
@@ -280,19 +260,21 @@ public class Cell {
 	}
 	
 	/**
-	 * Draws the cell to the PApplet
+	 * Draws the cell to the PApplet as ellipsoid shapes
+	 * No longer used now that cells are being represented as metaballs
 	 */
-//	public void drawCellEllipsoid(){
-//		window.pushMatrix();
-//		window.translate(this.center.getX(), this.center.getY(), this.center.getZ());
-//		float smallSide = this.lengths.getSmallest();
-//		Coordinate scaling = this.lengths.lengthsToScale();
-//		window.scale(scaling.getX(), scaling.getY(), scaling.getZ());
-//		if(selected) window.fill(this.displayColor.getRed(), this.displayColor.getGreen(), this.displayColor.getBlue());
-//		else window.fill((float) (this.displayColor.getRed()/2.0), (float) (this.displayColor.getGreen()/2.0), (float) (this.displayColor.getBlue()/2.0));
-//		window.sphere(smallSide);		
-//		window.popMatrix();
-//	}
+	@Deprecated
+	public void drawCellEllipsoid(){
+		window.pushMatrix();
+		window.translate(this.getRepresentation().getCenter().getX(), this.getRepresentation().getCenter().getY(), this.getRepresentation().getCenter().getZ());
+		float smallSide = this.lengths.getSmallest();
+		Coordinate scaling = this.lengths.lengthsToScale();
+		window.scale(scaling.getX(), scaling.getY(), scaling.getZ());
+		if(selected) window.fill(this.displayColor.getRed(), this.displayColor.getGreen(), this.displayColor.getBlue());
+		else window.fill((float) (this.displayColor.getRed()/2.0), (float) (this.displayColor.getGreen()/2.0), (float) (this.displayColor.getBlue()/2.0));
+		window.sphere(smallSide);		
+		window.popMatrix();
+	}
 	
 	/**
 	 * Draws the cell to the PApplet with its unique color

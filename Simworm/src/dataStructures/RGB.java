@@ -31,6 +31,10 @@ public class RGB {
 		this.blue = (int) Long.parseLong(hex.substring(6,8), 16); // 6 and 7 are B value
 	}
 	
+	/**
+	 * Duplication constructor for RGB objects
+	 * @param toDup the RGB to duplicate
+	 */
 	public RGB(RGB toDup){
 		this.red = toDup.red;
 		this.green = toDup.green;

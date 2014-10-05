@@ -30,6 +30,10 @@ public class GeneState {
 		this.unknown = true;
 	}
 	
+	/**
+	 * Duplication constructor for GeneState objects
+	 * @param toDup the GeneState to duplicate
+	 */
 	public GeneState(GeneState toDup){
 		this.on = toDup.on;
 		this.firstUsed = toDup.firstUsed;

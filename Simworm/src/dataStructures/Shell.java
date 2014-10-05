@@ -23,11 +23,11 @@ public class Shell{
 	public boolean recentGrowth; //indicates when the shell has recently gained cells
 	public ArrayList<String> mislocalized; // genes that are mislocalized due to a mutation
 	public HashMap<String, Integer> validGenes; //valid  C. elegans gene names as determined by Wormbase text file parser
-	
+
 	private final int shellWidth = 500;
 	private final int shellHeight = 300;
 	private final int shellDepth = 300;
-	
+
 	/**
 	 * Constructor for a shell - initializes everything
 	 * @param window The PApplet in which the shell will be drawn
@@ -41,15 +41,16 @@ public class Shell{
 		this.colorMode = ColorMode.LINEAGE;
 		this.recentGrowth = false;
 		this.mislocalized = new ArrayList<String>();
-		
+
 		//info about the shell itself
 		this.cells = new HashMap<String, Cell>();
-		
+
 		//info about p-0, which fills the whole shell at the start
 		Coordinate startCenter = new Coordinate(0, 0, 0);
 		Coordinate startLengths = new Coordinate(shellWidth, shellHeight, shellDepth);
-		
+
 		//populate events queue data from csv file
+		//look in two different places for this file - directory is different depending on run type
 		//for java application or junit test
 		try{
 			divisions = readEventsQueue("src/components/eventsQueue.csv");
@@ -63,7 +64,7 @@ public class Shell{
 				System.out.println("Couldn't find eventsQueue.csv at either of the expected locations.");
 			}
 		}
-		
+
 		//populate valid gene names from wormbase file
 		//for java application or junit test
 		try{
@@ -78,9 +79,9 @@ public class Shell{
 				System.out.println("Couldn't find wormbaseGeneInfo.txt at either of the expected locations.");
 			}
 		}
-		
+
 		window.currentColor = new RGB(1, 0, 0);
-		
+
 		//create p-0 with all the info calculated
 		Cell start = new Cell(this.window, "p-0", startCenter, startLengths, null, new HashMap<String, Gene>(), new RGB(255, 255, 0), divisions.get("p-0"), 0);
 		//works for java application or junit
@@ -95,14 +96,14 @@ public class Shell{
 			catch(Exception f){}
 		}
 		start.allRecentlyChanged();
-		
+
 		//calculate mutations
 		perShellMutations();
 		perCellMutations(start);
-		
+
 		this.cells.put("p-0", start);
 	}
-	
+
 	//getters
 	public HashMap<String, Cell> getCells() {
 		return cells;
@@ -111,19 +112,19 @@ public class Shell{
 	public HashMap<String, DivisionData> getDivisions() {
 		return divisions;
 	}
-	
+
 	public int getShellWidth(){
 		return shellWidth;
 	}
-	
+
 	public int getShellHeight(){
 		return shellHeight;
 	}
-	
+
 	public int getShellDepth(){
 		return shellDepth;
 	}	
-	
+
 	/**
 	 * Determines the name of a daughter cell based on what the parent cell is and what axis it's dividing along
 	 * daughter1 is always the more anterior, dorsal, or right child
@@ -156,22 +157,22 @@ public class Shell{
 		}
 		//now handle names that involve appending a direction indicator
 		switch(axis){
-			case X:
-				if(!parent.contains("-")) parent += "-";
-				if(d1) return parent + "a";
-				else return parent + "p";
-			case Y:
-				if(!parent.contains("-")) parent += "-";
-				if(d1) return parent + "d";
-				else return parent + "v";
-			case Z:
-				if(!parent.contains("-")) parent += "-";
-				if(d1) return parent + "r";
-				else return parent + "l";
+		case X:
+			if(!parent.contains("-")) parent += "-";
+			if(d1) return parent + "a";
+			else return parent + "p";
+		case Y:
+			if(!parent.contains("-")) parent += "-";
+			if(d1) return parent + "d";
+			else return parent + "v";
+		case Z:
+			if(!parent.contains("-")) parent += "-";
+			if(d1) return parent + "r";
+			else return parent + "l";
 		}
 		return null; //code never reaches this point
 	}	
-	
+
 	/** calculates the genes that a child will contain; to be called during cell division
 	 * @param parent the parent that is dividing
 	 * @param axis the axis along which the division is occurring
@@ -236,13 +237,13 @@ public class Shell{
 		this.simTime = toDup.simTime;
 		this.colorMode = toDup.colorMode;
 		HashMap<String, Cell> cellsmap = new HashMap<String, Cell>();
-		
+
 		for(String s: toDup.cells.keySet()){
 			cellsmap.put(s, new Cell(toDup.cells.get(s)));
 		}
 		this.cells = cellsmap;
 	}
-	
+
 	/**
 	 * simulates division of cell by calculating new names, centers, dimensions, and gene states of daughter cells
 	 * daughter1 is always the more anterior, dorsal, or right child
@@ -280,60 +281,60 @@ public class Shell{
 			color2 = cellColorLineage(d2name);
 			break;
 		}
-		
+
 		CellChangesData changes = new CellChangesData(new ArrayList<String>(), new ArrayList<Cell>()); //will hold all the added/removed cells; this is returned and the changes will propagate within other functions
 		switch(axis){ //how we proceed depends on which axis we're dividing along
-			case X:
-				d1Center = new Coordinate((float) ((d1Percentage - 1) * (ofInterest.getLengths().getX() / 2.0) + ofInterest.getRepresentation().getCenter().getX()),
-						ofInterest.getRepresentation().getCenter().getY(), ofInterest.getRepresentation().getCenter().getZ()); //calculations to get the center of daughter1
-				d1Lengths = new Coordinate((float) (d1Percentage*ofInterest.getLengths().getX()), ofInterest.getLengths().getY(), ofInterest.getLengths().getZ()); //calculations to get the dimensions of daughter1
-				daughter1 = new Cell(this.window, d1name, d1Center, d1Lengths, parent, d1genes, color1, divisions.get(d1name), ofInterest.getGeneration()+1); //create daughter1 with all the fields we have calculated
-				d2Center = new Coordinate((float) (d1Percentage * ofInterest.getLengths().getX() / 2.0 + ofInterest.getRepresentation().getCenter().getX()), //repeat for daughter2
-						ofInterest.getRepresentation().getCenter().getY(), ofInterest.getRepresentation().getCenter().getZ());
-				d2Lengths = new Coordinate((float) ((1-d1Percentage)*ofInterest.getLengths().getX()), ofInterest.getLengths().getY(), ofInterest.getLengths().getZ());
-				daughter2 = new Cell(this.window, d2name, d2Center, d2Lengths, parent, d2genes, color2, divisions.get(d2name), ofInterest.getGeneration()+1);
-				perCellMutations(daughter1);
-				perCellMutations(daughter2);
-				changes.cellsRemoved.add(parent); //store parent cell in changes to be removed later
-				changes.cellsAdded.add(daughter1); //store daughters in changes to be added to the actual cells hashmap later
-				changes.cellsAdded.add(daughter2);
-				break;
-			case Y: //equivalent cases for y and z
-				d1Center = new Coordinate(ofInterest.getRepresentation().getCenter().getX(),
-						(float) ((d1Percentage - 1) * (ofInterest.getLengths().getY() / 2.0) + ofInterest.getRepresentation().getCenter().getY()),
-						ofInterest.getRepresentation().getCenter().getZ());
-				d1Lengths = new Coordinate(ofInterest.getLengths().getX(), (float) (d1Percentage*ofInterest.getLengths().getY()), ofInterest.getLengths().getZ());
-				daughter1 = new Cell(this.window, d1name, d1Center, d1Lengths, parent, d1genes, color1, divisions.get(d1name), ofInterest.getGeneration()+1);
-				d2Center = new Coordinate(ofInterest.getRepresentation().getCenter().getX(),
-						(float) (d1Percentage * ofInterest.getLengths().getY() / 2.0 + ofInterest.getRepresentation().getCenter().getY()),
-						ofInterest.getRepresentation().getCenter().getZ());
-				d2Lengths = new Coordinate(ofInterest.getLengths().getX(), (float) ((1-d1Percentage)*ofInterest.getLengths().getY()), ofInterest.getLengths().getZ());
-				daughter2 = new Cell(this.window, d2name, d2Center, d2Lengths, parent, d2genes, color2, divisions.get(d2name), ofInterest.getGeneration()+1);
-				perCellMutations(daughter1);
-				perCellMutations(daughter2);
-				changes.cellsRemoved.add(parent);
-				changes.cellsAdded.add(daughter1);
-				changes.cellsAdded.add(daughter2);
-				break;
-			case Z:
-				d1Center = new Coordinate(ofInterest.getRepresentation().getCenter().getX(), ofInterest.getRepresentation().getCenter().getY(),
-						(float) ((d1Percentage - 1) * (ofInterest.getLengths().getZ() / 2.0) + ofInterest.getRepresentation().getCenter().getZ()));
-				d1Lengths = new Coordinate(ofInterest.getLengths().getX(), ofInterest.getLengths().getY(), (float) (d1Percentage*ofInterest.getLengths().getZ()));
-				daughter1 = new Cell(this.window, d1name, d1Center, d1Lengths, parent, d1genes, color1, divisions.get(d1name), ofInterest.getGeneration()+1);
-				d2Center = new Coordinate(ofInterest.getRepresentation().getCenter().getX(), ofInterest.getRepresentation().getCenter().getY(),
-						(float) (d1Percentage * ofInterest.getLengths().getZ() / 2.0 + ofInterest.getRepresentation().getCenter().getZ()));
-				d2Lengths = new Coordinate(ofInterest.getLengths().getX(), ofInterest.getLengths().getY(), (float) ((1-d1Percentage)*ofInterest.getLengths().getZ()));
-				daughter2 = new Cell(this.window, d2name, d2Center, d2Lengths, parent, d2genes, color2, divisions.get(d2name), ofInterest.getGeneration()+1);
-				perCellMutations(daughter1);
-				perCellMutations(daughter2);
-				changes.cellsRemoved.add(parent);
-				changes.cellsAdded.add(daughter1);
-				changes.cellsAdded.add(daughter2);
-				break;
+		case X:
+			d1Center = new Coordinate((float) ((d1Percentage - 1) * (ofInterest.getLengths().getX() / 2.0) + ofInterest.getRepresentation().getCenter().getX()),
+					ofInterest.getRepresentation().getCenter().getY(), ofInterest.getRepresentation().getCenter().getZ()); //calculations to get the center of daughter1
+			d1Lengths = new Coordinate((float) (d1Percentage*ofInterest.getLengths().getX()), ofInterest.getLengths().getY(), ofInterest.getLengths().getZ()); //calculations to get the dimensions of daughter1
+			daughter1 = new Cell(this.window, d1name, d1Center, d1Lengths, parent, d1genes, color1, divisions.get(d1name), ofInterest.getGeneration()+1); //create daughter1 with all the fields we have calculated
+			d2Center = new Coordinate((float) (d1Percentage * ofInterest.getLengths().getX() / 2.0 + ofInterest.getRepresentation().getCenter().getX()), //repeat for daughter2
+					ofInterest.getRepresentation().getCenter().getY(), ofInterest.getRepresentation().getCenter().getZ());
+			d2Lengths = new Coordinate((float) ((1-d1Percentage)*ofInterest.getLengths().getX()), ofInterest.getLengths().getY(), ofInterest.getLengths().getZ());
+			daughter2 = new Cell(this.window, d2name, d2Center, d2Lengths, parent, d2genes, color2, divisions.get(d2name), ofInterest.getGeneration()+1);
+			perCellMutations(daughter1);
+			perCellMutations(daughter2);
+			changes.cellsRemoved.add(parent); //store parent cell in changes to be removed later
+			changes.cellsAdded.add(daughter1); //store daughters in changes to be added to the actual cells hashmap later
+			changes.cellsAdded.add(daughter2);
+			break;
+		case Y: //equivalent cases for y and z
+			d1Center = new Coordinate(ofInterest.getRepresentation().getCenter().getX(),
+					(float) ((d1Percentage - 1) * (ofInterest.getLengths().getY() / 2.0) + ofInterest.getRepresentation().getCenter().getY()),
+					ofInterest.getRepresentation().getCenter().getZ());
+			d1Lengths = new Coordinate(ofInterest.getLengths().getX(), (float) (d1Percentage*ofInterest.getLengths().getY()), ofInterest.getLengths().getZ());
+			daughter1 = new Cell(this.window, d1name, d1Center, d1Lengths, parent, d1genes, color1, divisions.get(d1name), ofInterest.getGeneration()+1);
+			d2Center = new Coordinate(ofInterest.getRepresentation().getCenter().getX(),
+					(float) (d1Percentage * ofInterest.getLengths().getY() / 2.0 + ofInterest.getRepresentation().getCenter().getY()),
+					ofInterest.getRepresentation().getCenter().getZ());
+			d2Lengths = new Coordinate(ofInterest.getLengths().getX(), (float) ((1-d1Percentage)*ofInterest.getLengths().getY()), ofInterest.getLengths().getZ());
+			daughter2 = new Cell(this.window, d2name, d2Center, d2Lengths, parent, d2genes, color2, divisions.get(d2name), ofInterest.getGeneration()+1);
+			perCellMutations(daughter1);
+			perCellMutations(daughter2);
+			changes.cellsRemoved.add(parent);
+			changes.cellsAdded.add(daughter1);
+			changes.cellsAdded.add(daughter2);
+			break;
+		case Z:
+			d1Center = new Coordinate(ofInterest.getRepresentation().getCenter().getX(), ofInterest.getRepresentation().getCenter().getY(),
+					(float) ((d1Percentage - 1) * (ofInterest.getLengths().getZ() / 2.0) + ofInterest.getRepresentation().getCenter().getZ()));
+			d1Lengths = new Coordinate(ofInterest.getLengths().getX(), ofInterest.getLengths().getY(), (float) (d1Percentage*ofInterest.getLengths().getZ()));
+			daughter1 = new Cell(this.window, d1name, d1Center, d1Lengths, parent, d1genes, color1, divisions.get(d1name), ofInterest.getGeneration()+1);
+			d2Center = new Coordinate(ofInterest.getRepresentation().getCenter().getX(), ofInterest.getRepresentation().getCenter().getY(),
+					(float) (d1Percentage * ofInterest.getLengths().getZ() / 2.0 + ofInterest.getRepresentation().getCenter().getZ()));
+			d2Lengths = new Coordinate(ofInterest.getLengths().getX(), ofInterest.getLengths().getY(), (float) ((1-d1Percentage)*ofInterest.getLengths().getZ()));
+			daughter2 = new Cell(this.window, d2name, d2Center, d2Lengths, parent, d2genes, color2, divisions.get(d2name), ofInterest.getGeneration()+1);
+			perCellMutations(daughter1);
+			perCellMutations(daughter2);
+			changes.cellsRemoved.add(parent);
+			changes.cellsAdded.add(daughter1);
+			changes.cellsAdded.add(daughter2);
+			break;
 		}
 		return changes;
 	}
-	
+
 	/**
 	 * Color codes cells based on what par proteins they contain
 	 * @param genes The geneslist of the cell to be colored
@@ -369,13 +370,7 @@ public class Shell{
 		}
 		return new RGB(red, green, blue);
 	}
-	
-//	public void moveAllCells(){
-//		for(String s: this.cells.keySet()){
-//			this.cells.get(s).move();
-//		}
-//	}
-	
+
 	/**
 	 * color codes based on lineage, which can be determined from the cell name
 	 * @param genes The name of the cell to be colored
@@ -391,7 +386,7 @@ public class Shell{
 		else if(cellName.startsWith("p")) return new RGB(255, 255, 0);
 		else return new RGB(255, 255, 255);
 	}
-	
+
 	/**
 	 * color codes based on cell fate, which is determined by the states of various genes
 	 * @param genes The geneslist of the cell to be colored
@@ -401,11 +396,11 @@ public class Shell{
 		Gene pie = genes.get("pie-1");
 		Gene skn = genes.get("skn-1");
 		Gene pal = genes.get("pal-1");
-		
+
 		boolean germline = false;
 		boolean MSE = false;
 		boolean CD = false;
-		
+
 		if(pie != null){
 			if(!pie.getState().isUnknown()){
 				if(pie.getState().isOn()){
@@ -432,7 +427,7 @@ public class Shell{
 		else if(!germline && !MSE && CD) return new RGB(141, 160, 203);
 		else return new RGB(231, 138, 195); //occurs if no or more than 1 cell fates are satisfied; default situation
 	}
-	
+
 	/**
 	 * Recolors all cells to match a new color mode
 	 */
@@ -452,16 +447,18 @@ public class Shell{
 			}
 		}
 	}
-	
+
 	/**
-	 * Draws all cells present in the shell to the screen
+	 * Draws all cells present in the shell to the screen as ellipsoids
+	 * @deprecated no longer used now that cells are drawn as metaballs
 	 */
-//	public void drawAllCells(){
-//		for(String s: this.cells.keySet()){
-//			this.cells.get(s).drawCellEllipsoid();
-//		}
-//	}
-	
+	@Deprecated
+	public void drawAllCells(){
+		for(String s: this.cells.keySet()){
+			this.cells.get(s).drawCellEllipsoid();
+		}
+	}
+
 	/**
 	 * does any divisions that occur at this timestep then runs per cell timestep function on each cell 
 	 */
@@ -501,13 +498,17 @@ public class Shell{
 		}
 		simTime++;
 	}
-	
+
 	@Deprecated
-	//this is not how mutations actually work in biology...oops, I am just the code monkey
-	
 	//this method is inefficient because it works on a cell that is already calculated, goes through everything, and makes the changes to mutate it.
 	//if simulation becomes slow, you should move all of the pieces into other methods such that they can be calculated on the first pass.
 	//The function should remain but be marked as deprecated, because it is still helpful to see all of the pieces together and read the comments
+	/**
+	 * An early implementation of mutations. Not used after a discussion with bio-savvy folks.
+	 * @param c The cell we're mutating
+	 * @return the mutated cell
+	 * @deprecated this is not how mutations actually work in biology...oops
+	 */
 	public Cell calcMutation(Cell c){
 		//if we have turned mutations off, return the cell unchanged
 		if(mutationProb == 0) return c;
@@ -517,7 +518,7 @@ public class Shell{
 		int possibilities = Math.round(1/mutationProb);
 		System.out.println("possibilities is " + possibilities);
 		Random r = new Random();	
-		
+
 		//first, we deal with the possibility of mutated genes
 		HashMap<String, Gene> mutatedGenes = new HashMap<String, Gene>(); //create a new hashmap to store the mutated genes
 		System.out.println("start genes");
@@ -536,10 +537,10 @@ public class Shell{
 				mutatedGenes.put(s, toAdd); //otherwise add the gene unchanged
 			}
 		}
-		
+
 		//calculate color based on the new, mutated genes.
 		RGB mutatedColor = cellColorPars(mutatedGenes);
-		
+
 		//now deal with the possibility of mutated division data
 		DivisionData cData = c.getDivide();
 		//check d1/d2 split
@@ -554,7 +555,7 @@ public class Shell{
 			System.out.println("\t\tnew percent is " + mutatedPercent);
 		}
 		//if the if does not occur, this value will remain at the normal percent as set earlier
-		
+
 		int mutatedTime = cData.getTime(); //much like percentage we start by setting equal to the normal percent and changing it only if the dice demand it
 		rand = r.nextInt(possibilities);
 		System.out.println("\t" + c.getName() + " " + c.getDivide().getTime() + " time rolled " + rand);
@@ -562,13 +563,13 @@ public class Shell{
 			mutatedTime = simTime + r.nextInt(96 - simTime) + 1; //this sets the new time to somewhere between the current time and the end of our events queue
 			System.out.println("\t\tnew time is " + mutatedTime);
 		}
-		
+
 		//place all of the parts into a divisiondata structure
 		DivisionData mutatedData = new DivisionData(cData.getParent(), mutatedPercent, cData.getAxis(), mutatedTime, c.getGeneration());
 		//and finally place all of the parts into a cell to be returned. the non-mutatable attribute are drawn directly from the original cell.
 		return new Cell(c.window, c.getName(), c.getRepresentation().getCenter(), c.getLengths(), c.getParent(), mutatedGenes, mutatedColor, mutatedData, c.getGeneration());
 	}
-	
+
 	/**
 	 * Calculates mutations for each cell
 	 * @param genes The genes that the cell contains
@@ -605,9 +606,9 @@ public class Shell{
 		}
 		return c;
 	}
-	 /**
-	  * Calculates mutations for the overall shell
-	  */
+	/**
+	 * Calculates mutations for the overall shell
+	 */
 	public void perShellMutations(){
 		Random r = new Random();
 		int mutateTimes = 0; //times mutate if there are any mutant pars
@@ -656,7 +657,7 @@ public class Shell{
 					LinkedList<Integer> times = new LinkedList<Integer>(); //initialize with empty list
 					times.add(d.getTime());
 					groupGenerations.put(d.getGeneration(), times); //initialize it with an empty list.
-					
+
 				}
 			}
 			for(Integer i: groupGenerations.keySet()){ //now go through  the generations hashmap
@@ -684,7 +685,7 @@ public class Shell{
 			}
 		}
 	}
-	
+
 	/**
 	 * Calculates mutations that occur in a cell due to par1 being mutant
 	 * @param genes the cell's genes
@@ -742,7 +743,7 @@ public class Shell{
 		}
 		return c;
 	}
-	
+
 	/**
 	 * Calculates mutations that occur in a cell due to par2 being mutant
 	 * @param genes the cell's genes
@@ -779,7 +780,7 @@ public class Shell{
 		}
 		return c;
 	}
-	
+
 	/**
 	 * Calculates mutations that occur in a cell due to par3, par6, or pkc-3 being mutant (these mutants all behave the same way)
 	 * @param genes the cell's genes
@@ -814,7 +815,7 @@ public class Shell{
 		}
 		return c;
 	}
-	
+
 	/**
 	 * Calculates mutations that occur in a cell due to par4 being mutant
 	 * @param genes the cell's genes
@@ -829,7 +830,7 @@ public class Shell{
 		}	
 		return c;
 	}
-	
+
 	/**
 	 * Calculates mutations that occur in a cell due to par5 being mutant
 	 * @param genes the cell's genes
@@ -857,7 +858,7 @@ public class Shell{
 		}
 		return c;
 	}
-	
+
 	/**
 	 * Produces list of all cell names present in the shell at the current time, to be displayed on the interface
 	 * @return The list
@@ -869,7 +870,7 @@ public class Shell{
 		}
 		return toReturn;
 	}
-	
+
 	/**
 	 * Checks that the given string is a possible cell name
 	 * @param cell name
@@ -902,7 +903,7 @@ public class Shell{
 		}
 		return false; //anything else is invalid
 	}
-	
+
 	/**
 	 * Reads info about the events queue from CSV
 	 * @param file the name of the CSV as a string
@@ -965,7 +966,7 @@ public class Shell{
 		}
 		return queue;
 	}
-	
+
 	/**
 	 * Compiles a list of valid gene C. elegans gene names based on input data from wormbase
 	 * @param file the name of the txt file from wormbase
@@ -992,5 +993,5 @@ public class Shell{
 			throw new FileReadErrorException(file);
 		}
 	}
-	
+
 }
