@@ -91,7 +91,9 @@ public class BasicVisual extends PApplet{
 	private ArrayList<RGB> displayColorField;
 	private ArrayList<RGB> uniqueColorField;
 
-	//called on start. opens the screen where the user chooses mutant genes
+	/**
+	 * called on start. opens the screen where the user chooses mutant genes
+	 */
 	@SuppressWarnings("deprecation")
 	public void setup(){
 		mutantsChosen = false;
@@ -105,7 +107,7 @@ public class BasicVisual extends PApplet{
 		info = new ControlP5(this);
 		info.setAutoDraw(false);
 
-		//sets up the menu
+		//sets up the mutant selection menu
 		Button choose = new Button(info, "Choose mutants").setPosition(width/3, height/3).setSize((width/3), (height/20))
 				.setColorBackground(color(2, 52, 76))
 				.setColorForeground(color(2, 52, 76))
@@ -538,15 +540,6 @@ public class BasicVisual extends PApplet{
 				directionMoved = 3;
 			}
 		}
-		Coordinate towards = new Coordinate(m.getCenter().getX(), m.getCenter().getY(), m.getCenter().getZ()+unit);
-		if(inShellEllipsoid(towards)){
-			float towardsVal = netChargeMinusThis(towards, m);
-			if(towardsVal < lowest){
-				lowest = towardsVal;
-				location = towards;
-				directionMoved = 5;
-			}
-		}
 		Coordinate away = new Coordinate(m.getCenter().getX(), m.getCenter().getY(), m.getCenter().getZ()-unit);
 		if(inShellEllipsoid(away)){
 			float awayVal = netChargeMinusThis(away, m);
@@ -554,6 +547,15 @@ public class BasicVisual extends PApplet{
 				lowest = awayVal;
 				location = away;
 				directionMoved = 6;
+			}
+		}
+		Coordinate towards = new Coordinate(m.getCenter().getX(), m.getCenter().getY(), m.getCenter().getZ()+unit);
+		if(inShellEllipsoid(towards)){
+			float towardsVal = netChargeMinusThis(towards, m);
+			if(towardsVal < lowest){
+				lowest = towardsVal;
+				location = towards;
+				directionMoved = 5;
 			}
 		}
 		Coordinate topLeft = new Coordinate(m.getCenter().getX()-unit, m.getCenter().getY()-unit, m.getCenter().getZ());
@@ -574,15 +576,6 @@ public class BasicVisual extends PApplet{
 				directionMoved = 12;
 			}
 		}
-		Coordinate topFront = new Coordinate(m.getCenter().getX(), m.getCenter().getY()-unit, m.getCenter().getZ()+unit);
-		if(inShellEllipsoid(topFront)){
-			float topFrontVal = netChargeMinusThis(topFront, m);
-			if(topFrontVal < lowest){
-				lowest = topFrontVal;
-				location = topFront;
-				directionMoved = 13;
-			}
-		}
 		Coordinate topBack = new Coordinate(m.getCenter().getX(), m.getCenter().getY()-unit, m.getCenter().getZ()-unit);
 		if(inShellEllipsoid(topBack)){
 			float topBackVal = netChargeMinusThis(topBack, m);
@@ -590,6 +583,15 @@ public class BasicVisual extends PApplet{
 				lowest = topBackVal;
 				location = topBack;
 				directionMoved = 14;
+			}
+		}
+		Coordinate topFront = new Coordinate(m.getCenter().getX(), m.getCenter().getY()-unit, m.getCenter().getZ()+unit);
+		if(inShellEllipsoid(topFront)){
+			float topFrontVal = netChargeMinusThis(topFront, m);
+			if(topFrontVal < lowest){
+				lowest = topFrontVal;
+				location = topFront;
+				directionMoved = 13;
 			}
 		}
 		Coordinate downLeft = new Coordinate(m.getCenter().getX()-unit, m.getCenter().getY()+unit, m.getCenter().getZ());
@@ -610,15 +612,6 @@ public class BasicVisual extends PApplet{
 				directionMoved = 8;
 			}
 		}
-		Coordinate downFront = new Coordinate(m.getCenter().getX(), m.getCenter().getY()+unit, m.getCenter().getZ()+unit);
-		if(inShellEllipsoid(downFront)){
-			float downFrontVal = netChargeMinusThis(downFront, m);
-			if(downFrontVal < lowest){
-				lowest = downFrontVal;
-				location = downFront;
-				directionMoved = 9;
-			}
-		}
 		Coordinate downBack = new Coordinate(m.getCenter().getX(), m.getCenter().getY()+unit, m.getCenter().getZ()-unit);
 		if(inShellEllipsoid(downBack)){
 			float downBackVal = netChargeMinusThis(downBack, m);
@@ -628,22 +621,13 @@ public class BasicVisual extends PApplet{
 				directionMoved = 10;
 			}
 		}
-		Coordinate leftFront = new Coordinate(m.getCenter().getX()-unit, m.getCenter().getY(), m.getCenter().getZ()+unit);
-		if(inShellEllipsoid(leftFront)){
-			float leftFrontVal = netChargeMinusThis(leftFront, m);
-			if(leftFrontVal < lowest){
-				lowest = leftFrontVal;
-				location = leftFront;
-				directionMoved = 15;
-			}
-		}
-		Coordinate rightFront = new Coordinate(m.getCenter().getX()+unit, m.getCenter().getY(), m.getCenter().getZ()+unit);
-		if(inShellEllipsoid(rightFront)){
-			float rightFrontVal = netChargeMinusThis(rightFront, m);
-			if(rightFrontVal < lowest){
-				lowest = rightFrontVal;
-				location = rightFront;
-				directionMoved = 16;
+		Coordinate downFront = new Coordinate(m.getCenter().getX(), m.getCenter().getY()+unit, m.getCenter().getZ()+unit);
+		if(inShellEllipsoid(downFront)){
+			float downFrontVal = netChargeMinusThis(downFront, m);
+			if(downFrontVal < lowest){
+				lowest = downFrontVal;
+				location = downFront;
+				directionMoved = 9;
 			}
 		}
 		Coordinate leftBack = new Coordinate(m.getCenter().getX()-unit, m.getCenter().getY(), m.getCenter().getZ()-unit);
@@ -664,13 +648,22 @@ public class BasicVisual extends PApplet{
 				directionMoved = 18;
 			}
 		}
-		Coordinate topLeftFront = new Coordinate(m.getCenter().getX()-unit, m.getCenter().getY()-unit, m.getCenter().getZ()+unit);
-		if(inShellEllipsoid(topLeftFront)){
-			float topLeftFrontVal = netChargeMinusThis(topLeftFront, m);
-			if(topLeftFrontVal < lowest){
-				lowest = topLeftFrontVal;
-				location = topLeftFront;
-				directionMoved = 23;
+		Coordinate leftFront = new Coordinate(m.getCenter().getX()-unit, m.getCenter().getY(), m.getCenter().getZ()+unit);
+		if(inShellEllipsoid(leftFront)){
+			float leftFrontVal = netChargeMinusThis(leftFront, m);
+			if(leftFrontVal < lowest){
+				lowest = leftFrontVal;
+				location = leftFront;
+				directionMoved = 15;
+			}
+		}
+		Coordinate rightFront = new Coordinate(m.getCenter().getX()+unit, m.getCenter().getY(), m.getCenter().getZ()+unit);
+		if(inShellEllipsoid(rightFront)){
+			float rightFrontVal = netChargeMinusThis(rightFront, m);
+			if(rightFrontVal < lowest){
+				lowest = rightFrontVal;
+				location = rightFront;
+				directionMoved = 16;
 			}
 		}
 		Coordinate topLeftBack = new Coordinate(m.getCenter().getX()-unit, m.getCenter().getY()-unit, m.getCenter().getZ()-unit);
@@ -682,13 +675,13 @@ public class BasicVisual extends PApplet{
 				directionMoved = 24;
 			}
 		}
-		Coordinate topRightFront = new Coordinate(m.getCenter().getX()+unit, m.getCenter().getY()-unit, m.getCenter().getZ()+unit);
-		if(inShellEllipsoid(topRightFront)){
-			float topRightFrontVal = netChargeMinusThis(topRightFront, m);
-			if(topRightFrontVal < lowest){
-				lowest = topRightFrontVal;
-				location = topRightFront;
-				directionMoved = 25;
+		Coordinate topLeftFront = new Coordinate(m.getCenter().getX()-unit, m.getCenter().getY()-unit, m.getCenter().getZ()+unit);
+		if(inShellEllipsoid(topLeftFront)){
+			float topLeftFrontVal = netChargeMinusThis(topLeftFront, m);
+			if(topLeftFrontVal < lowest){
+				lowest = topLeftFrontVal;
+				location = topLeftFront;
+				directionMoved = 23;
 			}
 		}
 		Coordinate topRightBack = new Coordinate(m.getCenter().getX()+unit, m.getCenter().getY()-unit, m.getCenter().getZ()-unit);
@@ -700,13 +693,13 @@ public class BasicVisual extends PApplet{
 				directionMoved = 26;
 			}
 		}
-		Coordinate downLeftFront = new Coordinate(m.getCenter().getX()-unit, m.getCenter().getY()+unit, m.getCenter().getZ()+unit);
-		if(inShellEllipsoid(downLeftFront)){
-			float downLeftFrontVal = netChargeMinusThis(downLeftFront, m);
-			if(downLeftFrontVal < lowest){
-				lowest = downLeftFrontVal;
-				location = downLeftFront;
-				directionMoved = 19;
+		Coordinate topRightFront = new Coordinate(m.getCenter().getX()+unit, m.getCenter().getY()-unit, m.getCenter().getZ()+unit);
+		if(inShellEllipsoid(topRightFront)){
+			float topRightFrontVal = netChargeMinusThis(topRightFront, m);
+			if(topRightFrontVal < lowest){
+				lowest = topRightFrontVal;
+				location = topRightFront;
+				directionMoved = 25;
 			}
 		}
 		Coordinate downLeftBack = new Coordinate(m.getCenter().getX()-unit, m.getCenter().getY()+unit, m.getCenter().getZ()-unit);
@@ -718,13 +711,13 @@ public class BasicVisual extends PApplet{
 				directionMoved = 20;
 			}
 		}
-		Coordinate downRightFront = new Coordinate(m.getCenter().getX()+unit, m.getCenter().getY()+unit, m.getCenter().getZ()+unit);
-		if(inShellEllipsoid(downRightFront)){
-			float downRightFrontVal = netChargeMinusThis(downRightFront, m);
-			if(downRightFrontVal < lowest){
-				lowest = downRightFrontVal;
-				location = downRightFront;
-				directionMoved = 21;
+		Coordinate downLeftFront = new Coordinate(m.getCenter().getX()-unit, m.getCenter().getY()+unit, m.getCenter().getZ()+unit);
+		if(inShellEllipsoid(downLeftFront)){
+			float downLeftFrontVal = netChargeMinusThis(downLeftFront, m);
+			if(downLeftFrontVal < lowest){
+				lowest = downLeftFrontVal;
+				location = downLeftFront;
+				directionMoved = 19;
 			}
 		}
 		Coordinate downRightBack = new Coordinate(m.getCenter().getX()+unit, m.getCenter().getY()+unit, m.getCenter().getZ()-unit);
@@ -734,6 +727,15 @@ public class BasicVisual extends PApplet{
 				lowest = downRightBackVal;
 				location = downRightBack;
 				directionMoved = 22;
+			}
+		}
+		Coordinate downRightFront = new Coordinate(m.getCenter().getX()+unit, m.getCenter().getY()+unit, m.getCenter().getZ()+unit);
+		if(inShellEllipsoid(downRightFront)){
+			float downRightFrontVal = netChargeMinusThis(downRightFront, m);
+			if(downRightFrontVal < lowest){
+				lowest = downRightFrontVal;
+				location = downRightFront;
+				directionMoved = 21;
 			}
 		}
 		m.move(location);
@@ -1219,7 +1221,7 @@ public class BasicVisual extends PApplet{
 		if(keyCode == ESC) exit(); //exit program when user hits Esc key
 
 		if(mutantsChosen){ //only run if mutantsChosen is set, because userText doesn't exist yet if not - null pointer
-			if(!moving){
+			if(!moving){ //don't interrupt an animation in progress, it causes problems
 				if(keyCode == RIGHT){ //press right to progress forward in time
 					progressForward();
 				}

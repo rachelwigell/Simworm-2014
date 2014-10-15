@@ -1,0 +1,62 @@
+	Running the simulation:
+
+Extract the files in this .zip folder and double click Simworm14.jar to run it. Be sure to keep the jar, genes.csv, wormbaseGeneInfo.txt, antecedentsAndConsequents.csv, and eventsQueue.csv in the same directory together or the simulation will not work as intended.
+
+If this doesn't work, you may not have Java installed. Visit oracle's website and download Java: http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html
+
+
+
+
+	Explanation of what this folder contains:
+
+genes.csv: The list of genes tracked by the simulation. This is currently populated with a small subset of real C. elegans genes; those whose behavior is best understood currently.
+
+antecedentsAndConsequents.csv: The list of antecedent and consequent rules obeyed by the simulation. This is currently populated with a small subset of the rules that are most thoroughly studied and understood.
+
+eventsQueue.csv: The times and properties of the cell divisions depicted by the simulation. Currently, the simulation only goes up to the 26 cell stage.
+
+wormbaseGeneInfo.txt: A resource obtained from wormbase that allows for error-checking on gene names (only valid C. elegans genes will be accepted in genes.csv).
+
+
+
+
+	Altering the csv files (optional):
+
+The csv files can be altered to run the simulation with a different set of genes or antecedent and consequent rules. However, one must be *very carefuL* when touching these files, as they are read by the program in a very specific way and a single typo can result in an un-runnable simulation. Here is the format of each of three csv files:
+
+Events Queue:
+Each row is a new event. The columns, from left to right, represent:
+Name of the cell that is dividing
+Percentage of the volume that goes to daughter1 (daughter1 is always the more anterior, dorsal, or right child)
+Axis along which the division takes place (choices are X, Y, Z - capitalization matters!)
+The time (simulation time) of the division
+What generation the dividing cell belongs to
+
+Antecedents and Consequences:
+Each row is a new rule. The columns, from left to right, represent:
+Name of the *consequent* gene
+State that the consequent gene will be set to (choices are A and I - capitalization matters - meaning active or inactive)
+Start time of the rule
+End time of the rule - put 0 if the rule should never end
+Name of an *antecedent* gene
+State that the antecent gene must be set to in order for a consequence to occur
+Name of another antecedent gene, if present
+State for that gene...
+...etc (can repeat for as many antecedents as necessary, so some lines will be longer than others - this is okay)
+
+Genes:
+Each row is a new gene. The columns, from left to right, represent:
+Name of the gene (only lower-case letters, hyphens, and digits are accepted, and this will be checked against the wormbase file - only valid C. elegans genes will be accpted)
+Whether its state is initially active, inactive, or unknown (written as A, I, or U)
+Compartment on the x axis (choices are center, anterior, or posterior - be sure to use lower case)
+Compartment on the y axis (choices are center, dorsal, or ventral)
+Compartment on the z axis (choices are center, left, or right)
+
+Some genes end there. Others have 4 more entries. These are genes that switch compartments at some point. For example, par-6 has to switch from anterior to center after the first division (that is, within cell ab). These optional 4 entries are:
+
+New compartment on the x axis
+New compartment on the y axis
+New compartment on the z axis
+Name of the cell in which the change takes place
+
+If a gene switches more than once, an additional 4 entries can be made containing the same information for the second switch.

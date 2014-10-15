@@ -81,27 +81,30 @@ public class Gene /*implements Comparable<Gene>*/{
 	/**
 	 * Updates the relevantCons list to remove consequences whose time period is over, or add new ones whose time periods have begun
 	 * Should be called every time step
-	 * @param time The cell stage that the simulation is currently at (number of cells present)
+	 * @param stage The cell stage that the simulation is currently at (number of cells present)
 	 * @param recentGrowth indicates whether the shell has gained new cells since the last timestep
 	 * @return The gene with its relevantCons list updated
 	 */
-	public Gene updateCons(int time, boolean recentGrowth){
+	public Gene updateCons(int stage, boolean recentGrowth){
 		int i = 0;
 		ConsequentsList allCons = window.conslist;
+		
+		//go through the relevantCons list and find ones that have expired
 		ArrayList<Integer> toRemove = new ArrayList<Integer>();
 		for(Consequence c: this.relevantCons){
-			if(c.getEndStage() < time && c.getEndStage() != 0){ //0 is what we put for end if we never want the rule to end
-				toRemove.add(i);
-				//System.out.println("queueing rule involving " + c.getConsequence().getName() + " at index " + i + " for removal");
+			if(c.getEndStage() < stage && c.getEndStage() != 0){ //0 is what we put for end if we never want the rule to end
+				toRemove.add(i); //compile a list of rules that should be removed
 			}
 			i++;
 		}
+		//now actually remove those rules
 		for(Integer j: toRemove){
 			this.relevantCons.remove(j);
 		}
+		//now add rules that start late and have just become active on this time step
 		if(recentGrowth){ //to prevent duplicate versions of the rule from being added every time step in which the number of cells stays the same
 			for(Consequence c: allCons.startLate){
-				if(c.getStartStage() == time){
+				if(c.getStartStage() == stage){
 					this.relevantCons.add(c);
 				}
 			}

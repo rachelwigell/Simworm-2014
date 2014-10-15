@@ -2,6 +2,7 @@ package test;
 
 import static org.junit.Assert.*;
 
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Random;
@@ -18,6 +19,7 @@ import dataStructures.Coordinate;
 import dataStructures.DivisionData;
 import dataStructures.Gene;
 import dataStructures.GeneState;
+import dataStructures.InvalidFormatException;
 import dataStructures.Shell;
 
 public class MethodsTests {
@@ -758,5 +760,25 @@ public class MethodsTests {
 		assertEquals((int) testCoord.getX(), 14);
 		assertEquals((int) testCoord.getY(), 6);
 		assertEquals((int) testCoord.getZ(), 6);
+	}
+	
+	@Test
+	public void testGenerationCounter(){		
+		assertEquals(0, testShell.calculateGeneration("p-0"));
+		assertEquals(1, testShell.calculateGeneration("ab"));
+		assertEquals(1, testShell.calculateGeneration("p-1"));
+		assertEquals(2, testShell.calculateGeneration("ab-a"));
+		assertEquals(2, testShell.calculateGeneration("ab-p"));
+		assertEquals(2, testShell.calculateGeneration("ems"));
+		assertEquals(2, testShell.calculateGeneration("p-2"));
+		assertEquals(3, testShell.calculateGeneration("ab-al"));
+		assertEquals(3, testShell.calculateGeneration("ab-ar"));
+		assertEquals(4, testShell.calculateGeneration("ab-ara"));
+		assertEquals(4, testShell.calculateGeneration("ms-a"));
+		assertEquals(3, testShell.calculateGeneration("p-3"));
+		
+		for(String d: testShell.getDivisions().keySet()){
+			assertEquals(testShell.getDivisions().get(d).getGeneration(), testShell.calculateGeneration(d));
+		}
 	}
 }

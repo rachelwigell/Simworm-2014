@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Queue;
 import java.util.Random;
 
 import processing.BasicVisual;
@@ -172,6 +173,39 @@ public class Shell{
 		}
 		return null; //code never reaches this point
 	}	
+	
+	/**
+	 * Calculates what generation this cell belongs to, using its name
+	 * @param name the name of the cell of interest
+	 * @return the generation it belongs to
+	 */
+	public int calculateGeneration(String name){
+		//first handle the prefix-names
+		if(name.equals("p-0")) return 0;
+		else if(name.equals("p-1")) return 1;
+		else if(name.equals("ab")) return 1;
+		else if(name.equals("ems")) return 2;
+		else if(name.equals("p-2")) return 2;
+		else if(name.equals("p-3")) return 3;
+		else if(name.equals("c")) return 3;
+		else if(name.equals("e")) return 3;
+		else if(name.equals("ms")) return 3;
+		else if(name.equals("p-4")) return 4;
+		else if(name.equals("d")) return 4;
+		//if it isn't one of these names, it's one of those names with the addition of a hyphenated suffix (e.g. -alp)
+		//remove letters from the end; each one represents another generation
+		//once you get back to the hyphen, add the generation of the prefix to get the total generation
+		else{
+			char c = name.charAt(name.length()-1);
+			int gen = 0;
+			while(c != '-'){
+				name = name.substring(0, name.length()-1);
+				gen++;
+				c = name.charAt(name.length()-1);
+			}
+			return gen + calculateGeneration(name.substring(0, name.length()-1));
+		}
+	}
 
 	/** calculates the genes that a child will contain; to be called during cell division
 	 * @param parent the parent that is dividing
@@ -464,7 +498,6 @@ public class Shell{
 	 */
 	public void timeStep(){
 		recentGrowth = false;
-		//System.out.println("Beginning cell divisions, if any");
 		ArrayList<CellChangesData> cellChanges = new ArrayList<CellChangesData>();
 		for(String s: cells.keySet()){
 			Cell c = cells.get(s);
@@ -476,19 +509,20 @@ public class Shell{
 			}
 		}
 		for(CellChangesData d: cellChanges){
+			//remove cells that divided from the shell
 			for(String s: d.cellsRemoved){
 				cells.remove(s);
 			}
+			//add their children
 			for(Cell c: d.cellsAdded){
 				cells.put(c.getName(), c);
 			}
 		}
-		//System.out.println("Beginning new time step " + simTime);
-		//System.out.println("Beginning check of genes in all cells");
 		for(String s: this.cells.keySet()){
 			cells.put(s, cells.get(s).timeLapse(cells.size(), recentGrowth));		
 		}
-		//fate color mode the only one in which cells can change colors between divisions
+		//fate color mode is the only one in which cells can change colors between divisions
+		//so if we're in fate mode, we must update the colors of the cells in case any have chanegd.
 		if(this.colorMode == ColorMode.FATE){
 			updateColorMode();
 		}
@@ -945,15 +979,7 @@ public class Shell{
 					reader.close();
 					throw new InvalidFormatException(FormatProblem.EXPECTEDNUMBER, row, 3);
 				}
-				int generation;
-				try{
-					generation = Integer.parseInt(queueInfo[4]); //generation of the splitting cell in fifth row
-				}
-				catch(NumberFormatException e){
-					reader.close();
-					throw new InvalidFormatException(FormatProblem.EXPECTEDNUMBER, row, 4);
-				}
-				queue.put(parent, new DivisionData(parent, d1Percentage, axis, time, generation)); //put data into queue
+				queue.put(parent, new DivisionData(parent, d1Percentage, axis, time, calculateGeneration(parent))); //put data into queue
 				row++;
 			}
 			reader.close();
