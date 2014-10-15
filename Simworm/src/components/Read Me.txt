@@ -30,7 +30,6 @@ Name of the cell that is dividing
 Percentage of the volume that goes to daughter1 (daughter1 is always the more anterior, dorsal, or right child)
 Axis along which the division takes place (choices are X, Y, Z - capitalization matters!)
 The time (simulation time) of the division
-What generation the dividing cell belongs to
 
 Antecedents and Consequences:
 Each row is a new rule. The columns, from left to right, represent:
