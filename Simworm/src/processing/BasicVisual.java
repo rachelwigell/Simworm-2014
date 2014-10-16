@@ -1181,7 +1181,6 @@ public class BasicVisual extends PApplet{
 				progressBar.setValue(currentTime); //increment the progress bar
 			}
 			if(mustUpdateDisplay){
-				updateColorMode();
 				iterateThroughGrid(); //if any of our update conditions occurred, update the screen
 			}
 		}
