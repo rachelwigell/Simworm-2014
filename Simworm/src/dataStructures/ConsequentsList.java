@@ -90,8 +90,8 @@ public class ConsequentsList { //holds data about antecedents and consequences
 					throw new InvalidFormatException(FormatProblem.INVALIDGENE, row, 0);
 				}
 				//second cell in a row is the state of the consequence
-				if(consInfo[1].equals("A")) state = new GeneState(true); //active if the row says A
-				else if(consInfo[1].equals("I")) state = new GeneState(false); //inactive if I
+				if(consInfo[1].equals("A")) state = new GeneState(GeneStates.ACTIVE); //active if the row says A
+				else if(consInfo[1].equals("I")) state = new GeneState(GeneStates.INACTIVE); //inactive if I
 				else{
 					reader.close();
 					throw new InvalidFormatException(FormatProblem.INVALIDSTATESTRICT, row, 1);
@@ -123,8 +123,9 @@ public class ConsequentsList { //holds data about antecedents and consequences
 				for(String s: consInfo){
 					if(i  > 3){ //get past the first four spreadsheet cells which don't pertain to antecedents
 						if(i % 2 == 1){ //odd number rows are the state
-							if(s.equals("A")) anteState = new GeneState(true);
-							else if(s.equals("I")) anteState = new GeneState(false);
+							if(s.equals("A")) anteState = new GeneState(GeneStates.ACTIVE);
+							else if(s.equals("I")) anteState = new GeneState(GeneStates.INACTIVE);
+							else if(s.equals("N")) anteState = new GeneState(GeneStates.NOTPRESENT);
 							else{ //if not A or I, it's an invalid state
 								reader.close();
 								throw new InvalidFormatException(FormatProblem.INVALIDSTATESTRICT, row, i);

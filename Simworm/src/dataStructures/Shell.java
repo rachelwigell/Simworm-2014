@@ -563,7 +563,7 @@ public class Shell{
 			int rand = r.nextInt(possibilities);
 			System.out.println("\t" + s + " " + toAdd.getState().isOn() + " rolled " + rand);
 			if(!toAdd.getState().isUnknown() && rand == 0){
-				toAdd.setState(new GeneState(!toAdd.getState().isOn()));
+//				toAdd.setState(new GeneState(!toAdd.getState().isOn()));
 				mutatedGenes.put(s, toAdd); //add the same gene but with opposite state
 				System.out.println("\t\tnew state is " + toAdd.getState().isOn());
 			}

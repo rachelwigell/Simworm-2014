@@ -1181,6 +1181,7 @@ public class BasicVisual extends PApplet{
 				progressBar.setValue(currentTime); //increment the progress bar
 			}
 			if(mustUpdateDisplay){
+				updateColorMode();
 				iterateThroughGrid(); //if any of our update conditions occurred, update the screen
 			}
 		}
@@ -1193,11 +1194,11 @@ public class BasicVisual extends PApplet{
 		if(currentTime > 1){ //can't go before time 1
 			int numCellsBefore = displayShell.getCells().keySet().size(); //how many cells were on the screen before we started making calculations?
 			//reset the text
-			userText = "Type a cell name to see its contents,\nor press right arrow to progress 1 timestep\nor left arrow to move backwards 1 timestep.";
+			userText = "Click a cell to see its contents,\nor press right arrow to progress 1 timestep\nor left arrow to move backwards 1 timestep.";
 			currentTime--; //current time has decremented
 			//certain actions occurring will cause us to need to change the picture. in these situations, we'll want to call
 			//iterateOverGrid(). But this function is very expensive, so we want to do this only if strictly necessary.
-			boolean mustUpdateDisplay = false;
+			boolean mustUpdateDisplay = fateState;
 			if(someCellSelected() != null){ // if there is some cell selected
 				someCellSelected().setSelected(false); //deselect it
 				mustUpdateDisplay = true; // need to update display to reflect this

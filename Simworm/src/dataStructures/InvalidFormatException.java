@@ -38,6 +38,7 @@ public class InvalidFormatException extends Exception {
 				System.out.println("Problem reading cell " + convertNumToLetter(column)  + row + "\n"
 						+ "Only valid inputs are\n"
 						+ "A (active) or I (inactive).\n"
+						+ "For antecedents, you may also use N (not present).\n"
 						+ "Be sure to use caps.");
 				break;
 			case INVALIDSTATE:

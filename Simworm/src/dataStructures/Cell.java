@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import processing.BasicVisual;
@@ -16,7 +17,7 @@ public class Cell {
 	private Coordinate lengths; //a little misleading, this isn't a set of coordinates, it's the length of the cell in each direction
 	private String parent;
 	private HashMap<String, Gene> genes;
-	private HashMap<String, Gene> recentlyChanged = new HashMap<String, Gene>();
+	private ArrayList<String> recentlyChanged = new ArrayList<String>();
 	private RGB displayColor;
 	private RGB uniqueColor;
 	private DivisionData divide;
@@ -75,9 +76,9 @@ public class Cell {
 		}
 		this.generation = toDup.generation;
 		this.selected = false;
-		HashMap<String, Gene> changesmap = new HashMap<String, Gene>();
-		for(String s: toDup.recentlyChanged.keySet()){
-			changesmap.put(s, new Gene(toDup.recentlyChanged.get(s)));
+		ArrayList<String> changesmap = new ArrayList<String>();
+		for(String s: toDup.recentlyChanged){
+			changesmap.add(s);
 		}
 		this.representation = new Metaball(toDup.getRepresentation());
 		this.recentlyChanged = changesmap;
@@ -102,7 +103,7 @@ public class Cell {
 	 */
 	public void allRecentlyChanged(){
 		for(String s: genes.keySet()){
-			recentlyChanged.put(s, genes.get(s));
+			recentlyChanged.add(s);
 		}
 	}
 	
@@ -127,7 +128,7 @@ public class Cell {
 		return genes;
 	}
 
-	public HashMap<String, Gene> getRecentlyChanged() {
+	public ArrayList<String> getRecentlyChanged() {
 		return recentlyChanged;
 	}
 
@@ -166,23 +167,29 @@ public class Cell {
 	 */
 	public HashMap<String, Gene> applyCons(){ //use list of genes that have recently changed, to calculate effects
 		HashMap<String, Gene> effects = new HashMap<String, Gene>(); //will hold all changes to be made to the cell
-		for(String s: recentlyChanged.keySet()){ //look through list of genes that have been changed
+		for(Consequence c: window.conslist.antecedentsAndConsequents){ //cells that have rules involving absence should always
+			for(Gene g: c.getAntecedents()){ //be considered recently changed, since they can "disappear" on
+				if(g.getState().getState() == GeneStates.NOTPRESENT){ //any cell division
+					this.recentlyChanged.add(g.getName());
+				}
+			}
+		}
+		for(String s: recentlyChanged){ //look through list of genes that have been changed
 			Gene g = genes.get(s);
+			if(g == null){
+				g = new Gene(s, null, null, new HashMap<String, Coordinate>(), this.window);
+				g.populateCons();
+			}
 			for(Consequence c: g.getRelevantCons()){ //for each, consider the consequences that contain it as an antecedent
 				boolean allFulfilled = true; //tracks whether all necessary antecedents for a particular consequence are fulfilled
 				Gene cons = c.getConsequence();
 				checkAnte:
 				for(Gene a: c.getAntecedents()){ //look at the antecedents for a particular consequence
 					if(genes.get(a.getName()) == null){
-						allFulfilled = false;
-						break checkAnte; // if cell doesn't contain this antecedent, stop immediately
-					}
-					//now that we know the antecedent gene exists the genes hashmap, we want to start using the instance from within the cell instead of the one in conslist.
-					//the one in conslist might not have all the correct information, especially if there are mutations.
-					Gene aInGenes = genes.get(a.getName());
-					if(aInGenes.getState().isUnknown()){
-						allFulfilled = false;
-						break checkAnte; //if any gene in the antecedents is unknown, stop immediately
+						if(a.getState().getState() != GeneStates.NOTPRESENT){ //unless the antecedent rule is "not present"...
+							allFulfilled = false;
+							break checkAnte; // if cell doesn't contain this antecedent, stop immediately
+						}
 					}
 					if(genes.get(cons.getName()) == null){
 						allFulfilled = false;
@@ -201,20 +208,35 @@ public class Cell {
 							break checkAnte; //if state of the gene is already set here, stop immediately
 						}
 					}
-					if(aInGenes.getState().isOn() != a.getState().isOn()){ //check if the state of the gene in the cell is what it must be to fulfill antecedent
-						allFulfilled = false; //if any are wrong, set flag. if get to end of for without setting to false, then all antecedents are fulfilled
-						break checkAnte; //stop looking through antecedents as soon as one contradictory one is found
+					//now that we know the antecedent gene exists the genes hashmap, we want to start using the instance from within the cell instead of the one in conslist.
+					//the one in conslist might not have all the correct information, especially if there are mutations.
+					if(a.getState().getState() != GeneStates.NOTPRESENT){
+						Gene aInGenes = genes.get(a.getName());
+						if(aInGenes.getState().isUnknown()){
+							allFulfilled = false;
+							break checkAnte; //if any gene in the antecedents is unknown, stop immediately
+						}
+						if(aInGenes.getState().isOn() != a.getState().isOn()){ //check if the state of the gene in the cell is what it must be to fulfill antecedent
+							allFulfilled = false; //if any are wrong, set flag. if get to end of for without setting to false, then all antecedents are fulfilled
+							break checkAnte; //stop looking through antecedents as soon as one contradictory one is found
+						}
+						Coordinate compartment = consInGenes.getLocation(); //holds location of the consequence gene
+						//check that antecedent is in the same compartment as the consequence - by making sure that all antecedents match the consequence,
+						//we also make sure that all antecedents are in the same compartment
+						//only a problem if we're not in the center
+						if(compartment.getAP() != Compartment.XCENTER || compartment.getDV() != Compartment.YCENTER || compartment.getLR() != Compartment.ZCENTER){
+							if((compartment.getAP() != aInGenes.getLocation().getAP() && aInGenes.getLocation().getAP() != Compartment.XCENTER)
+									|| (compartment.getDV() != aInGenes.getLocation().getDV() && aInGenes.getLocation().getDV() != Compartment.YCENTER)
+									|| (compartment.getLR() != aInGenes.getLocation().getLR() && aInGenes.getLocation().getLR() != Compartment.ZCENTER)){
+								allFulfilled = false; //if not, the two genes can't interact
+								break checkAnte;
+							}
+						}
 					}
-					Coordinate compartment = consInGenes.getLocation(); //holds location of the consequence gene
-					//check that antecedent is in the same compartment as the consequence - by making sure that all antecedents match the consequence,
-					//we also make sure that all antecedents are in the same compartment
-					//only a problem if we're not in the center
-					if(compartment.getAP() != Compartment.XCENTER || compartment.getDV() != Compartment.YCENTER || compartment.getLR() != Compartment.ZCENTER){
-						if((compartment.getAP() != aInGenes.getLocation().getAP() && aInGenes.getLocation().getAP() != Compartment.XCENTER)
-								|| (compartment.getDV() != aInGenes.getLocation().getDV() && aInGenes.getLocation().getDV() != Compartment.YCENTER)
-								|| (compartment.getLR() != aInGenes.getLocation().getLR() && aInGenes.getLocation().getLR() != Compartment.ZCENTER)){
-							allFulfilled = false; //if not, the two genes can't interact
-							break checkAnte;
+					else{ //if the antecedent was that the gene should be absent...
+						if(genes.get(a.getName()) != null){ //but it's present...
+							allFulfilled = false; //then our antecedent is not fulfilled
+							break checkAnte; //can stop looking immediately.
 						}
 					}
 				}
@@ -229,18 +251,7 @@ public class Cell {
 				
 			}
 		}
-		//now carry out "special" rules involving pie's absence
-		if(!this.genes.keySet().contains("pie-1")){
-			if(this.genes.keySet().contains("skn-1")){
-				this.genes.get("skn-1").setState(new GeneState(true));
-				effects.put("skn-1", this.genes.get("skn-1"));
-			}
-			else if(this.genes.keySet().contains("pal-1")){
-				this.genes.get("pal-1").setState(new GeneState(true));
-				effects.put("pal-1", this.genes.get("pal-1"));
-			}
-		}
-		this.recentlyChanged = effects; //cell must track recent changes for the next call to applyCons
+		this.recentlyChanged.addAll(effects.keySet()); //cell must track recent changes for the next call to applyCons
 		return effects;
 	}
 	
@@ -339,8 +350,8 @@ public class Cell {
 					throw new InvalidFormatException(FormatProblem.INVALIDGENENAME, row, 0);
 				}				
 				//second cell is gene state. should only be A, I, U, or a number
-				if(geneInfo[1].equals("A")) state = new GeneState(true); //if A, gene set to active
-				else if(geneInfo[1].equals("I")) state = new GeneState(false); //I is inactive
+				if(geneInfo[1].equals("A")) state = new GeneState(GeneStates.ACTIVE); //if A, gene set to active
+				else if(geneInfo[1].equals("I")) state = new GeneState(GeneStates.INACTIVE); //I is inactive
 				else if(geneInfo[1].equals("U")) state = new GeneState(); //U is unknown indefinitely
 				else try{
 					state = new GeneState(Integer.parseInt(geneInfo[1])); //if a number, gene set to unknown but will become known at the given time

@@ -19,6 +19,7 @@ import dataStructures.Coordinate;
 import dataStructures.DivisionData;
 import dataStructures.Gene;
 import dataStructures.GeneState;
+import dataStructures.GeneStates;
 import dataStructures.InvalidFormatException;
 import dataStructures.Shell;
 
@@ -81,7 +82,7 @@ public class MethodsTests {
 
 	@Test
 	public void testGeneInitiation(){
-		Gene testGene = new Gene("pal-1", new GeneState(true), new Coordinate(Compartment.XCENTER,Compartment.YCENTER,Compartment.ZCENTER), new HashMap<String, Coordinate>(), testVis);
+		Gene testGene = new Gene("pal-1", new GeneState(GeneStates.ACTIVE), new Coordinate(Compartment.XCENTER,Compartment.YCENTER,Compartment.ZCENTER), new HashMap<String, Coordinate>(), testVis);
 		testGene.populateCons();
 		assertEquals(3, testGene.getRelevantCons().size());
 	}
@@ -107,7 +108,7 @@ public class MethodsTests {
 	public void enumTests(){
 		Coordinate testCoor = new Coordinate(Compartment.POSTERIOR, Compartment.YCENTER, Compartment.ZCENTER);
 		assertEquals(Compartment.POSTERIOR, testCoor.getAP());
-		Gene testGene = new Gene("par-1", new GeneState(true), new Coordinate(Compartment.POSTERIOR, Compartment.YCENTER, Compartment.ZCENTER), new HashMap<String, Coordinate>(), testVis).populateCons();
+		Gene testGene = new Gene("par-1", new GeneState(GeneStates.ACTIVE), new Coordinate(Compartment.POSTERIOR, Compartment.YCENTER, Compartment.ZCENTER), new HashMap<String, Coordinate>(), testVis).populateCons();
 		assertEquals(Compartment.POSTERIOR, testGene.getLocation().getAP());
 	}
 
@@ -183,14 +184,14 @@ public class MethodsTests {
 
 	@Test
 	public void instancesTest(){
-		Gene g = new Gene("test", new GeneState(true), new Coordinate(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER), new HashMap<String, Coordinate>(), testVis);
+		Gene g = new Gene("test", new GeneState(GeneStates.ACTIVE), new Coordinate(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER), new HashMap<String, Coordinate>(), testVis);
 		Gene g2 = g;
-		g2.setState(new GeneState(false));
+		g2.setState(new GeneState(GeneStates.INACTIVE));
 		assertFalse(g.getState().isOn());
 
-		Gene h = new Gene("test", new GeneState(true), new Coordinate(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER), new HashMap<String, Coordinate>(), testVis);
+		Gene h = new Gene("test", new GeneState(GeneStates.ACTIVE), new Coordinate(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER), new HashMap<String, Coordinate>(), testVis);
 		Gene h2 = new Gene(h.getName(), h.getState(), h.getLocation(), h.getChanges(), testVis);
-		h2.setState(new GeneState(false));
+		h2.setState(new GeneState(GeneStates.INACTIVE));
 		assertTrue(h.getState().isOn());
 	}
 
@@ -438,7 +439,7 @@ public class MethodsTests {
 		x = null;
 		assertTrue(test.getAP() == Compartment.XCENTER);
 		//non-primitive
-		GeneState s = new GeneState(true);
+		GeneState s = new GeneState(GeneStates.ACTIVE);
 		Gene g = new Gene("test", s);
 		s = null;
 		assertNotNull(g.getState());
@@ -458,7 +459,7 @@ public class MethodsTests {
 		assertFalse(list.antecedentsAndConsequents.get(0).getConsequence().getState().isOn());
 		assertFalse(list.antecedentsAndConsequents.get(17).getAntecedents()[1].getState().isOn());
 		assertEquals("pie-1", list.antecedentsAndConsequents.get(1).getAntecedents()[0].getName());
-		Gene g = new Gene("par-6", new GeneState(true), new Coordinate(Compartment.ANTERIOR, Compartment.YCENTER, Compartment.ZCENTER), new HashMap<String, Coordinate>(), testVis);
+		Gene g = new Gene("par-6", new GeneState(GeneStates.ACTIVE), new Coordinate(Compartment.ANTERIOR, Compartment.YCENTER, Compartment.ZCENTER), new HashMap<String, Coordinate>(), testVis);
 		g.populateCons();
 	}
 
@@ -516,7 +517,7 @@ public class MethodsTests {
 	@Test
 	public void testObjectInstantiation(){
 		HashMap<Integer, GeneState> map = new HashMap<Integer, GeneState>();
-		GeneState s = new GeneState(true);
+		GeneState s = new GeneState(GeneStates.ACTIVE);
 		map.put(1, s);
 		assertTrue(map.get(1).isOn());
 		s.setOn(false);
@@ -526,7 +527,7 @@ public class MethodsTests {
 	@Test
 	public void testObjectInstantiation2(){
 		HashMap<Integer, GeneState> map = new HashMap<Integer, GeneState>();
-		GeneState s = new GeneState(true);
+		GeneState s = new GeneState(GeneStates.ACTIVE);
 		GeneState t;
 		t = s;
 		map.put(1, t);
@@ -538,18 +539,18 @@ public class MethodsTests {
 	@Test
 	public void testObjectInstantiation3(){
 		HashMap<Integer, Gene> map = new HashMap<Integer, Gene>();
-		Gene g = new Gene("name", new GeneState(true));
+		Gene g = new Gene("name", new GeneState(GeneStates.ACTIVE));
 		Gene h = new Gene(g.getName(), g.getState());
 		map.put(1, h);
 		assertTrue(map.get(1).getState().isOn());
-		g.setState(new GeneState(false));
+		g.setState(new GeneState(GeneStates.INACTIVE));
 		assertTrue(map.get(1).getState().isOn());
 	}
 
 	@Test
 	public void testObjectInstantiation4(){
 		HashMap<Integer, Gene> map = new HashMap<Integer, Gene>();
-		Gene g = new Gene("name", new GeneState(true));
+		Gene g = new Gene("name", new GeneState(GeneStates.ACTIVE));
 		Gene h = new Gene(g.getName(), g.getState());
 		map.put(1, h);
 		assertTrue(map.get(1).getState().isOn());
@@ -560,7 +561,7 @@ public class MethodsTests {
 	@Test
 	public void testObjectInstatiation5(){
 		HashMap<Integer, Gene> map = new HashMap<Integer, Gene>();
-		Gene g = new Gene("name", new GeneState(true));
+		Gene g = new Gene("name", new GeneState(GeneStates.ACTIVE));
 		Gene h = new Gene(g.getName(), g.getState());
 		map.put(1, h);
 		g.setName("new");
@@ -602,7 +603,7 @@ public class MethodsTests {
 
 	@Test
 	public void testDup(){
-		Gene g = new Gene("name", new GeneState(true));
+		Gene g = new Gene("name", new GeneState(GeneStates.ACTIVE));
 		Gene h = g;
 		h.setName("new");
 		assertEquals("new", g.getName());
@@ -610,7 +611,7 @@ public class MethodsTests {
 
 	@Test
 	public void testDup2(){
-		Gene g = new Gene("name", new GeneState(true));
+		Gene g = new Gene("name", new GeneState(GeneStates.ACTIVE));
 		Gene h = new Gene(g.getName(), g.getState());
 		h.setName("new");
 		assertEquals("name", g.getName());
