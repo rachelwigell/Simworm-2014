@@ -251,6 +251,7 @@ public class Cell {
 				
 			}
 		}
+		this.recentlyChanged = new ArrayList<String>();
 		this.recentlyChanged.addAll(effects.keySet()); //cell must track recent changes for the next call to applyCons
 		return effects;
 	}
