@@ -734,21 +734,17 @@ public class Shell{
 				String nextInfo = line.split(",")[column-1]; //look at the cell in the pertinent column
 				if(c.getGenes().get(nextInfo) != null){ //if it is a gene name in this cell
 					gene = nextInfo;
-					System.out.println(nextInfo + " a gene in this cell");
 				}
 				else if(validGenes.keySet().contains(nextInfo)){ //if it's a valid gene name but just isn't in this cell, we do nothing
 					gene = nextInfo;
-					System.out.println(nextInfo + " a gene not in this cell");
 				}
 				else if(nextInfo.equals("absent")){ //if it is an indication of absence...
 					if(c.getGenes().get(gene) != null){ //and the gene isn't absent...
 						c.getGenes().remove(gene); //remove it.
 						c.getRecentlyChanged().remove(gene);
-						System.out.println(nextInfo);
 					}
 				}
 				else if(nextInfo.equals("mislocalized")){ //if it's mislocalized...
-					System.out.println(nextInfo);
 					if(c.getGenes().get(gene) != null){
 						this.mislocalized.add(gene);
 					}
@@ -760,76 +756,60 @@ public class Shell{
 						if(c.getGenes().get(gene) != null){
 							switch(comp){ //which compartment are we looking at?
 							case XCENTER:
-								System.out.println(nextInfo + " XCENTER probability");
 								probabilities.setX(probability);
 								comp = Compartment.ANTERIOR; //move to next compartment
 								break;
 							case ANTERIOR:
-								System.out.println(nextInfo + " ANTERIOR probability");
 								probabilities.setY(probability);
 								comp = Compartment.POSTERIOR;
 								break;
 							case POSTERIOR:
-								System.out.println(nextInfo + " POSTERIOR probability");
 								probabilities.setZ(probability);
 								probabilities.printCoordinate("probabilities");
 								var = r.nextInt(200);
 								if(var < probabilities.getX() * 2){
 									c.getGenes().get(gene).setLocation(new Coordinate(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER));
-									System.out.println(gene + " goes XCENTER");
 								}
 								else if(var < probabilities.getX()*2 + probabilities.getY()*2){
 									c.getGenes().get(gene).setLocation(new Coordinate(Compartment.ANTERIOR, Compartment.YCENTER, Compartment.ZCENTER));
-									System.out.println(gene + " goes ANTERIOR");
 								}
 								else{
 									c.getGenes().get(gene).setLocation(new Coordinate(Compartment.POSTERIOR, Compartment.YCENTER, Compartment.ZCENTER));
-									System.out.println(gene + " goes POSTERIOR");
 								}
 								comp = Compartment.YCENTER;
 								break;
 							case YCENTER:
-								System.out.println(nextInfo + " YCENTER probability");
 								probabilities.setX(probability);
 								comp = Compartment.DORSAL;
 								break;
 							case DORSAL:
-								System.out.println(nextInfo + " DORSAL probability");
 								probabilities.setY(probability);
 								comp = Compartment.VENTRAL;
 								break;
 							case VENTRAL:
-								System.out.println(nextInfo + " VENTRAL probability");
 								probabilities.setZ(probability);
-								probabilities.printCoordinate("probabilities");
 								var = r.nextInt(200);
 								Compartment currentX = c.getGenes().get(gene).getLocation().getAP();
 								if(var < probabilities.getX() * 2){
 									c.getGenes().get(gene).setLocation(new Coordinate(currentX, Compartment.YCENTER, Compartment.ZCENTER));
-									System.out.println(gene + " goes YCENTER");
 								}
 								else if(var < probabilities.getX()*2 + probabilities.getY()*2){
 									c.getGenes().get(gene).setLocation(new Coordinate(currentX, Compartment.DORSAL, Compartment.ZCENTER));
-									System.out.println(gene + " goes DORSAL");
 								}
 								else{
 									c.getGenes().get(gene).setLocation(new Coordinate(currentX, Compartment.VENTRAL, Compartment.ZCENTER));
-									System.out.println(gene + " goes VENTRAL");
 								}
 								comp = Compartment.ZCENTER;
 								break;
 							case ZCENTER:
-								System.out.println(nextInfo + " ZCENTER probability");
 								probabilities.setX(probability);
 								comp = Compartment.LEFT;
 								break;
 							case LEFT:
-								System.out.println(nextInfo + " LEFT probability");
 								probabilities.setY(probability);
 								comp = Compartment.RIGHT;
 								break;
 							case RIGHT:
-								System.out.println(nextInfo + " RIGHT probability");
 								probabilities.setZ(probability);
 								probabilities.printCoordinate("probabilities");
 								var = r.nextInt(200);
@@ -837,15 +817,12 @@ public class Shell{
 								Compartment currentY = c.getGenes().get(gene).getLocation().getDV();
 								if(var < probabilities.getX() * 2){
 									c.getGenes().get(gene).setLocation(new Coordinate(currentX, currentY, Compartment.ZCENTER));
-									System.out.println(gene + " goes ZCENTER");
 								}
 								else if(var < probabilities.getX()*2 + probabilities.getY()*2){
 									c.getGenes().get(gene).setLocation(new Coordinate(currentX, currentY, Compartment.LEFT));
-									System.out.println(gene + " goes LEFT");
 								}
 								else{
 									c.getGenes().get(gene).setLocation(new Coordinate(currentX, currentY, Compartment.RIGHT));
-									System.out.println(gene + " goes RIGHT");
 								}
 								comp = null;
 								break;
@@ -1167,11 +1144,9 @@ public class Shell{
 			reader.close();
 		}
 		catch (FileNotFoundException e){
-			System.out.println("file not found");
 			throw new FileReadErrorException(file);
 		}
 		catch (IOException e){
-			System.out.println("IO exception");
 			throw new FileReadErrorException(file);
 		}
 	}
