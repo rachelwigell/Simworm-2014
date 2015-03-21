@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.Queue;
 import java.util.Random;
 
 import processing.BasicVisual;
@@ -173,7 +172,7 @@ public class Shell{
 		}
 		return null; //code never reaches this point
 	}	
-	
+
 	/**
 	 * Calculates what generation this cell belongs to, using its name
 	 * @param name the name of the cell of interest
@@ -563,7 +562,7 @@ public class Shell{
 			int rand = r.nextInt(possibilities);
 			System.out.println("\t" + s + " " + toAdd.getState().isOn() + " rolled " + rand);
 			if(!toAdd.getState().isUnknown() && rand == 0){
-//				toAdd.setState(new GeneState(!toAdd.getState().isOn()));
+				//				toAdd.setState(new GeneState(!toAdd.getState().isOn()));
 				mutatedGenes.put(s, toAdd); //add the same gene but with opposite state
 				System.out.println("\t\tnew state is " + toAdd.getState().isOn());
 			}
@@ -611,32 +610,22 @@ public class Shell{
 	 */
 	public Cell perCellMutations (Cell c){
 		//this order is strategic: rules get overwritten in the correct way
-		if(mutants.get("par-3")){
-			c.getGenes().remove("par-3");
-			c.getRecentlyChanged().remove("par-3");
-			par3Mutations(c);
-		}
-		if(mutants.get("par-6")){
-			c.getGenes().remove("par-6");
-			c.getRecentlyChanged().remove("par-6");
-			par3Mutations(c); //par-3, par-6, pkc-3 mutations all behave the same
-		}
-		if(mutants.get("pkc-3")){
-			c.getGenes().remove("pkc-3");
-			c.getRecentlyChanged().remove("pkc-3");
-			par3Mutations(c);
-		}
-		if(mutants.get("par-2")){
-			par2Mutations(c); //removal of par-2 built into par2Mutations
-		}
-		if(mutants.get("par-5")){
-			par5Mutations(c);
-		}
-		if(mutants.get("par-1")){
-			par1Mutations(c);
-		}
-		if(mutants.get("par-4")){
-			par4Mutations(c);
+		String[] genes = {"par-3", "par-6", "pkc-3", "par-2", "par-5", "par-1", "par-4"};
+		for(String s: genes){
+			if(mutants.get(s)){
+				try{
+					readMutantRules("src/components/mutantRules.csv", c, s);
+				}
+				catch(Exception e){
+					//for java applet or executable
+					try{
+						readMutantRules("mutantRules.csv", c, s);
+					}
+					catch(Exception f){
+						System.out.println("Couldn't find mutantRules.csv at either of the expected locations.");
+					}
+				}
+			}
 		}
 		return c;
 	}
@@ -720,7 +709,170 @@ public class Shell{
 		}
 	}
 
+	public Cell readMutantRules(String file, Cell c, String mutant) throws FileNotFoundException, InvalidFormatException{
+		int column = 0;
+		try{
+			BufferedReader reader = new BufferedReader(new FileReader(file)); //open the file
+			String line = "";
+			line = reader.readLine();
+			String[] mutantInfo = line.split(","); //split into an array using commas as separators
+			for(int i = 0; i < mutantInfo.length; i++){ //looking for the column containing the info on this mutant
+				if(mutantInfo[i].equals(mutant)) column = i+1;
+			}
+			if(column == 0){ //if the mutant isn't in the spreadsheet, don't modify the cell
+				reader.close();
+				return c;
+			}
+
+			int row = 2;
+			String gene = null;
+			Compartment comp = null;
+			Coordinate probabilities = new Coordinate(0, 0, 0);
+			int var;
+			Random r = new Random();
+			while((line = reader.readLine()) != null){ //read one row
+				String nextInfo = line.split(",")[column-1]; //look at the cell in the pertinent column
+				if(c.getGenes().get(nextInfo) != null){ //if it is a gene name in this cell
+					gene = nextInfo;
+					System.out.println(nextInfo + " a gene in this cell");
+				}
+				else if(validGenes.keySet().contains(nextInfo)){ //if it's a valid gene name but just isn't in this cell, we do nothing
+					gene = nextInfo;
+					System.out.println(nextInfo + " a gene not in this cell");
+				}
+				else if(nextInfo.equals("absent")){ //if it is an indication of absence...
+					if(c.getGenes().get(gene) != null){ //and the gene isn't absent...
+						c.getGenes().remove(gene); //remove it.
+						c.getRecentlyChanged().remove(gene);
+						System.out.println(nextInfo);
+					}
+				}
+				else if(nextInfo.equals("mislocalized")){ //if it's mislocalized...
+					System.out.println(nextInfo);
+					if(c.getGenes().get(gene) != null){
+						this.mislocalized.add(gene);
+					}
+					comp = Compartment.XCENTER; //indicate that the following cell should contain the probability of XCENTER mislocalization
+				}
+				else{ //the only other valid input is a number
+					try{
+						float probability = Float.parseFloat(nextInfo); //that number represents the probability of mislocalization in some compartment
+						if(c.getGenes().get(gene) != null){
+							switch(comp){ //which compartment are we looking at?
+							case XCENTER:
+								System.out.println(nextInfo + " XCENTER probability");
+								probabilities.setX(probability);
+								comp = Compartment.ANTERIOR; //move to next compartment
+								break;
+							case ANTERIOR:
+								System.out.println(nextInfo + " ANTERIOR probability");
+								probabilities.setY(probability);
+								comp = Compartment.POSTERIOR;
+								break;
+							case POSTERIOR:
+								System.out.println(nextInfo + " POSTERIOR probability");
+								probabilities.setZ(probability);
+								probabilities.printCoordinate("probabilities");
+								var = r.nextInt(200);
+								if(var < probabilities.getX() * 2){
+									c.getGenes().get(gene).setLocation(new Coordinate(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER));
+									System.out.println(gene + " goes XCENTER");
+								}
+								else if(var < probabilities.getX()*2 + probabilities.getY()*2){
+									c.getGenes().get(gene).setLocation(new Coordinate(Compartment.ANTERIOR, Compartment.YCENTER, Compartment.ZCENTER));
+									System.out.println(gene + " goes ANTERIOR");
+								}
+								else{
+									c.getGenes().get(gene).setLocation(new Coordinate(Compartment.POSTERIOR, Compartment.YCENTER, Compartment.ZCENTER));
+									System.out.println(gene + " goes POSTERIOR");
+								}
+								comp = Compartment.YCENTER;
+								break;
+							case YCENTER:
+								System.out.println(nextInfo + " YCENTER probability");
+								probabilities.setX(probability);
+								comp = Compartment.DORSAL;
+								break;
+							case DORSAL:
+								System.out.println(nextInfo + " DORSAL probability");
+								probabilities.setY(probability);
+								comp = Compartment.VENTRAL;
+								break;
+							case VENTRAL:
+								System.out.println(nextInfo + " VENTRAL probability");
+								probabilities.setZ(probability);
+								probabilities.printCoordinate("probabilities");
+								var = r.nextInt(200);
+								Compartment currentX = c.getGenes().get(gene).getLocation().getAP();
+								if(var < probabilities.getX() * 2){
+									c.getGenes().get(gene).setLocation(new Coordinate(currentX, Compartment.YCENTER, Compartment.ZCENTER));
+									System.out.println(gene + " goes YCENTER");
+								}
+								else if(var < probabilities.getX()*2 + probabilities.getY()*2){
+									c.getGenes().get(gene).setLocation(new Coordinate(currentX, Compartment.DORSAL, Compartment.ZCENTER));
+									System.out.println(gene + " goes DORSAL");
+								}
+								else{
+									c.getGenes().get(gene).setLocation(new Coordinate(currentX, Compartment.VENTRAL, Compartment.ZCENTER));
+									System.out.println(gene + " goes VENTRAL");
+								}
+								comp = Compartment.ZCENTER;
+								break;
+							case ZCENTER:
+								System.out.println(nextInfo + " ZCENTER probability");
+								probabilities.setX(probability);
+								comp = Compartment.LEFT;
+								break;
+							case LEFT:
+								System.out.println(nextInfo + " LEFT probability");
+								probabilities.setY(probability);
+								comp = Compartment.RIGHT;
+								break;
+							case RIGHT:
+								System.out.println(nextInfo + " RIGHT probability");
+								probabilities.setZ(probability);
+								probabilities.printCoordinate("probabilities");
+								var = r.nextInt(200);
+								currentX = c.getGenes().get(gene).getLocation().getAP();
+								Compartment currentY = c.getGenes().get(gene).getLocation().getDV();
+								if(var < probabilities.getX() * 2){
+									c.getGenes().get(gene).setLocation(new Coordinate(currentX, currentY, Compartment.ZCENTER));
+									System.out.println(gene + " goes ZCENTER");
+								}
+								else if(var < probabilities.getX()*2 + probabilities.getY()*2){
+									c.getGenes().get(gene).setLocation(new Coordinate(currentX, currentY, Compartment.LEFT));
+									System.out.println(gene + " goes LEFT");
+								}
+								else{
+									c.getGenes().get(gene).setLocation(new Coordinate(currentX, currentY, Compartment.RIGHT));
+									System.out.println(gene + " goes RIGHT");
+								}
+								comp = null;
+								break;
+							}
+						}
+					}
+					catch(NumberFormatException e){
+						reader.close();
+						throw new InvalidFormatException(FormatProblem.MUTANTCSV, row, column);
+					}
+				}
+				row++;
+			}
+
+			reader.close();
+			return c;
+		}
+		catch (FileNotFoundException e){
+			throw new FileNotFoundException();
+		}
+		catch (IOException e){
+			throw new FileNotFoundException();
+		}
+	}
+
 	/**
+	 * @deprecated use readMutantRules instead - this behavior is no longer hard coded
 	 * Calculates mutations that occur in a cell due to par1 being mutant
 	 * @param genes the cell's genes
 	 * @return the updated genes with effects from mutation
@@ -779,6 +931,7 @@ public class Shell{
 	}
 
 	/**
+	 * @deprecated use readMutantRules instead - this behavior is no longer hard coded
 	 * Calculates mutations that occur in a cell due to par2 being mutant
 	 * @param genes the cell's genes
 	 * @return the updated genes with effects from mutation
@@ -816,6 +969,7 @@ public class Shell{
 	}
 
 	/**
+	 * @deprecated use readMutantRules instead - this behavior is no longer hard coded
 	 * Calculates mutations that occur in a cell due to par3, par6, or pkc-3 being mutant (these mutants all behave the same way)
 	 * @param genes the cell's genes
 	 * @return the updated genes with effects from mutation
@@ -851,6 +1005,7 @@ public class Shell{
 	}
 
 	/**
+	 * @deprecated use readMutantRules instead - this behavior is no longer hard coded
 	 * Calculates mutations that occur in a cell due to par4 being mutant
 	 * @param genes the cell's genes
 	 * @return the updated genes with effects from mutation
@@ -866,6 +1021,7 @@ public class Shell{
 	}
 
 	/**
+	 * @deprecated use readMutantRules instead - this behavior is no longer hard coded
 	 * Calculates mutations that occur in a cell due to par5 being mutant
 	 * @param genes the cell's genes
 	 * @return the updated genes with effects from mutation

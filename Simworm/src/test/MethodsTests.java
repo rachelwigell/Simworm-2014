@@ -1,8 +1,12 @@
 package test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
-import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Random;
@@ -20,7 +24,6 @@ import dataStructures.DivisionData;
 import dataStructures.Gene;
 import dataStructures.GeneState;
 import dataStructures.GeneStates;
-import dataStructures.InvalidFormatException;
 import dataStructures.Shell;
 
 public class MethodsTests {
@@ -780,6 +783,20 @@ public class MethodsTests {
 		
 		for(String d: testShell.getDivisions().keySet()){
 			assertEquals(testShell.getDivisions().get(d).getGeneration(), testShell.calculateGeneration(d));
+		}
+	}
+	
+	@Test
+	public void testSwitchFunctionality(){
+		int i = 0;
+		switch(i){
+		case 0:
+			i++;
+			System.out.println("this definitely happens");
+			break;
+		case 1:
+			fail("does this happen too?");
+			break;
 		}
 	}
 }

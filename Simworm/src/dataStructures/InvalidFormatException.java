@@ -76,6 +76,11 @@ public class InvalidFormatException extends Exception {
 						+ "Detected invalid cell name: be sure to use only\n"
 						+ "lower case characters, numbers, and hyphens.\n"
 						+ "Also be sure you have only used valid C. elegans cell names.\n");
+				break;
+			case MUTANTCSV:
+				System.out.println("Problem reading cell " + convertNumToLetter(column) + row + "\n"
+						+ "Detected invalid mutant information.\n"
+						+ "Please review the notes about formatting in mutantRules.csv");
 		}
 	}
 }

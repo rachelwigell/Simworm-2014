@@ -132,7 +132,7 @@ public class BasicVisual extends PApplet{
 		for(Toggle t: chooseMutants.getItems()){ //setting the font size on the checkbox options has to be done kind of indirectly
 			t.captionLabel().setControlFont(new ControlFont(createFont("arial", (float) (width/100))));
 		}
-		createShell = new Button(info, "createShell").setPosition(width/3, (float) (height/1.65)).setLabel("create shell").setSize((width/3), (height/20)); //button to confirm checkbox settings
+		createShell = new Button(info, "createShell").setPosition(width/3, (float) (height/1.65)).setLabel("create embryo").setSize((width/3), (height/20)); //button to confirm checkbox settings
 		createShell.captionLabel().setControlFont(new ControlFont(createFont("arial", (float) (width/80))));
 
 		currentTime = 1;
