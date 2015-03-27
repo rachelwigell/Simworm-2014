@@ -23,6 +23,7 @@ public class Shell{
 	public boolean recentGrowth; //indicates when the shell has recently gained cells
 	public ArrayList<String> mislocalized; // genes that are mislocalized due to a mutation
 	public HashMap<String, Integer> validGenes; //valid  C. elegans gene names as determined by Wormbase text file parser
+	public HashMap<CellFate, ArrayList<Gene>> fateRules;
 
 	private final int shellWidth = 500;
 	private final int shellHeight = 300;
@@ -41,6 +42,7 @@ public class Shell{
 		this.colorMode = ColorMode.LINEAGE;
 		this.recentGrowth = false;
 		this.mislocalized = new ArrayList<String>();
+		this.fateRules = new HashMap<CellFate, ArrayList<Gene>>();
 
 		//info about the shell itself
 		this.cells = new HashMap<String, Cell>();
@@ -77,6 +79,18 @@ public class Shell{
 			}
 			catch(Exception f){
 				System.out.println("Couldn't find wormbaseGeneInfo.txt at either of the expected locations.");
+			}
+		}
+		
+		try{
+			compileFateRules("src/components/fateRules.csv");
+		}
+		catch(Exception e){
+			try{
+				compileFateRules("fateRules.csv");
+			}
+			catch(Exception f){
+				System.out.println("Couldn't find fateRules.csv at either of the expected locations.");
 			}
 		}
 
@@ -125,6 +139,75 @@ public class Shell{
 		return shellDepth;
 	}	
 
+	public HashMap<CellFate, ArrayList<Gene>> compileFateRules(String file) throws FileReadErrorException, InvalidFormatException{
+		HashMap<CellFate, ArrayList<Gene>> fateRules = new HashMap<CellFate, ArrayList<Gene>>();
+		try{
+			BufferedReader reader = new BufferedReader(new FileReader(file)); //open the file
+			String line = "";
+			line = reader.readLine();
+			HashMap<Integer, CellFate> locations = new HashMap<Integer, CellFate>();
+			String[] fateInfo = line.split(","); //split into an array using commas as separators
+			for(int i = 0; i < fateInfo.length; i++){
+				String s = fateInfo[i];
+				if(s.equals("Germline")){
+					locations.put(i, CellFate.GERMLINE);
+					fateRules.put(CellFate.GERMLINE, new ArrayList<Gene>());
+				}
+				else if(s.equals("MS")){
+					locations.put(i, CellFate.MS);
+					fateRules.put(CellFate.MS, new ArrayList<Gene>());
+				}
+				else if(s.equals("E")){
+					locations.put(i, CellFate.E);
+					fateRules.put(CellFate.E, new ArrayList<Gene>());
+				}
+				else if(s.equals("C")){
+					locations.put(i, CellFate.C);
+					fateRules.put(CellFate.C, new ArrayList<Gene>());
+				}
+				else if(s.equals("D")){
+					locations.put(i, CellFate.D);
+					fateRules.put(CellFate.D, new ArrayList<Gene>());
+				}
+			}
+			int row = 2;
+			String[] gene = new String[fateInfo.length];
+			while((line = reader.readLine()) != null){ //read one row
+				fateInfo = line.split(",");
+				for(int i = 0; i < fateInfo.length; i++){
+					if(validGenes.keySet().contains(fateInfo[i])){ 
+						gene[i] = fateInfo[i];
+					}
+					else if(fateInfo[i].equals("A")){
+						ArrayList<Gene> genes = fateRules.get(locations.get(i));
+						genes.add(new Gene(gene[i], new GeneState(GeneStates.ACTIVE)));
+						fateRules.put(locations.get(i), genes);
+					}
+					else if(fateInfo[i].equals("I")){
+						ArrayList<Gene> genes = fateRules.get(locations.get(i));
+						genes.add(new Gene(gene[i], new GeneState(GeneStates.INACTIVE)));
+						fateRules.put(locations.get(i), genes);
+					}
+					else{
+						System.out.println("This is happening");
+						reader.close();
+						throw new InvalidFormatException(FormatProblem.INVALIDSTATESTRICT, row, i+1);
+					}
+				}
+				row++;
+			}
+			reader.close();
+			this.fateRules = fateRules;
+			return fateRules;
+		}
+		catch (FileNotFoundException e){
+			throw new FileReadErrorException(file);
+		}
+		catch (IOException e){
+			throw new FileReadErrorException(file);
+		}
+	}
+	
 	/**
 	 * Determines the name of a daughter cell based on what the parent cell is and what axis it's dividing along
 	 * daughter1 is always the more anterior, dorsal, or right child
@@ -426,39 +509,66 @@ public class Shell{
 	 * @return The RGB value of the cell's color
 	 */
 	public RGB cellColorFate(HashMap<String, Gene> genes){
-		Gene pie = genes.get("pie-1");
-		Gene skn = genes.get("skn-1");
-		Gene pal = genes.get("pal-1");
 
-		boolean germline = false;
-		boolean MSE = false;
-		boolean CD = false;
+		boolean germline = true;
+		boolean MS = true;
+		boolean E = true;
+		boolean C = true;
+		boolean D = true;
+		
+		for(Gene g: fateRules.get(CellFate.GERMLINE)){
+			if(genes.get(g.getName()) == null){
+				germline = false;
+			}
+			else{
+				germline = genes.get(g.getName()).getState().getState() == g.getState().getState();				
+			}
+		}
+		
+		for(Gene g: fateRules.get(CellFate.MS)){
+			if(genes.get(g.getName()) == null) MS = false;
+			else{
+				MS = genes.get(g.getName()).getState().getState() == g.getState().getState();					
+			}
+		}
+		
+		for(Gene g: fateRules.get(CellFate.E)){
+			if(genes.get(g.getName()) == null) E = false;
+			else{
+				E = genes.get(g.getName()).getState().getState() == g.getState().getState();					
+			}
+		}
+		
+		for(Gene g: fateRules.get(CellFate.C)){
+			if(genes.get(g.getName()) == null) C = false;
+			else{
+				C = genes.get(g.getName()).getState().getState() == g.getState().getState();					
+			}
+		}
 
-		if(pie != null){
-			if(!pie.getState().isUnknown()){
-				if(pie.getState().isOn()){
-					germline = true;
-				}
+		for(Gene g: fateRules.get(CellFate.D)){
+			if(genes.get(g.getName()) == null) D = false;
+			else{
+				D = genes.get(g.getName()).getState().getState() == g.getState().getState();					
 			}
 		}
-		if(skn != null){
-			if(!skn.getState().isUnknown()){
-				if(skn.getState().isOn()){
-					MSE = true;
-				}
-			}
+		
+		RGB color = null;
+		if(germline) color = mixColors(color, new RGB(166, 216, 84));
+		if(MS) color = mixColors(color, new RGB(252, 141, 98));
+		if(E) color = mixColors(color, new RGB(255, 217, 47));
+		if(C) color = mixColors(color, new RGB(141, 160, 203));
+		if(D) color = mixColors(color, new RGB(102, 194, 165));
+		if(color == null) color = new RGB(231, 138, 195);
+		return color;
+	}
+	
+	public RGB mixColors(RGB color1, RGB color2){
+		if(color1 == null) return color2;
+		else if(color2 == null) return color1;
+		else{
+			return new RGB((color1.getRed() + color2.getRed())/2, (color1.getGreen() + color2.getGreen())/2, (color1.getBlue() + color2.getBlue()/2));
 		}
-		if(pal != null){
-			if(!pal.getState().isUnknown()){
-				if(pal.getState().isOn()){
-					CD = true;
-				}
-			}
-		}
-		if(germline && !MSE && !CD) return new RGB(102, 194, 165);
-		else if(!germline && MSE && !CD) return new RGB(252, 141, 98);
-		else if(!germline && !MSE && CD) return new RGB(141, 160, 203);
-		else return new RGB(231, 138, 195); //occurs if no or more than 1 cell fates are satisfied; default situation
 	}
 
 	/**
@@ -709,7 +819,7 @@ public class Shell{
 		}
 	}
 
-	public Cell readMutantRules(String file, Cell c, String mutant) throws FileNotFoundException, InvalidFormatException{
+	public Cell readMutantRules(String file, Cell c, String mutant) throws FileReadErrorException, InvalidFormatException{
 		int column = 0;
 		try{
 			BufferedReader reader = new BufferedReader(new FileReader(file)); //open the file
@@ -728,8 +838,8 @@ public class Shell{
 			String gene = null;
 			Compartment comp = null;
 			Coordinate probabilities = new Coordinate(0, 0, 0);
-			int var;
 			Random r = new Random();
+			int var;
 			while((line = reader.readLine()) != null){ //read one row
 				String nextInfo = line.split(",")[column-1]; //look at the cell in the pertinent column
 				if(c.getGenes().get(nextInfo) != null){ //if it is a gene name in this cell
@@ -748,7 +858,7 @@ public class Shell{
 					if(c.getGenes().get(gene) != null){
 						this.mislocalized.add(gene);
 					}
-					comp = Compartment.XCENTER; //indicate that the following cell should contain the probability of XCENTER mislocalization
+					comp = Compartment.XCENTER; //indicate that the following spreadsheet cell should contain the probability of XCENTER mislocalization
 				}
 				else{ //the only other valid input is a number
 					try{
@@ -765,7 +875,6 @@ public class Shell{
 								break;
 							case POSTERIOR:
 								probabilities.setZ(probability);
-								probabilities.printCoordinate("probabilities");
 								var = r.nextInt(200);
 								if(var < probabilities.getX() * 2){
 									c.getGenes().get(gene).setLocation(new Coordinate(Compartment.XCENTER, Compartment.YCENTER, Compartment.ZCENTER));
@@ -811,7 +920,6 @@ public class Shell{
 								break;
 							case RIGHT:
 								probabilities.setZ(probability);
-								probabilities.printCoordinate("probabilities");
 								var = r.nextInt(200);
 								currentX = c.getGenes().get(gene).getLocation().getAP();
 								Compartment currentY = c.getGenes().get(gene).getLocation().getDV();
@@ -841,10 +949,10 @@ public class Shell{
 			return c;
 		}
 		catch (FileNotFoundException e){
-			throw new FileNotFoundException();
+			throw new FileReadErrorException(file);
 		}
 		catch (IOException e){
-			throw new FileNotFoundException();
+			throw new FileReadErrorException(file);
 		}
 	}
 

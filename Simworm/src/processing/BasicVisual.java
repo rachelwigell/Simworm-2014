@@ -51,6 +51,8 @@ public class BasicVisual extends PApplet{
 	Button fateKey1;
 	Button fateKey2;
 	Button fateKey3;
+	Button fateKey4;
+	Button fateKey5;
 	Button parsKey0;
 	Button parsKey1;
 	Button parsKey2;
@@ -284,15 +286,20 @@ public class BasicVisual extends PApplet{
 		.captionLabel().setControlFont(new ControlFont(createFont("arial", (float) (width/90))));
 
 		//initialize the color keys; these are not interactive
-		fateKey0 = new Button(info, "germline").setPosition((float) (width/1.25), (float) (height - 12*height/30)).setColorBackground(color(102, 194, 165)).setColorActive(color(102, 194, 165)).setColorForeground(color(102, 194, 165)).setVisible(false).setSize((int) (width/20), (int) (height/40));
+		fateKey0 = new Button(info, "germline").setPosition((float) (width/1.25), (float) (height - 12*height/30)).setColorBackground(color(166, 216, 84)).setColorActive(color(166, 216, 84)).setColorForeground(color(166, 216, 84)).setVisible(false).setSize((int) (width/20), (int) (height/40));
 		fateKey0.captionLabel().setControlFont(new ControlFont(createFont("arial", (float) (width/133))));
-		fateKey1 = new Button(info, "MS/E").setPosition((float) (width - 2*width/15), (float) (height - 12*height/30)).setColorBackground(color(252, 141, 98)).setColorActive(color(252, 141, 98)).setColorForeground(color(252, 141, 98)).setVisible(false).setSize((int) (width/20), (int) (height/40));
+		fateKey1 = new Button(info, "MS").setPosition((float) (width - 2*width/15), (float) (height - 12*height/30)).setColorBackground(color(252, 141, 98)).setColorActive(color(252, 141, 98)).setColorForeground(color(252, 141, 98)).setVisible(false).setSize((int) (width/20), (int) (height/40));
 		fateKey1.captionLabel().setControlFont(new ControlFont(createFont("arial", (float) (width/133))));
-		fateKey2 = new Button(info, "C/D").setPosition((float) (width - width/15), (float) (height - 12*height/30)).setColorBackground(color(141, 160, 203)).setColorActive(color(141, 160, 203)).setColorForeground(color(141, 160, 203)).setVisible(false).setSize((int) (width/20), (int) (height/40));
+		fateKey2 = new Button(info, "E").setPosition((float) (width - width/15), (float) (height - 12*height/30)).setColorBackground(color(255, 217, 47)).setColorActive(color(255, 217, 47)).setColorForeground(color(141, 217, 47)).setVisible(false).setSize((int) (width/20), (int) (height/40));
 		fateKey2.captionLabel().setControlFont(new ControlFont(createFont("arial", (float) (width/133))));
-		fateKey3 = new Button(info, "Default").setPosition((float) (width/1.25), (float) (height - 11*height/30)).setColorBackground(color(231, 138, 195)).setColorActive(color(231, 138, 195)).setColorForeground(color(231, 138, 195)).setVisible(false).setSize((int) (width/20), (int) (height/40));
+		fateKey3 = new Button(info, "C").setPosition((float) (width/1.25), (float) (height - 11*height/30)).setColorBackground(color(141, 160, 203)).setColorActive(color(141, 160, 203)).setColorForeground(color(141, 160, 203)).setVisible(false).setSize((int) (width/20), (int) (height/40));
 		fateKey3.captionLabel().setControlFont(new ControlFont(createFont("arial", (float) (width/133))));
-
+		fateKey4 = new Button(info, "D").setPosition((float) (width - 2*width/15), (float) (height - 11*height/30)).setColorBackground(color(102, 194, 165)).setColorActive(color(102, 194, 165)).setColorForeground(color(102, 194, 165)).setVisible(false).setSize((int) (width/20), (int) (height/40));
+		fateKey4.captionLabel().setControlFont(new ControlFont(createFont("arial", (float) (width/133))));
+		fateKey5 = new Button(info, "Default").setPosition((float) (width - width/15), (float) (height - 11*height/30)).setColorBackground(color(231, 138, 195)).setColorActive(color(231, 138, 195)).setColorForeground(color(231, 138, 195)).setVisible(false).setSize((int) (width/20), (int) (height/40));
+		fateKey5.captionLabel().setControlFont(new ControlFont(createFont("arial", (float) (width/133))));
+		
+		
 		parsKey0 = new Button(info, "par-1").setPosition((float) (width/1.25), (float) (height - 12*height/30)).setColorBackground(color(255, 0, 255)).setColorActive(color(255, 0, 255)).setColorForeground(color(255, 0, 255)).setVisible(false).setSize((int) (width/20), (int) (height/40));
 		parsKey0.captionLabel().setControlFont(new ControlFont(createFont("arial", (float) (width/133))));
 		parsKey1 = new Button(info, "par-2").setPosition((float) (width/1.25), (float) (height - 11*height/30)).setColorBackground(color(255, 0, 0)).setColorActive(color(255, 0, 0)).setColorForeground(color(255, 0, 0)).setVisible(false).setSize((int) (width/20), (int) (height/40));
@@ -1314,6 +1321,8 @@ public class BasicVisual extends PApplet{
 			fateKey1.setVisible(true);
 			fateKey2.setVisible(true);
 			fateKey3.setVisible(true);
+			fateKey4.setVisible(true);
+			fateKey5.setVisible(true);
 			parsKey0.setVisible(false);
 			parsKey1.setVisible(false);
 			parsKey2.setVisible(false);
@@ -1333,6 +1342,8 @@ public class BasicVisual extends PApplet{
 			fateKey1.setVisible(false);
 			fateKey2.setVisible(false);
 			fateKey3.setVisible(false);
+			fateKey4.setVisible(false);
+			fateKey5.setVisible(false);
 			parsKey0.setVisible(true);
 			parsKey1.setVisible(true);
 			parsKey2.setVisible(true);
@@ -1352,6 +1363,8 @@ public class BasicVisual extends PApplet{
 			fateKey1.setVisible(false);
 			fateKey2.setVisible(false);
 			fateKey3.setVisible(false);
+			fateKey4.setVisible(false);
+			fateKey5.setVisible(false);
 			parsKey0.setVisible(false);
 			parsKey1.setVisible(false);
 			parsKey2.setVisible(false);
