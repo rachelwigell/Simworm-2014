@@ -352,6 +352,7 @@ public class Shell{
 		this.window = toDup.window;
 		this.simTime = toDup.simTime;
 		this.colorMode = toDup.colorMode;
+		this.fateRules = toDup.fateRules;
 		HashMap<String, Cell> cellsmap = new HashMap<String, Cell>();
 
 		for(String s: toDup.cells.keySet()){
@@ -520,35 +521,35 @@ public class Shell{
 			if(genes.get(g.getName()) == null){
 				germline = false;
 			}
-			else{
+			else if(germline){
 				germline = genes.get(g.getName()).getState().getState() == g.getState().getState();				
 			}
 		}
 		
 		for(Gene g: fateRules.get(CellFate.MS)){
 			if(genes.get(g.getName()) == null) MS = false;
-			else{
+			else if(MS){
 				MS = genes.get(g.getName()).getState().getState() == g.getState().getState();					
 			}
 		}
 		
 		for(Gene g: fateRules.get(CellFate.E)){
 			if(genes.get(g.getName()) == null) E = false;
-			else{
+			else if(E){
 				E = genes.get(g.getName()).getState().getState() == g.getState().getState();					
 			}
 		}
 		
 		for(Gene g: fateRules.get(CellFate.C)){
 			if(genes.get(g.getName()) == null) C = false;
-			else{
+			else if(C){
 				C = genes.get(g.getName()).getState().getState() == g.getState().getState();					
 			}
 		}
 
 		for(Gene g: fateRules.get(CellFate.D)){
 			if(genes.get(g.getName()) == null) D = false;
-			else{
+			else if(D){
 				D = genes.get(g.getName()).getState().getState() == g.getState().getState();					
 			}
 		}
