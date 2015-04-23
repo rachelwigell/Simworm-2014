@@ -308,7 +308,7 @@ public class Cell {
 	 * @return String containing list of genes and their states
 	 */
 	public String getInfo(){
-		String parsInfo = this.name+" genes present:\n\n";
+		String parsInfo = this.name+" proteins present:\n\n";
 		String otherInfo = "\n\n";
 		for(String s: this.genes.keySet()){	
 			if(this.genes.get(s).getName().contains("par")){

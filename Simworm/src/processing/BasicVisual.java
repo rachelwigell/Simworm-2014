@@ -2,6 +2,7 @@ package processing;
 
 import java.awt.Dimension;
 import java.awt.Toolkit;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -31,7 +32,7 @@ public class BasicVisual extends PApplet{
 	PeasyCam camera;
 	ControlP5 info;
 	Textarea userTextArea;
-//	Textarea cellNamesArea;
+	//	Textarea cellNamesArea;
 	Button frontB;
 	Button backB;
 	Button topB;
@@ -84,9 +85,10 @@ public class BasicVisual extends PApplet{
 	boolean firstClick = false;
 	public RGB currentColor;
 	boolean moving = false;
+	boolean memoryError=false;
 
 	//marching cubes fields
-	int gridSize = 12;
+	int gridSize = 22;
 	float threshold = 16.0f;
 	boolean[][][] field;
 	private ArrayList<ArrayList<Coordinate>> vertices;
@@ -156,9 +158,10 @@ public class BasicVisual extends PApplet{
 		shellsOverTime.put(1, new Shell(farthestShell)); //populate the first member of the hashmap
 		numCellsAtTime.put(1, 1);
 		timeCount = 0;
+
 		iterateThroughGrid();
 
-		userText = "Type a cell name to see its contents,\nor press right arrow to progress 1 timestep\nor left arrow to move backwards 1 timestep.";
+		userText = "Click a cell to see its contents,\nor press right arrow to progress 1 timestep\nor left arrow to move backwards 1 timestep.";
 		lineageState = true;
 		fateState = false;
 		parsState = false;
@@ -167,12 +170,12 @@ public class BasicVisual extends PApplet{
 		userTextArea = new Textarea(info, "infoText");
 		userTextArea.setPosition((float) (width/1.25), height/40)
 		.setSize((width/5), (int) (height/3.5))
-		.setFont(createFont("arial", (width/114)));
-		
-//		cellNamesArea = new Textarea(info, "namesText"); //textarea where the names of the currently present cells are displayed
-//		cellNamesArea.setPosition((float) (width/1.25), (float) (5*height/20))
-//		.setSize((int) (width/5), (int) (height/8)).
-//		setFont(createFont("arial", (width/114)));
+		.setFont(createFont("arial", (width/90)));
+
+		//		cellNamesArea = new Textarea(info, "namesText"); //textarea where the names of the currently present cells are displayed
+		//		cellNamesArea.setPosition((float) (width/1.25), (float) (5*height/20))
+		//		.setSize((int) (width/5), (int) (height/8)).
+		//		setFont(createFont("arial", (width/114)));
 
 		//label for the color key
 		new Button(info, "cell color key") //just a label, not interactive
@@ -181,7 +184,7 @@ public class BasicVisual extends PApplet{
 		.setColorActive(color(0, 0, 0))
 		.setColorForeground(color(0, 0, 0))
 		.captionLabel().setControlFont(new ControlFont(createFont("arial", (float) (width/90))));
-		
+
 		//label for the option buttons to turn shell depiction on/off
 		new Button(info, "draw shell") //just a label, not interactive
 		.setPosition((float) (width/1.26), (float) (height - 41*height/60))
@@ -189,7 +192,7 @@ public class BasicVisual extends PApplet{
 		.setColorActive(color(0, 0, 0))
 		.setColorForeground(color(0, 0, 0))
 		.captionLabel().setControlFont(new ControlFont(createFont("arial", (float) (width/90))));
-		
+
 		//buttons for choosing to display shell
 		showShell = new RadioButton(info, "showShell");
 		showShell.setItemsPerRow(3)
@@ -298,8 +301,8 @@ public class BasicVisual extends PApplet{
 		fateKey4.captionLabel().setControlFont(new ControlFont(createFont("arial", (float) (width/133))));
 		fateKey5 = new Button(info, "Uncommitted").setPosition((float) (width - width/15), (float) (height - 11*height/30)).setColorBackground(color(231, 138, 195)).setColorActive(color(231, 138, 195)).setColorForeground(color(231, 138, 195)).setVisible(false).setSize((int) (width/20), (int) (height/40));
 		fateKey5.captionLabel().setControlFont(new ControlFont(createFont("arial", (float) (width/162))));
-		
-		
+
+
 		parsKey0 = new Button(info, "par-1").setPosition((float) (width/1.25), (float) (height - 12*height/30)).setColorBackground(color(255, 0, 255)).setColorActive(color(255, 0, 255)).setColorForeground(color(255, 0, 255)).setVisible(false).setSize((int) (width/20), (int) (height/40));
 		parsKey0.captionLabel().setControlFont(new ControlFont(createFont("arial", (float) (width/133))));
 		parsKey1 = new Button(info, "par-2").setPosition((float) (width/1.25), (float) (height - 11*height/30)).setColorBackground(color(255, 0, 0)).setColorActive(color(255, 0, 0)).setColorForeground(color(255, 0, 0)).setVisible(false).setSize((int) (width/20), (int) (height/40));
@@ -393,6 +396,20 @@ public class BasicVisual extends PApplet{
 		.setLock(true)
 		.setMax(96);
 		progressBar.captionLabel().setControlFont(new ControlFont(createFont("arial", (float) (width/100))));
+
+		//begin memory test:
+		//some computers experience a java heap error on second call of iterateThroughGrid()
+		//we want to catch this right away and give the user the option to execute with more memory
+		try{	
+			iterateThroughGrid();
+		}
+		catch (OutOfMemoryError e){
+			long maxBytes = Runtime.getRuntime().maxMemory();
+			System.out.println("Max memory: " + maxBytes / 1024 / 1024 + "M");
+			this.memoryError = true;
+			return;
+		}
+
 		mutantsChosen = true; //value used to choose what items are drawn in draw()
 		//set this back to true to return to start menu
 	}
@@ -416,47 +433,55 @@ public class BasicVisual extends PApplet{
 	 */
 	public void draw(){
 		background(0);
-		lights();
-		noStroke();
-		
-		//some of these settings should only be called if we're past the mutants screen
-		//else these elements won't exist yet and you'll get null pointer exceptions
-		//boolean mutantsChosen will get set to false when we exit that screen
-		if(mutantsChosen){
-			drawAxes(); //draw the coordinate axes
-			printVertices(false); //draw the shell using metaballs
-			drawShell();
-			userTextArea.setText(userText); //show the text output that userText is currently set to
-			//boolean values for lineageState, fateState, parsState exist so that we don't have to continuously set the color
-			//they hold the current state of the color mode (that is, false for those that aren't currently set and true for the one that is)
-			//we only set colors when the colormode doesn't match these, which indicates that the colormode has been recently changed
-			if(chooseColorMode.getState(0) != lineageState || chooseColorMode.getState(1) != fateState || chooseColorMode.getState(2) != parsState){
-				updateColorMode();
-			}
-			//if an animation is occurring, we need to continuously update the cell locations until it has ended
-			if(moving){
-				boolean equilibrium = false;
-				equilibrium = moveAllMetaballs();
-				iterateThroughGrid();
-				if(equilibrium) moving = false;
-			}
-			//if we're in automatic time flow mode, call progressForward periodically
-			if(chooseTimeflowMode.getState(1)){
-				if(timeCount >= 10){
-					progressForward();
-					timeCount = 0;
+		if(!memoryError){
+			lights();
+			noStroke();
+
+			//some of these settings should only be called if we're past the mutants screen
+			//else these elements won't exist yet and you'll get null pointer exceptions
+			//boolean mutantsChosen will get set to false when we exit that screen
+			if(mutantsChosen){
+				drawAxes(); //draw the coordinate axes
+				printVertices(false); //draw the shell using metaballs
+				drawShell();
+				userTextArea.setText(userText); //show the text output that userText is currently set to
+				//boolean values for lineageState, fateState, parsState exist so that we don't have to continuously set the color
+				//they hold the current state of the color mode (that is, false for those that aren't currently set and true for the one that is)
+				//we only set colors when the colormode doesn't match these, which indicates that the colormode has been recently changed
+				if(chooseColorMode.getState(0) != lineageState || chooseColorMode.getState(1) != fateState || chooseColorMode.getState(2) != parsState){
+					updateColorMode();
 				}
-				else{
-					timeCount++;
+				//if an animation is occurring, we need to continuously update the cell locations until it has ended
+				if(moving){
+					boolean equilibrium = false;
+					equilibrium = moveAllMetaballs();
+					iterateThroughGrid();
+					if(equilibrium) moving = false;
+				}
+				//if we're in automatic time flow mode, call progressForward periodically
+				if(chooseTimeflowMode.getState(1)){
+					if(timeCount >= 10){
+						progressForward();
+						timeCount = 0;
+					}
+					else{
+						timeCount++;
+					}
 				}
 			}
+
+			//this prevents clicks on the infoView (right hand side) from affecting the camera
+			if(mouseX > 4 * (width/5)) camera.setActive(false);
+			else camera.setActive(true);
+
+			gui();
 		}
-
-		//this prevents clicks on the infoView (right hand side) from affecting the camera
-		if(mouseX > 4 * (width/5)) camera.setActive(false);
-		else camera.setActive(true);
-
-		gui();
+		else{
+			System.gc();
+			this.text("We have detected that your computer did not allocate enough\n"
+					+ "memory to the program for it to run properly. Permission to\n"
+					+ "restart with more memory? (Type y for yes and n for no)", 0, 0);
+		}
 	}
 
 	/**
@@ -842,6 +867,7 @@ public class BasicVisual extends PApplet{
 	 * Highest cost function!! call only when absolutely necessary!
 	 */
 	public void iterateThroughGrid(){		
+		System.gc();
 		threshold = (float) (15.0 + displayShell.getCells().keySet().size());
 		vertices = new ArrayList<ArrayList<Coordinate>>();
 		displayColorField = new ArrayList<RGB>();
@@ -849,7 +875,7 @@ public class BasicVisual extends PApplet{
 		int W = displayShell.getShellWidth();
 		int H = displayShell.getShellWidth();
 		int D = displayShell.getShellWidth();
-		field = new boolean[W+gridSize][H+gridSize][D+gridSize];
+		field = new boolean[W+gridSize+1][H+gridSize+1][D+gridSize+1];
 		for(String s: displayShell.getCells().keySet()){
 			Metaball m = displayShell.getCells().get(s).getRepresentation();
 			setFieldNearBall(m);
@@ -862,7 +888,7 @@ public class BasicVisual extends PApplet{
 			}
 		}
 	}
-	
+
 	/**
 	 * For testing purposes, this displays the radius of influence of each cell as a semitransparent sphere
 	 */
@@ -871,7 +897,7 @@ public class BasicVisual extends PApplet{
 			showRadiusOfInfluence(displayShell.getCells().get(s).getRepresentation());
 		}
 	}
-	
+
 	/**
 	 * For testing purposes, this displays the radius of influence of the given metaball as a semitransparent sphere
 	 * @param m the metaball to display
@@ -883,7 +909,7 @@ public class BasicVisual extends PApplet{
 		sphere(m.getRadiusOfInfluence());
 		popMatrix();
 	}
-	
+
 	/**
 	 * Takes in any Coordinate and returns the nearest coordinate location that is on the grid
 	 * @param near coordinate we want to be near
@@ -892,22 +918,22 @@ public class BasicVisual extends PApplet{
 	 */
 	public Coordinate snapToGrid(Coordinate near, boolean lower){
 		int W = displayShell.getShellWidth()/2;		
-		
+
 		float x = near.getX() - (near.getX() + W) % gridSize;
 		float y = near.getY() - (near.getY() + W) % gridSize;
 		float z = near.getZ() - (near.getZ() + W) % gridSize;
-		
+
 		x = Math.round(x);
 		y = Math.round(y);
 		z = Math.round(z);
-		
+
 		if(x < -W) x = -W;
 		else if(x > W) x = W;
 		if(y < -W) y = -W;
 		else if(y > W) y = W;
 		if(z < -W) z = -W;
 		else if(z > W) z = W;
-		
+
 		if(lower) return new Coordinate(x, y, z);
 		else return new Coordinate(x+gridSize, y+gridSize, z+gridSize);
 	}
@@ -1135,7 +1161,7 @@ public class BasicVisual extends PApplet{
 		displayShell.updateColorMode(); //calls the method that will change the colors of the existing cells
 		iterateThroughGrid(); //image has changed
 	}
-	
+
 	/**
 	 * moves the cells during animations
 	 * shows each step if showAnimations is on, otherwise just moves them to equilibrium immediately
@@ -1192,7 +1218,7 @@ public class BasicVisual extends PApplet{
 			}
 		}
 	}
-	
+
 	/**
 	 * progresses backward in time, called when left arrow is pressed
 	 */
@@ -1227,35 +1253,52 @@ public class BasicVisual extends PApplet{
 	public void keyReleased(){
 		if(keyCode == ESC) exit(); //exit program when user hits Esc key
 
-		if(mutantsChosen){ //only run if mutantsChosen is set, because userText doesn't exist yet if not - null pointer
-			if(!moving){ //don't interrupt an animation in progress, it causes problems
-				if(keyCode == RIGHT){ //press right to progress forward in time
-					progressForward();
-				}
-				else if(keyCode == LEFT){ //press left arrow to progress backward in time
-					progressBackward();
-				}
-				else if(keyCode == BACKSPACE){ //manually implement backspace
-					if (userText.length() > 0) { //if there is text
-						userText = userText.substring(0, userText.length()-1); //replace it with the same text minus the last letter
+		if(!memoryError){
+			if(mutantsChosen){ //only run if mutantsChosen is set, because userText doesn't exist yet if not - null pointer
+				if(!moving){ //don't interrupt an animation in progress, it causes problems
+					if(keyCode == RIGHT){ //press right to progress forward in time
+						progressForward();
 					}
-				}
-				else if(keyCode == ENTER || keyCode == RETURN){ //enter finalizes a command
-					if(!displayShell.getCells().containsKey(userText)){ //if the userText isn't currently an existing cell name, print that the cell doesn't exist
-						userText = "Cell not present";
+					else if(keyCode == LEFT){ //press left arrow to progress backward in time
+						progressBackward();
 					}
-					else{ //if it is a cell name, print the genes list for the cell
-						for(String s: displayShell.getCells().keySet()){
-							if(!s.equals(userText)) displayShell.getCells().get(s).setSelected(false);
-							else displayShell.getCells().get(s).setSelected(true); //and select the one that was written
+					else if(keyCode == BACKSPACE){ //manually implement backspace
+						if (userText.length() > 0) { //if there is text
+							userText = userText.substring(0, userText.length()-1); //replace it with the same text minus the last letter
 						}
-						userText = displayShell.getCells().get(userText).getInfo();
-						iterateThroughGrid(); //update display to show selected cell
+					}
+					else if(keyCode == ENTER || keyCode == RETURN){ //enter finalizes a command
+						if(!displayShell.getCells().containsKey(userText)){ //if the userText isn't currently an existing cell name, print that the cell doesn't exist
+							userText = "Cell not present";
+						}
+						else{ //if it is a cell name, print the genes list for the cell
+							for(String s: displayShell.getCells().keySet()){
+								if(!s.equals(userText)) displayShell.getCells().get(s).setSelected(false);
+								else displayShell.getCells().get(s).setSelected(true); //and select the one that was written
+							}
+							userText = displayShell.getCells().get(userText).getInfo();
+							iterateThroughGrid(); //update display to show selected cell
+						}
+					}
+					else if(((int) key) >= 33 && ((int) key) <= 126){ //if it's any other ("normal" ascii) key, just add that letter to the userText
+						if (userText.length() > 10) userText = ""; //clear it if it gets to more than 10 characters so the user never has to delete a bunch of text; no useful commands are over 10 char anyway
+						userText = userText + key;
 					}
 				}
-				else if(((int) key) >= 33 && ((int) key) <= 126){ //if it's any other ("normal" ascii) key, just add that letter to the userText
-					if (userText.length() > 10) userText = ""; //clear it if it gets to more than 10 characters so the user never has to delete a bunch of text; no useful commands are over 10 char anyway
-					userText = userText + key;
+			}
+		}
+		else{
+			if(key == 'n') exit();
+			else if(key == 'y'){
+				this.text("loading...", 0, 200);
+				draw();
+				Runtime rt = Runtime.getRuntime();
+				try {
+					Process pr = rt.exec("java -Xmx1024M -jar Simworm.jar");
+					exit();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
 				}
 			}
 		}
