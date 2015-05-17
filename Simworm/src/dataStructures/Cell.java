@@ -15,13 +15,13 @@ public class Cell {
 	private String name;
 //	private Coordinate center;
 	private Coordinate lengths; //a little misleading, this isn't a set of coordinates, it's the length of the cell in each direction
-	private String parent;
+//	private String parent;
 	private HashMap<String, Gene> genes;
 	private ArrayList<String> recentlyChanged = new ArrayList<String>();
 	private RGB displayColor;
 	private RGB uniqueColor;
 	private DivisionData divide;
-	private int generation;
+//	private int generation;
 	private boolean selected;
 	private Metaball representation;
 	
@@ -37,15 +37,13 @@ public class Cell {
 	 * @param divide The data that will be required to calculate this cell's division
 	 * @param generation Generation that the cell belongs to (p-0 is 0th generation, ab and p-1 are first generation, etc)
 	 */
-	public Cell(BasicVisual window, String name, Coordinate center, Coordinate lengths, String parent, HashMap<String, Gene> genes, RGB color, DivisionData divide, int generation){
+	public Cell(BasicVisual window, String name, Coordinate center, Coordinate lengths, HashMap<String, Gene> genes, RGB color, DivisionData divide){
 		this.window = window;
 		this.name = name;
 		this.lengths = lengths;
-		this.parent = parent;
 		this.genes = genes;
 		this.displayColor = color;
 		this.divide = divide;
-		this.generation = generation;
 		this.selected = false;
 		this.uniqueColor = new RGB(window.currentColor.getRed(), window.currentColor.getGreen(), window.currentColor.getBlue());
 		window.incrementCurrentColor();
@@ -61,9 +59,7 @@ public class Cell {
 	public Cell(Cell toDup){
 		this.window = toDup.window;
 		this.name = toDup.name;
-//		this.center = new Coordinate(toDup.center);
 		this.lengths = new Coordinate(toDup.lengths);
-		this.parent = toDup.parent;
 		HashMap<String, Gene> genesmap = new HashMap<String, Gene>();
 		for(String s: toDup.genes.keySet()){
 			genesmap.put(s, new Gene(toDup.genes.get(s)));
@@ -74,7 +70,6 @@ public class Cell {
 		if(toDup.divide != null){
 			this.divide = new DivisionData(toDup.divide);
 		}
-		this.generation = toDup.generation;
 		this.selected = false;
 		ArrayList<String> changesmap = new ArrayList<String>();
 		for(String s: toDup.recentlyChanged){
@@ -120,10 +115,6 @@ public class Cell {
 		return lengths;
 	}
 
-	public String getParent() {
-		return parent;
-	}
-
 	public HashMap<String, Gene> getGenes() {
 		return genes;
 	}
@@ -134,10 +125,6 @@ public class Cell {
 
 	public DivisionData getDivide() {
 		return divide;
-	}
-
-	public int getGeneration() {
-		return generation;
 	}
 
 	public RGB getColor() {

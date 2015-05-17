@@ -97,7 +97,7 @@ public class Shell{
 		window.currentColor = new RGB(1, 0, 0);
 
 		//create p-0 with all the info calculated
-		Cell start = new Cell(this.window, "p-0", startCenter, startLengths, null, new HashMap<String, Gene>(), new RGB(255, 255, 0), divisions.get("p-0"), 0);
+		Cell start = new Cell(this.window, "p-0", startCenter, startLengths, new HashMap<String, Gene>(), new RGB(255, 255, 0), divisions.get("p-0"));
 		//works for java application or junit
 		try{
 			start.readGeneInfo("src/components/genes.csv", this);
@@ -405,11 +405,11 @@ public class Shell{
 			d1Center = new Coordinate((float) ((d1Percentage - 1) * (ofInterest.getLengths().getX() / 2.0) + ofInterest.getRepresentation().getCenter().getX()),
 					ofInterest.getRepresentation().getCenter().getY(), ofInterest.getRepresentation().getCenter().getZ()); //calculations to get the center of daughter1
 			d1Lengths = new Coordinate((float) (d1Percentage*ofInterest.getLengths().getX()), ofInterest.getLengths().getY(), ofInterest.getLengths().getZ()); //calculations to get the dimensions of daughter1
-			daughter1 = new Cell(this.window, d1name, d1Center, d1Lengths, parent, d1genes, color1, divisions.get(d1name), ofInterest.getGeneration()+1); //create daughter1 with all the fields we have calculated
+			daughter1 = new Cell(this.window, d1name, d1Center, d1Lengths, d1genes, color1, divisions.get(d1name)); //create daughter1 with all the fields we have calculated
 			d2Center = new Coordinate((float) (d1Percentage * ofInterest.getLengths().getX() / 2.0 + ofInterest.getRepresentation().getCenter().getX()), //repeat for daughter2
 					ofInterest.getRepresentation().getCenter().getY(), ofInterest.getRepresentation().getCenter().getZ());
 			d2Lengths = new Coordinate((float) ((1-d1Percentage)*ofInterest.getLengths().getX()), ofInterest.getLengths().getY(), ofInterest.getLengths().getZ());
-			daughter2 = new Cell(this.window, d2name, d2Center, d2Lengths, parent, d2genes, color2, divisions.get(d2name), ofInterest.getGeneration()+1);
+			daughter2 = new Cell(this.window, d2name, d2Center, d2Lengths, d2genes, color2, divisions.get(d2name));
 			perCellMutations(daughter1);
 			perCellMutations(daughter2);
 			changes.cellsRemoved.add(parent); //store parent cell in changes to be removed later
@@ -421,12 +421,12 @@ public class Shell{
 					(float) ((d1Percentage - 1) * (ofInterest.getLengths().getY() / 2.0) + ofInterest.getRepresentation().getCenter().getY()),
 					ofInterest.getRepresentation().getCenter().getZ());
 			d1Lengths = new Coordinate(ofInterest.getLengths().getX(), (float) (d1Percentage*ofInterest.getLengths().getY()), ofInterest.getLengths().getZ());
-			daughter1 = new Cell(this.window, d1name, d1Center, d1Lengths, parent, d1genes, color1, divisions.get(d1name), ofInterest.getGeneration()+1);
+			daughter1 = new Cell(this.window, d1name, d1Center, d1Lengths, d1genes, color1, divisions.get(d1name));
 			d2Center = new Coordinate(ofInterest.getRepresentation().getCenter().getX(),
 					(float) (d1Percentage * ofInterest.getLengths().getY() / 2.0 + ofInterest.getRepresentation().getCenter().getY()),
 					ofInterest.getRepresentation().getCenter().getZ());
 			d2Lengths = new Coordinate(ofInterest.getLengths().getX(), (float) ((1-d1Percentage)*ofInterest.getLengths().getY()), ofInterest.getLengths().getZ());
-			daughter2 = new Cell(this.window, d2name, d2Center, d2Lengths, parent, d2genes, color2, divisions.get(d2name), ofInterest.getGeneration()+1);
+			daughter2 = new Cell(this.window, d2name, d2Center, d2Lengths, d2genes, color2, divisions.get(d2name));
 			perCellMutations(daughter1);
 			perCellMutations(daughter2);
 			changes.cellsRemoved.add(parent);
@@ -437,11 +437,11 @@ public class Shell{
 			d1Center = new Coordinate(ofInterest.getRepresentation().getCenter().getX(), ofInterest.getRepresentation().getCenter().getY(),
 					(float) ((d1Percentage - 1) * (ofInterest.getLengths().getZ() / 2.0) + ofInterest.getRepresentation().getCenter().getZ()));
 			d1Lengths = new Coordinate(ofInterest.getLengths().getX(), ofInterest.getLengths().getY(), (float) (d1Percentage*ofInterest.getLengths().getZ()));
-			daughter1 = new Cell(this.window, d1name, d1Center, d1Lengths, parent, d1genes, color1, divisions.get(d1name), ofInterest.getGeneration()+1);
+			daughter1 = new Cell(this.window, d1name, d1Center, d1Lengths, d1genes, color1, divisions.get(d1name));
 			d2Center = new Coordinate(ofInterest.getRepresentation().getCenter().getX(), ofInterest.getRepresentation().getCenter().getY(),
 					(float) (d1Percentage * ofInterest.getLengths().getZ() / 2.0 + ofInterest.getRepresentation().getCenter().getZ()));
 			d2Lengths = new Coordinate(ofInterest.getLengths().getX(), ofInterest.getLengths().getY(), (float) ((1-d1Percentage)*ofInterest.getLengths().getZ()));
-			daughter2 = new Cell(this.window, d2name, d2Center, d2Lengths, parent, d2genes, color2, divisions.get(d2name), ofInterest.getGeneration()+1);
+			daughter2 = new Cell(this.window, d2name, d2Center, d2Lengths, d2genes, color2, divisions.get(d2name));
 			perCellMutations(daughter1);
 			perCellMutations(daughter2);
 			changes.cellsRemoved.add(parent);
@@ -709,9 +709,9 @@ public class Shell{
 		}
 
 		//place all of the parts into a divisiondata structure
-		DivisionData mutatedData = new DivisionData(cData.getParent(), mutatedPercent, cData.getAxis(), mutatedTime, c.getGeneration());
+		DivisionData mutatedData = new DivisionData(cData.getParent(), mutatedPercent, cData.getAxis(), mutatedTime, c.getDivide().getGeneration());
 		//and finally place all of the parts into a cell to be returned. the non-mutatable attribute are drawn directly from the original cell.
-		return new Cell(c.window, c.getName(), c.getRepresentation().getCenter(), c.getLengths(), c.getParent(), mutatedGenes, mutatedColor, mutatedData, c.getGeneration());
+		return new Cell(c.window, c.getName(), c.getRepresentation().getCenter(), c.getLengths(), mutatedGenes, mutatedColor, mutatedData);
 	}
 
 	/**

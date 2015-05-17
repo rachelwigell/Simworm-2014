@@ -15,6 +15,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import processing.BasicVisual;
+import dataStructures.Axes;
 import dataStructures.Cell;
 import dataStructures.CellChangesData;
 import dataStructures.Compartment;
@@ -24,6 +25,7 @@ import dataStructures.DivisionData;
 import dataStructures.Gene;
 import dataStructures.GeneState;
 import dataStructures.GeneStates;
+import dataStructures.RGB;
 import dataStructures.Shell;
 
 public class MethodsTests {
@@ -798,5 +800,17 @@ public class MethodsTests {
 			fail("does this happen too?");
 			break;
 		}
+	}
+	
+	public void addsItem(HashMap<String, Gene> map){
+		map.put("test", new Gene("testGene", new GeneState()));
+	}
+	
+	@Test
+	public void testListAdditionFunctionality(){
+		Cell cell = new Cell(testVis, "testCell", new Coordinate(0, 0, 0), new Coordinate(100, 100, 100), new HashMap<String, Gene>(), new RGB(0, 0, 0), new DivisionData("testParent", 50, Axes.X, 0, 0));
+		assertEquals(0, cell.getGenes().keySet().size());
+		addsItem(cell.getGenes());
+		assertEquals(1, cell.getGenes().keySet().size());
 	}
 }
