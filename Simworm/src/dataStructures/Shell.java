@@ -319,6 +319,11 @@ public class Shell{
 				if((comp != Compartment.POSTERIOR && daughter1) || (comp != Compartment.ANTERIOR && !daughter1)){ //so if neither situation is occurring...
 					childGenes.put(g.getName(), new Gene(g.getName(), g.getState(), g.getLocation(), g.getChanges(), window).populateCons()); //add a new instance of the gene to childGenes, and populate its relevantCons list
 				}
+				//cells not present should be "inherited" regardless of compartment, so that they have the opportunity to be created in any cell
+				//when their antecedents are fulfilled
+				if(g.getState().isNotPresent()){
+					childGenes.put(g.getName(), new Gene(g.getName(), g.getState(), g.getLocation(), g.getChanges(), window).populateCons()); //add a new instance of the gene to childGenes, and populate its relevantCons list
+				}
 			}
 			break;
 		case Y: //equivalent code for y and z
@@ -328,6 +333,9 @@ public class Shell{
 				if((comp != Compartment.VENTRAL && daughter1) || (comp != Compartment.DORSAL && !daughter1)){
 					childGenes.put(g.getName(), new Gene(g.getName(), g.getState(), g.getLocation(), g.getChanges(), window).populateCons());
 				}
+				if(g.getState().isNotPresent()){
+					childGenes.put(g.getName(), new Gene(g.getName(), g.getState(), g.getLocation(), g.getChanges(), window).populateCons());
+				}
 			}
 			break;
 		case Z:
@@ -335,6 +343,9 @@ public class Shell{
 				Gene g = parentGenes.get(s);
 				Compartment comp = g.getLocation().getLR();
 				if((comp != Compartment.LEFT && daughter1) || (comp != Compartment.RIGHT && !daughter1)){
+					childGenes.put(g.getName(), new Gene(g.getName(), g.getState(), g.getLocation(), g.getChanges(), window).populateCons());
+				}
+				if(g.getState().isNotPresent()){
 					childGenes.put(g.getName(), new Gene(g.getName(), g.getState(), g.getLocation(), g.getChanges(), window).populateCons());
 				}
 			}
@@ -641,77 +652,6 @@ public class Shell{
 			window.iterateThroughGrid();
 		}
 		simTime++;
-	}
-
-	@Deprecated
-	//this method is inefficient because it works on a cell that is already calculated, goes through everything, and makes the changes to mutate it.
-	//if simulation becomes slow, you should move all of the pieces into other methods such that they can be calculated on the first pass.
-	//The function should remain but be marked as deprecated, because it is still helpful to see all of the pieces together and read the comments
-	/**
-	 * An early implementation of mutations. Not used after a discussion with bio-savvy folks.
-	 * @param c The cell we're mutating
-	 * @return the mutated cell
-	 * @deprecated this is not how mutations actually work in biology...oops
-	 */
-	public Cell calcMutation(Cell c){
-		//if we have turned mutations off, return the cell unchanged
-		if(mutationProb == 0) return c;
-		//else continue on. mutationProb is a number between 0 and 1 inclusive that represents the probability of a mutation.
-		//but random number generation works like rolling dice, what we need is the number of sides the dice should have.
-		//this is found by dividing 1 by mutationProb. We need an int, so round it. The probability of action is 1 over the resultant
-		int possibilities = Math.round(1/mutationProb);
-		System.out.println("possibilities is " + possibilities);
-		Random r = new Random();	
-
-		//first, we deal with the possibility of mutated genes
-		HashMap<String, Gene> mutatedGenes = new HashMap<String, Gene>(); //create a new hashmap to store the mutated genes
-		System.out.println("start genes");
-		for(String s: c.getGenes().keySet()){
-			Gene toAdd = c.getGenes().get(s); //look at a gene
-			//two parts to the if: first, we can only mutate genes that are known
-			//secondly, we only act if our dice "roll" a 0. 0 is not arbitrary, it is the only number guaranteed to be within the range of the "roll."
-			int rand = r.nextInt(possibilities);
-			System.out.println("\t" + s + " " + toAdd.getState().isOn() + " rolled " + rand);
-			if(!toAdd.getState().isUnknown() && rand == 0){
-				//				toAdd.setState(new GeneState(!toAdd.getState().isOn()));
-				mutatedGenes.put(s, toAdd); //add the same gene but with opposite state
-				System.out.println("\t\tnew state is " + toAdd.getState().isOn());
-			}
-			else{
-				mutatedGenes.put(s, toAdd); //otherwise add the gene unchanged
-			}
-		}
-
-		//calculate color based on the new, mutated genes.
-		RGB mutatedColor = cellColorPars(mutatedGenes);
-
-		//now deal with the possibility of mutated division data
-		DivisionData cData = c.getDivide();
-		//check d1/d2 split
-		double mutatedPercent = cData.getD1Percentage(); //set equal to the normal percent
-		int rand = r.nextInt(possibilities);
-		System.out.println("start divisions");
-		System.out.println("\t" + c.getName() + " " + c.getDivide().getD1Percentage() + " percent rolled " + rand);
-		if(rand == 0){ //get a new random number, division mutation should be entirely independent of gene mutation
-			//nextInt(11) will get a random number between 0 and 10 inclusive. Dividing by 10 will get a random number between 0 and 1
-			//this is what we want because d1/d2 percentage is expressed on a 0-1 scale in increments of .1
-			mutatedPercent = r.nextInt(11)/10.0;
-			System.out.println("\t\tnew percent is " + mutatedPercent);
-		}
-		//if the if does not occur, this value will remain at the normal percent as set earlier
-
-		int mutatedTime = cData.getTime(); //much like percentage we start by setting equal to the normal percent and changing it only if the dice demand it
-		rand = r.nextInt(possibilities);
-		System.out.println("\t" + c.getName() + " " + c.getDivide().getTime() + " time rolled " + rand);
-		if(rand == 0){
-			mutatedTime = simTime + r.nextInt(96 - simTime) + 1; //this sets the new time to somewhere between the current time and the end of our events queue
-			System.out.println("\t\tnew time is " + mutatedTime);
-		}
-
-		//place all of the parts into a divisiondata structure
-		DivisionData mutatedData = new DivisionData(cData.getParent(), mutatedPercent, cData.getAxis(), mutatedTime, c.getDivide().getGeneration());
-		//and finally place all of the parts into a cell to be returned. the non-mutatable attribute are drawn directly from the original cell.
-		return new Cell(c.window, c.getName(), c.getRepresentation().getCenter(), c.getLengths(), mutatedGenes, mutatedColor, mutatedData);
 	}
 
 	/**

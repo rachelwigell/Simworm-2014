@@ -60,6 +60,10 @@ public class GeneState {
 	public boolean isUnknown(){
 		return this.state == GeneStates.UNKNOWN;
 	}
+	
+	public boolean isNotPresent(){
+		return this.state == GeneStates.NOTPRESENT;
+	}
 
 	public void setOn(boolean on){
 		if(on){

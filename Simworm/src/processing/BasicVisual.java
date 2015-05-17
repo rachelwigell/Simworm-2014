@@ -32,7 +32,6 @@ public class BasicVisual extends PApplet{
 	PeasyCam camera;
 	ControlP5 info;
 	Textarea userTextArea;
-	//	Textarea cellNamesArea;
 	Button frontB;
 	Button backB;
 	Button topB;
@@ -172,11 +171,6 @@ public class BasicVisual extends PApplet{
 		.setSize((width/5), (int) (height/3.5))
 		.setFont(createFont("arial", (width/90)));
 
-		//		cellNamesArea = new Textarea(info, "namesText"); //textarea where the names of the currently present cells are displayed
-		//		cellNamesArea.setPosition((float) (width/1.25), (float) (5*height/20))
-		//		.setSize((int) (width/5), (int) (height/8)).
-		//		setFont(createFont("arial", (width/114)));
-
 		//label for the color key
 		new Button(info, "cell color key") //just a label, not interactive
 		.setPosition((float) (width/1.26), (float) (height - 13*height/30))
@@ -225,7 +219,7 @@ public class BasicVisual extends PApplet{
 		.setPosition((float) (width/1.25), (float) (height - 17*height/30))
 		.addItem("On", 0)
 		.addItem("Off", 1)
-		.activate(0)
+		.activate(1)
 		.setNoneSelectedAllowed(false)
 		.setSize((int) (width/75), (int) (height/40))
 		.setColorBackground(color(49, 130, 189))
@@ -1294,10 +1288,9 @@ public class BasicVisual extends PApplet{
 				draw();
 				Runtime rt = Runtime.getRuntime();
 				try {
-					Process pr = rt.exec("java -Xmx1024M -jar Simworm.jar");
+					rt.exec("java -Xmx1024M -jar Simworm.jar");
 					exit();
 				} catch (IOException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}

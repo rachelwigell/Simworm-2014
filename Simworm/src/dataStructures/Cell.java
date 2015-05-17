@@ -13,15 +13,12 @@ import processing.Metaball;
 public class Cell {
 	BasicVisual window;
 	private String name;
-//	private Coordinate center;
 	private Coordinate lengths; //a little misleading, this isn't a set of coordinates, it's the length of the cell in each direction
-//	private String parent;
 	private HashMap<String, Gene> genes;
 	private ArrayList<String> recentlyChanged = new ArrayList<String>();
 	private RGB displayColor;
 	private RGB uniqueColor;
 	private DivisionData divide;
-//	private int generation;
 	private boolean selected;
 	private Metaball representation;
 	
@@ -155,8 +152,8 @@ public class Cell {
 	public HashMap<String, Gene> applyCons(){ //use list of genes that have recently changed, to calculate effects
 		HashMap<String, Gene> effects = new HashMap<String, Gene>(); //will hold all changes to be made to the cell
 		for(Consequence c: window.conslist.antecedentsAndConsequents){ //cells that have rules involving absence should always
-			for(Gene g: c.getAntecedents()){ //be considered recently changed, since they can "disappear" on
-				if(g.getState().getState() == GeneStates.NOTPRESENT){ //any cell division
+			for(Gene g: c.getAntecedents()){ //be considered recently changed, since they can "disappear" on any cell division
+				if(g.getState().getState() == GeneStates.NOTPRESENT){
 					this.recentlyChanged.add(g.getName());
 				}
 			}
@@ -189,7 +186,7 @@ public class Cell {
 						allFulfilled = false;
 						break checkAnte; // if an effect is already going to be applied to this gene, can stop immediately
 					}
-					if(!consInGenes.getState().isUnknown()){
+					if(!consInGenes.getState().isUnknown() && !consInGenes.getState().isNotPresent()){
 						if(consInGenes.getState().isOn() == cons.getState().isOn()){
 							allFulfilled = false;
 							break checkAnte; //if state of the gene is already set here, stop immediately
@@ -222,8 +219,10 @@ public class Cell {
 					}
 					else{ //if the antecedent was that the gene should be absent...
 						if(genes.get(a.getName()) != null){ //but it's present...
-							allFulfilled = false; //then our antecedent is not fulfilled
-							break checkAnte; //can stop looking immediately.
+							if(genes.get(a.getName()).getState().getState() != GeneStates.NOTPRESENT){//and not set to NOTPRESENT...
+								allFulfilled = false; //then our antecedent is not fulfilled
+								break checkAnte; //can stop looking immediately.
+							}
 						}
 					}
 				}
@@ -298,6 +297,7 @@ public class Cell {
 		String parsInfo = this.name+" proteins present:\n\n";
 		String otherInfo = "\n\n";
 		for(String s: this.genes.keySet()){	
+			if(this.genes.get(s).getState().getState() == GeneStates.NOTPRESENT) continue;
 			if(this.genes.get(s).getName().contains("par")){
 				if(this.genes.get(s).getState().isUnknown()) parsInfo += s + " unknown\n";
 				else if(this.genes.get(s).getState().isOn()) parsInfo += s + " active\n";
@@ -341,6 +341,7 @@ public class Cell {
 				if(geneInfo[1].equals("A")) state = new GeneState(GeneStates.ACTIVE); //if A, gene set to active
 				else if(geneInfo[1].equals("I")) state = new GeneState(GeneStates.INACTIVE); //I is inactive
 				else if(geneInfo[1].equals("U")) state = new GeneState(); //U is unknown indefinitely
+				else if(geneInfo[1].equals("N")) state = new GeneState(GeneStates.NOTPRESENT); //if N, gene not present yet (created by transcription later)
 				else try{
 					state = new GeneState(Integer.parseInt(geneInfo[1])); //if a number, gene set to unknown but will become known at the given time
 				}
